@@ -1,10 +1,131 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { FaPlay, FaCheck, FaTimes, FaClock, FaEye, FaTimesCircle, FaTrash, FaBroom } from 'react-icons/fa';
+import { FaPlay, FaCheck, FaTimes, FaClock, FaEye, FaTimesCircle, FaTrash, FaBroom, FaDownload, FaTerminal, FaInfoCircle, FaExclamationTriangle, FaBug } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import getApiBase from '../services/getApiBase';
 
 const API_BASE = getApiBase();
+
+// Enhanced logging system
+class TestResultsLogger {
+  constructor() {
+    this.logs = [];
+    this.maxLogs = 1000; // Keep last 1000 logs
+    this.logLevels = {
+      DEBUG: 0,
+      INFO: 1,
+      WARN: 2,
+      ERROR: 3
+    };
+    this.currentLevel = this.logLevels.INFO;
+  }
+
+  log(level, message, data = null, context = {}) {
+    const timestamp = new Date().toISOString();
+    const logEntry = {
+      id: Date.now() + Math.random(),
+      timestamp,
+      level,
+      message,
+      data,
+      context: {
+        ...context,
+        userAgent: navigator.userAgent,
+        url: window.location.href
+      }
+    };
+
+    this.logs.push(logEntry);
+    
+    // Keep only the last maxLogs entries
+    if (this.logs.length > this.maxLogs) {
+      this.logs = this.logs.slice(-this.maxLogs);
+    }
+
+    // Console output with appropriate styling
+    const levelColors = {
+      DEBUG: 'color: #6B7280',
+      INFO: 'color: #3B82F6',
+      WARN: 'color: #F59E0B',
+      ERROR: 'color: #EF4444'
+    };
+
+    const levelIcons = {
+      DEBUG: '🐛',
+      INFO: 'ℹ️',
+      WARN: '⚠️',
+      ERROR: '❌'
+    };
+
+    console.log(
+      `%c${levelIcons[level]} [AdminTestResults] ${message}`,
+      levelColors[level],
+      data || '',
+      context
+    );
+
+    return logEntry;
+  }
+
+  debug(message, data = null, context = {}) {
+    if (this.currentLevel <= this.logLevels.DEBUG) {
+      return this.log('DEBUG', message, data, context);
+    }
+  }
+
+  info(message, data = null, context = {}) {
+    if (this.currentLevel <= this.logLevels.INFO) {
+      return this.log('INFO', message, data, context);
+    }
+  }
+
+  warn(message, data = null, context = {}) {
+    if (this.currentLevel <= this.logLevels.WARN) {
+      return this.log('WARN', message, data, context);
+    }
+  }
+
+  error(message, error = null, context = {}) {
+    if (this.currentLevel <= this.logLevels.ERROR) {
+      const errorData = error ? {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      } : null;
+      return this.log('ERROR', message, errorData, context);
+    }
+  }
+
+  getLogs(level = null, limit = null) {
+    let filteredLogs = this.logs;
+    if (level) {
+      filteredLogs = this.logs.filter(log => log.level === level);
+    }
+    if (limit) {
+      filteredLogs = filteredLogs.slice(-limit);
+    }
+    return filteredLogs;
+  }
+
+  clearLogs() {
+    this.logs = [];
+    this.info('Logs cleared');
+  }
+
+  exportLogs() {
+    const logData = {
+      exportTime: new Date().toISOString(),
+      totalLogs: this.logs.length,
+      logs: this.logs
+    };
+    return JSON.stringify(logData, null, 2);
+  }
+
+  setLogLevel(level) {
+    this.currentLevel = this.logLevels[level] || this.logLevels.INFO;
+    this.info(`Log level set to ${level}`);
+  }
+}
 
 const AdminTestResults = () => {
   const { user, loading: authLoading } = useAuth();
@@ -16,15 +137,38 @@ const AdminTestResults = () => {
   const [progress, setProgress] = useState(0);
   const [currentTest, setCurrentTest] = useState('');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [showLogs, setShowLogs] = useState(false);
+  const [logLevel, setLogLevel] = useState('INFO');
+  
+  // Enhanced logging instance
+  const logger = useRef(new TestResultsLogger());
   
   // Cache for API responses
   const cache = useRef(new Map());
   const lastFetchTime = useRef(0);
   const CACHE_DURATION = 5000; // 5 seconds cache
   const progressInterval = useRef(null);
+  const performanceTimers = useRef(new Map());
 
   // Helper to get auth token
   const getToken = () => localStorage.getItem('token');
+
+  // Performance monitoring
+  const startTimer = (name) => {
+    performanceTimers.current.set(name, performance.now());
+    logger.current.debug(`Timer started: ${name}`);
+  };
+
+  const endTimer = (name) => {
+    const startTime = performanceTimers.current.get(name);
+    if (startTime) {
+      const duration = performance.now() - startTime;
+      logger.current.info(`Timer completed: ${name}`, { duration: `${duration.toFixed(2)}ms` });
+      performanceTimers.current.delete(name);
+      return duration;
+    }
+    return null;
+  };
 
   // Get status icon and color
   const getStatusInfo = (status) => {
@@ -43,50 +187,80 @@ const AdminTestResults = () => {
   // Clear test history
   const handleClearHistory = async () => {
     if (!confirm('Are you sure you want to clear all test history? This action cannot be undone.')) {
+      logger.current.info('Clear history cancelled by user');
       return;
     }
     
+    startTimer('clearHistory');
     setLoading(true);
     setError(null);
+    const url = `${API_BASE}/api/admin/test-results`;
+    const options = { method: 'DELETE', headers: { 'Authorization': `Bearer ${getToken()}` } };
+    
+    logger.current.info('Clearing test history', { url, method: 'DELETE' });
+    
     try {
-      const res = await fetch(`${API_BASE}/api/admin/test-results`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${getToken()}` }
+      const res = await fetch(url, options);
+      logger.current.info('Clear history response received', { 
+        status: res.status, 
+        ok: res.ok,
+        statusText: res.statusText 
       });
+      
       if (!res.ok) throw new Error('Failed to clear test history');
+      
       setTestRuns([]);
       setSelectedRun(null);
+      logger.current.info('Test history cleared successfully');
     } catch (err) {
       setError(err.message);
+      logger.current.error('Error clearing test history', err, { url, options });
     } finally {
       setLoading(false);
       setShowClearConfirm(false);
+      endTimer('clearHistory');
     }
   };
 
   // Delete specific test run
   const handleDeleteRun = async (id) => {
     if (!confirm('Are you sure you want to delete this test run?')) {
+      logger.current.info('Delete test run cancelled by user', { testRunId: id });
       return;
     }
     
+    startTimer(`deleteRun_${id}`);
     setError(null);
+    const url = `${API_BASE}/api/admin/test-results/${id}`;
+    const options = { method: 'DELETE', headers: { 'Authorization': `Bearer ${getToken()}` } };
+    
+    logger.current.info('Deleting test run', { testRunId: id, url, method: 'DELETE' });
+    
     try {
-      const res = await fetch(`${API_BASE}/api/admin/test-results/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${getToken()}` }
+      const res = await fetch(url, options);
+      logger.current.info('Delete run response received', { 
+        testRunId: id,
+        status: res.status, 
+        ok: res.ok,
+        statusText: res.statusText 
       });
+      
       if (!res.ok) throw new Error('Failed to delete test run');
+      
       setTestRuns(runs => runs.filter(r => r.id !== id));
       if (selectedRun && selectedRun.id === id) {
         setSelectedRun(null);
       }
+      logger.current.info('Test run deleted successfully', { testRunId: id });
     } catch (err) {
       setError(err.message);
+      logger.current.error('Error deleting test run', err, { testRunId: id, url, options });
+    } finally {
+      endTimer(`deleteRun_${id}`);
     }
   };
 
-  // Debounced fetch function
+  // Debounced fetch function with enhanced logging
   const debouncedFetch = useCallback((url, options = {}) => {
     const cacheKey = `${url}-${JSON.stringify(options)}`;
     const now = Date.now();
@@ -95,20 +269,36 @@ const AdminTestResults = () => {
     if (cache.current.has(cacheKey)) {
       const cached = cache.current.get(cacheKey);
       if (now - cached.timestamp < CACHE_DURATION) {
+        logger.current.debug('Returning cached data', { url, cacheAge: now - cached.timestamp });
         return Promise.resolve(cached.data);
       }
     }
     
     // Rate limiting - don't fetch too frequently
     if (now - lastFetchTime.current < 1000) {
+      logger.current.warn('Rate limited fetch', { url, timeSinceLastFetch: now - lastFetchTime.current });
       return Promise.resolve(null);
     }
     
     lastFetchTime.current = now;
+    startTimer(`fetch_${url}`);
+    
+    logger.current.info('Initiating fetch request', { url, options });
     
     return fetch(url, options).then(async (res) => {
-      if (!res.ok) throw new Error('Failed to fetch');
+      const duration = endTimer(`fetch_${url}`);
+      logger.current.info('Fetch response received', { 
+        url, 
+        status: res.status, 
+        ok: res.ok,
+        duration: `${duration?.toFixed(2)}ms`,
+        headers: Object.fromEntries(res.headers.entries())
+      });
+      
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      
       const data = await res.json();
+      logger.current.debug('Fetch data parsed', { url, dataSize: JSON.stringify(data).length });
       
       // Cache the response
       cache.current.set(cacheKey, {
@@ -117,49 +307,79 @@ const AdminTestResults = () => {
       });
       
       return data;
+    }).catch(err => {
+      const duration = endTimer(`fetch_${url}`);
+      logger.current.error('Fetch request failed', err, { 
+        url, 
+        options,
+        duration: `${duration?.toFixed(2)}ms`
+      });
+      throw err;
     });
   }, []);
 
   // Fetch all test runs
   const fetchTestRuns = async () => {
-    // Don't fetch if auth is still loading or user is not authenticated
     if (authLoading || !user) {
+      logger.current.warn('Fetch test runs skipped', { authLoading, userAuthenticated: !!user });
       return;
     }
     
+    startTimer('fetchTestRuns');
     setLoading(true);
     setError(null);
+    const url = `${API_BASE}/api/admin/test-results`;
+    const options = { headers: { 'Authorization': `Bearer ${getToken()}` } };
+    
+    logger.current.info('Fetching all test runs', { url, userId: user.id });
+    
     try {
-      const data = await debouncedFetch(`${API_BASE}/api/admin/test-results`, {
-        headers: { 'Authorization': `Bearer ${getToken()}` }
-      });
+      const data = await debouncedFetch(url, options);
       if (data) {
         setTestRuns(data);
+        logger.current.info('Test runs loaded successfully', { 
+          count: data.length,
+          runs: data.map(run => ({ id: run.id, status: run.status, date: run.date }))
+        });
       }
     } catch (err) {
       setError(err.message);
+      logger.current.error('Error fetching test runs', err, { url, userId: user.id });
     } finally {
       setLoading(false);
+      endTimer('fetchTestRuns');
     }
   };
 
   // Fetch details for a specific run
   const fetchRunDetails = async (id) => {
-    // Don't fetch if auth is still loading or user is not authenticated
     if (authLoading || !user) {
+      logger.current.warn('Fetch run details skipped', { authLoading, userAuthenticated: !!user });
       return;
     }
     
+    startTimer(`fetchRunDetails_${id}`);
     setError(null);
+    const url = `${API_BASE}/api/admin/test-results/${id}`;
+    const options = { headers: { 'Authorization': `Bearer ${getToken()}` } };
+    
+    logger.current.info('Fetching run details', { testRunId: id, url, userId: user.id });
+    
     try {
-      const data = await debouncedFetch(`${API_BASE}/api/admin/test-results/${id}`, {
-        headers: { 'Authorization': `Bearer ${getToken()}` }
-      });
+      const data = await debouncedFetch(url, options);
       if (data) {
         setSelectedRun(data);
+        logger.current.info('Run details loaded successfully', { 
+          testRunId: id,
+          status: data.status,
+          summary: data.summary
+        });
       }
     } catch (err) {
       setError(err.message);
+      logger.current.error('Error fetching run details', err, { testRunId: id, url, userId: user.id });
+    } finally {
+      endTimer(`fetchRunDetails_${id}`);
     }
   };
 
@@ -167,6 +387,7 @@ const AdminTestResults = () => {
   const startProgressSimulation = () => {
     setProgress(0);
     setCurrentTest('Initializing test environment...');
+    logger.current.info('Starting progress simulation');
     
     const testPhases = [
       'Loading test configuration...',
@@ -187,20 +408,23 @@ const AdminTestResults = () => {
           clearInterval(progressInterval.current);
           setProgress(100);
           setCurrentTest('Test execution completed');
+          logger.current.info('Progress simulation completed');
           return 100;
         }
-        
         // Update current test phase
         const phaseProgress = (newProgress / 100) * testPhases.length;
         const currentPhase = Math.floor(phaseProgress);
         if (currentPhase < testPhases.length && currentPhase !== phaseIndex) {
           phaseIndex = currentPhase;
           setCurrentTest(testPhases[currentPhase]);
+          logger.current.debug('Progress phase updated', { 
+            phase: testPhases[currentPhase], 
+            progress: newProgress.toFixed(1) 
+          });
         }
-        
         return newProgress;
       });
-    }, 1000);
+    }, 500);
   };
 
   // Stop progress simulation
@@ -208,6 +432,7 @@ const AdminTestResults = () => {
     if (progressInterval.current) {
       clearInterval(progressInterval.current);
       progressInterval.current = null;
+      logger.current.info('Progress simulation stopped');
     }
     setProgress(0);
     setCurrentTest('');
@@ -217,48 +442,120 @@ const AdminTestResults = () => {
   const handleRunTests = async () => {
     // Don't run if auth is still loading or user is not authenticated
     if (authLoading || !user) {
+      logger.current.warn('Run tests skipped', { authLoading, userAuthenticated: !!user });
       return;
     }
     
+    startTimer('runTests');
     setRunning(true);
     setError(null);
     startProgressSimulation();
+    
+    logger.current.info('Starting new test run', { userId: user.id, userEmail: user.email });
     
     try {
       const res = await fetch(`${API_BASE}/api/admin/run-tests`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${getToken()}` }
       });
+      
+      logger.current.info('Test run API response received', { 
+        status: res.status, 
+        ok: res.ok,
+        statusText: res.statusText 
+      });
+      
       if (!res.ok) throw new Error('Failed to start test run');
+      
       // Add the new running test to the top
       const newRun = await res.json();
       setTestRuns(runs => [newRun, ...runs]);
       
+      logger.current.info('New test run created', { 
+        testRunId: newRun.id,
+        status: newRun.status,
+        summary: newRun.summary
+      });
+      
       // Poll for completion with reduced frequency
       let done = false;
       let pollCount = 0;
-      while (!done && pollCount < 30) { // up to ~30s
+      const maxPolls = 30; // up to ~30s
+      
+      logger.current.info('Starting poll loop for test completion', { maxPolls });
+      
+      while (!done && pollCount < maxPolls) {
         await new Promise(r => setTimeout(r, 2000)); // Increased from 1s to 2s
+        pollCount++;
+        
+        logger.current.debug('Polling test status', { pollCount, testRunId: newRun.id });
+        
         const pollData = await debouncedFetch(`${API_BASE}/api/admin/test-results/${newRun.id}`, {
           headers: { 'Authorization': `Bearer ${getToken()}` }
         });
+        
         if (pollData && pollData.status !== 'running') {
           setTestRuns(runs => runs.map(r => r.id === pollData.id ? pollData : r));
           done = true;
+          logger.current.info('Test run completed', { 
+            testRunId: newRun.id,
+            finalStatus: pollData.status,
+            pollCount,
+            summary: pollData.summary
+          });
         }
-        pollCount++;
+      }
+      
+      if (!done) {
+        logger.current.warn('Test run polling timeout', { 
+          testRunId: newRun.id,
+          pollCount: maxPolls 
+        });
       }
     } catch (err) {
       setError(err.message);
+      logger.current.error('Error during test run', err, { userId: user.id });
     } finally {
       setRunning(false);
       stopProgressSimulation();
+      endTimer('runTests');
     }
+  };
+
+  // Export logs
+  const handleExportLogs = () => {
+    const logData = logger.current.exportLogs();
+    const blob = new Blob([logData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `test-results-logs-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    logger.current.info('Logs exported successfully');
+  };
+
+  // Clear logs
+  const handleClearLogs = () => {
+    logger.current.clearLogs();
+  };
+
+  // Handle log level change
+  const handleLogLevelChange = (newLevel) => {
+    setLogLevel(newLevel);
+    logger.current.setLogLevel(newLevel);
   };
 
   useEffect(() => {
     // Only fetch when auth is ready and user is authenticated
     if (!authLoading && user) {
+      logger.current.info('Component mounted, fetching test runs', { 
+        userId: user.id,
+        userEmail: user.email 
+      });
       fetchTestRuns();
     }
   }, [authLoading, user]);
@@ -268,9 +565,37 @@ const AdminTestResults = () => {
     return () => {
       if (progressInterval.current) {
         clearInterval(progressInterval.current);
+        logger.current.info('Component unmounting, cleanup performed');
       }
     };
   }, []);
+
+  // When a run is selected
+  useEffect(() => {
+    if (selectedRun) {
+      logger.current.info('Test run selected for viewing', { 
+        testRunId: selectedRun.id,
+        status: selectedRun.status 
+      });
+    }
+  }, [selectedRun]);
+
+  // When error changes
+  useEffect(() => {
+    if (error) {
+      logger.current.error('Error state updated', null, { error });
+    }
+  }, [error]);
+
+  // When loading state changes
+  useEffect(() => {
+    logger.current.debug('Loading state changed', { loading });
+  }, [loading]);
+
+  // When running state changes
+  useEffect(() => {
+    logger.current.debug('Running state changed', { running });
+  }, [running]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
@@ -281,6 +606,35 @@ const AdminTestResults = () => {
             <p className="text-gray-600 dark:text-gray-400">View and manage automated test runs for the platform.</p>
           </div>
           <div className="flex items-center gap-3">
+            {/* Log Level Selector */}
+            <select
+              value={logLevel}
+              onChange={(e) => handleLogLevelChange(e.target.value)}
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+            >
+              <option value="DEBUG">Debug</option>
+              <option value="INFO">Info</option>
+              <option value="WARN">Warn</option>
+              <option value="ERROR">Error</option>
+            </select>
+            
+            {/* Log Controls */}
+            <button
+              onClick={() => setShowLogs(!showLogs)}
+              className="px-4 py-2 bg-gray-600 text-white rounded-lg font-semibold shadow hover:bg-gray-700 flex items-center gap-2 transition-all duration-200"
+            >
+              <FaTerminal className="w-4 h-4" />
+              {showLogs ? 'Hide Logs' : 'Show Logs'}
+            </button>
+            
+            <button
+              onClick={handleExportLogs}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold shadow hover:bg-green-700 flex items-center gap-2 transition-all duration-200"
+            >
+              <FaDownload className="w-4 h-4" />
+              Export Logs
+            </button>
+            
             <button
               onClick={() => setShowClearConfirm(true)}
               disabled={loading || testRuns.length === 0}
@@ -289,6 +643,7 @@ const AdminTestResults = () => {
               <FaBroom className="w-4 h-4" />
               Clear History
             </button>
+            
             <button
               onClick={handleRunTests}
               disabled={running}
@@ -308,6 +663,50 @@ const AdminTestResults = () => {
             </button>
           </div>
         </div>
+
+        {/* Log Viewer */}
+        {showLogs && (
+          <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <FaTerminal className="w-4 h-4" />
+                Application Logs
+              </h3>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  {logger.current.logs.length} logs
+                </span>
+                <button
+                  onClick={handleClearLogs}
+                  className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700 transition-colors"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+            <div className="bg-gray-900 text-green-400 rounded-lg p-4 max-h-96 overflow-y-auto font-mono text-xs">
+              {logger.current.logs.slice(-50).map((log) => (
+                <div key={log.id} className="mb-1">
+                  <span className="text-gray-500">[{log.timestamp}]</span>
+                  <span className={`ml-2 ${
+                    log.level === 'ERROR' ? 'text-red-400' :
+                    log.level === 'WARN' ? 'text-yellow-400' :
+                    log.level === 'INFO' ? 'text-blue-400' :
+                    'text-gray-400'
+                  }`}>
+                    {log.level}
+                  </span>
+                  <span className="ml-2">{log.message}</span>
+                  {log.data && (
+                    <div className="ml-4 text-gray-500">
+                      {typeof log.data === 'object' ? JSON.stringify(log.data, null, 2) : log.data}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         
         {/* Progress Bar for Running Tests */}
         {running && (
