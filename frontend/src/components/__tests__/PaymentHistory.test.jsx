@@ -330,7 +330,7 @@ describe('PaymentHistory', () => {
     
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(
-        'http://localhost:3000/payments/history',
+        'http://localhost:3000/api/payments/history',
         {
           headers: {
             'Authorization': 'Bearer mock-token'
