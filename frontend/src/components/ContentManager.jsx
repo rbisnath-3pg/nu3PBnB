@@ -15,7 +15,7 @@ const ContentManager = () => {
   const [notification, setNotification] = useState({ show: false, title: '', message: '', type: 'info' });
   const [filters, setFilters] = useState({
     section: '',
-    language: i18n.language,
+    language: (i18n.language || 'en').split('-')[0],
     search: ''
   });
   const [pagination, setPagination] = useState({
@@ -202,7 +202,7 @@ const ContentManager = () => {
         content: '',
         type: 'html',
         section: 'general',
-        language: i18n.language,
+        language: (i18n.language || 'en').split('-')[0],
         isActive: true,
         comment: ''
       });

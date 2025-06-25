@@ -312,4 +312,42 @@ For more, see the full documentation in the `documentation/` folder.
 
 **Last Updated**: June 2025  
 **Version**: 1.0.0  
-**Maintainer**: nu3PBnB Development Team 
+**Maintainer**: nu3PBnB Development Team
+
+## 🚀 Live Demo
+- **Frontend:** https://nu3pbnb-frontend.onrender.com
+- **Backend API:** https://nu3pbnb-api.onrender.com
+
+## 🗄️ Database
+- **MongoDB Atlas** is used for production data.
+- Connection string is managed via environment variables (see `ENVIRONMENT_SETUP.md`).
+
+## 🌱 Seeding the Database
+To populate your online MongoDB Atlas database with sample listings:
+```bash
+node seed-listings.js
+```
+- The script connects to your Atlas cluster and inserts sample listings with proper GeoJSON locations.
+
+## 🧪 Testing
+- Run all tests:
+  ```bash
+  npm test
+  ```
+- Test coverage is high for listings, payments, and admin endpoints.
+- Some admin tests are failing due to missing `adminToken` setup (see `routes/__tests__/admin.test.js`).
+- For Mongoose/Jest integration, see the warning in test output and refer to [Mongoose Jest Docs](https://mongoosejs.com/docs/jest.html).
+
+## 🛠️ Deployment
+- Deployed on [Render](https://render.com) using `render.yaml`.
+- Environment variables are set in the Render dashboard.
+- See `DEPLOYMENT.md` for step-by-step deployment instructions.
+
+## 📄 Documentation
+- See `ENVIRONMENT_SETUP.md` for environment variable setup.
+- See `DEPLOYMENT.md` for cloud deployment instructions.
+- See `API_DOCUMENTATION.md` for API details.
+
+---
+
+For any issues, check the logs on Render or run tests locally for more details. 

@@ -8,7 +8,7 @@ Your database connection string should be set as an environment variable, not ha
 
 ### **For Local Development (.env file):**
 ```bash
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/nu3pbnb?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://rbisnath:<password>@cluster0.psisy90.mongodb.net/nu3pbnb?retryWrites=true&w=majority&appName=Cluster0
 NODE_ENV=development
 PORT=3000
 JWT_SECRET=your_local_jwt_secret
@@ -16,7 +16,7 @@ JWT_SECRET=your_local_jwt_secret
 
 ### **For Production (Render Dashboard):**
 ```bash
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/nu3pbnb?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://rbisnath:<password>@cluster0.psisy90.mongodb.net/nu3pbnb?retryWrites=true&w=majority&appName=Cluster0
 NODE_ENV=production
 PORT=10000
 JWT_SECRET=your_production_jwt_secret
@@ -25,13 +25,9 @@ JWT_SECRET=your_production_jwt_secret
 ## 🗄️ **MongoDB Atlas Setup**
 
 1. **Go to [mongodb.com/atlas](https://mongodb.com/atlas)**
-2. **Sign in with:** `robbie.bisnath@3pillarglobal.com`
-3. **Get your connection string:**
-   - Click "Connect" on your cluster
-   - Choose "Connect your application"
-   - Copy the connection string
-   - Replace `<password>` with your actual password
-   - Add `/nu3pbnb` after the cluster URL
+2. **Create a cluster, add a user, and allow access from anywhere**
+3. **Copy your connection string from the Drivers > Node.js tab**
+4. **Replace `<password>` with your actual password**
 
 ## 🔧 **Setting Up in Render**
 
@@ -63,4 +59,8 @@ JWT_SECRET=your_production_jwt_secret
 
 ## 📞 **Need Help?**
 
-If you need assistance setting up your MongoDB Atlas connection string, let me know and I'll guide you through the process step-by-step! 
+If you need assistance setting up your MongoDB Atlas connection string, let me know and I'll guide you through the process step-by-step!
+
+### Troubleshooting
+- If you see connection errors, double-check your URI and password
+- For more, see `DEPLOYMENT.md` 

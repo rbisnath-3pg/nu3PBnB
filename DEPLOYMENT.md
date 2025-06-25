@@ -215,4 +215,39 @@ app.use(cors({
 3. **Test locally** with production environment variables
 4. **Review platform documentation** for specific issues
 
-**Happy Deploying! 🚀** 
+**Happy Deploying! 🚀**
+
+## 1. MongoDB Atlas Setup
+- Create a free cluster at [mongodb.com/atlas](https://mongodb.com/atlas)
+- Add a database user (e.g., `rbisnath`) and set a password
+- Allow access from anywhere (0.0.0.0/0) in Network Access
+- Get your connection string (Drivers > Node.js)
+- Example:
+  ```
+  mongodb+srv://rbisnath:<password>@cluster0.psisy90.mongodb.net/nu3pbnb?retryWrites=true&w=majority&appName=Cluster0
+  ```
+
+## 2. Render Deployment
+- Push your code to GitHub
+- Connect your repo to Render
+- Use the `render.yaml` blueprint
+- Set environment variables in the Render dashboard:
+  - `MONGODB_URI` (your Atlas connection string)
+  - `NODE_ENV=production`
+  - `PORT=10000`
+  - `JWT_SECRET=your_secret_key`
+- Deploy and monitor logs for errors
+
+## 3. Seeding Data
+- Run `node seed-listings.js` to populate sample listings
+- Script uses GeoJSON for location (required by backend)
+
+## 4. Testing
+- Run `npm test` for full test suite
+- Some admin tests may fail if `adminToken` is not set up (see test file for details)
+- For Mongoose/Jest integration, see [Mongoose Jest Docs](https://mongoosejs.com/docs/jest.html)
+
+## 5. Troubleshooting
+- If you see `Internal server error` on API endpoints, check your MongoDB URI and credentials
+- For dependency issues, use `--legacy-peer-deps` in frontend build command (see `render.yaml`)
+- For more, see `ENVIRONMENT_SETUP.md` and `API_DOCUMENTATION.md` 

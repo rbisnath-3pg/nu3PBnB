@@ -249,7 +249,7 @@ function App() {
     try {
       setLoading(true)
       setError(null)
-      const currentLanguage = i18n.language || 'en'
+      const currentLanguage = (i18n.language || 'en').split('-')[0] // Get just the language code
       const url = `${API_BASE}/listings?page=${page}&language=${currentLanguage}`
       
       const response = await fetch(url, {
@@ -287,7 +287,7 @@ function App() {
     try {
       setLoading(true)
       setError(null)
-      const currentLanguage = i18n.language || 'en'
+      const currentLanguage = (i18n.language || 'en').split('-')[0] // Get just the language code
       const url = `${API_BASE}/listings/featured?language=${currentLanguage}`
       
       const response = await fetch(url, {

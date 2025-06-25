@@ -100,7 +100,7 @@ const SearchBar = ({ onSearch, onFiltersChange, className = '' }) => {
   const performSearch = async (query = searchQuery) => {
     setIsLoading(true);
     try {
-      const currentLanguage = i18n.language || 'en';
+      const currentLanguage = (i18n.language || 'en').split('-')[0];
       const params = new URLSearchParams({
         language: currentLanguage,
         ...filters

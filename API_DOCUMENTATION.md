@@ -1,38 +1,34 @@
-# Nu3PBnB API Documentation
+# 📚 API Documentation for nu3PBnB
+
+## Base URL
+- Production: `https://nu3pbnb-api.onrender.com`
+
+## Listings Endpoints
+- `GET /api/listings` — Returns all listings with pagination
+  - If the database is empty, returns an empty array
+- `GET /api/listings/:id` — Returns a specific listing
+- `POST /api/listings` — Create a new listing (requires authentication)
+- ...
+
+## Authentication
+- JWT-based, use `/api/auth/login` to obtain a token
+- Pass token as `Authorization: Bearer <token>`
+
+## Error Handling
+- 401 Unauthorized if token is missing/invalid
+- 500 Internal Server Error if database is not connected
+- 200 OK with empty array if no data is present
+
+## Seeding Data
+- Use `node seed-listings.js` to add sample listings
+- See `DEPLOYMENT.md` and `ENVIRONMENT_SETUP.md` for setup
+
+---
+For more endpoints and details, see the full documentation in the `documentation/` folder.
 
 ## Overview
 
 The Nu3PBnB API provides comprehensive access to our Airbnb-like platform for third-party integrations. This API allows you to manage listings, bookings, reviews, messages, and payments programmatically.
-
-## Base URL
-
-```
-https://your-domain.com/api
-```
-
-## Authentication
-
-### API Key Authentication
-
-All API requests require an API key to be included in the request headers:
-
-```
-X-API-Key: your_api_key_here
-```
-
-Or using the Authorization header:
-
-```
-Authorization: Bearer your_api_key_here
-```
-
-### JWT Token Authentication
-
-For user-specific operations, you'll need to authenticate users and include their JWT token:
-
-```
-Authorization: Bearer user_jwt_token_here
-```
 
 ## Rate Limiting
 
@@ -41,27 +37,6 @@ Authorization: Bearer user_jwt_token_here
   - `X-RateLimit-Limit`: Maximum requests per hour
   - `X-RateLimit-Remaining`: Remaining requests in current window
   - `X-RateLimit-Reset`: Time when the rate limit resets
-
-## Error Handling
-
-All errors follow a consistent format:
-
-```json
-{
-  "error": "Error type",
-  "message": "Human-readable error message"
-}
-```
-
-Common HTTP status codes:
-- `200` - Success
-- `201` - Created
-- `400` - Bad Request
-- `401` - Unauthorized
-- `403` - Forbidden
-- `404` - Not Found
-- `429` - Rate Limit Exceeded
-- `500` - Internal Server Error
 
 ## Endpoints
 
