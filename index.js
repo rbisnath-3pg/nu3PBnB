@@ -288,6 +288,46 @@ app.get('/db-status', async (req, res) => {
   }
 });
 
+// Temporary endpoint to remove problematic geospatial index
+app.post('/fix-index', async (req, res) => {
+  try {
+    console.log('🔄 Attempting to remove geospatial index on location field');
+    
+    const db = mongoose.connection.db;
+    
+    // Try to drop the problematic index
+    try {
+      await db.collection('listings').dropIndex('location_2dsphere');
+      console.log('✅ Successfully dropped location_2dsphere index');
+    } catch (dropError) {
+      console.log('⚠️ Could not drop location_2dsphere index:', dropError.message);
+    }
+    
+    // Try alternative index names
+    try {
+      await db.collection('listings').dropIndex('location_1');
+      console.log('✅ Successfully dropped location_1 index');
+    } catch (dropError) {
+      console.log('⚠️ Could not drop location_1 index:', dropError.message);
+    }
+    
+    // List all indexes to see what's there
+    const indexes = await db.collection('listings').getIndexes();
+    console.log('📊 Current indexes:', Object.keys(indexes));
+    
+    res.json({ 
+      message: 'Index removal attempted',
+      currentIndexes: Object.keys(indexes)
+    });
+  } catch (error) {
+    console.error('❌ Index removal failed:', error);
+    res.status(500).json({ 
+      message: 'Index removal failed',
+      error: error.message 
+    });
+  }
+});
+
 const authRoutes = require('./routes/auth');
 console.log('Loaded routes/auth.js');
 app.use('/api/auth', authRoutes);
