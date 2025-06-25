@@ -188,6 +188,106 @@ app.get('/', (req, res) => {
   res.send('nu3PBnB API is running');
 });
 
+// Temporary public endpoint for database initialization (for production setup)
+app.post('/init-db', async (req, res) => {
+  try {
+    console.log('🔄 Public database initialization requested via /init-db');
+    
+    // Check if there's already data in the database
+    const User = require('./models/User');
+    const Listing = require('./models/Listing');
+    const existingUsers = await User.countDocuments();
+    const existingListings = await Listing.countDocuments();
+    
+    if (existingUsers > 0 || existingListings > 0) {
+      return res.status(400).json({ 
+        message: 'Database already contains data. Use /init-db/force to reinitialize.',
+        existingUsers,
+        existingListings
+      });
+    }
+    
+    // Initialize database
+    await initializeDatabase();
+    
+    // Get counts after initialization
+    const userCount = await User.countDocuments();
+    const listingCount = await Listing.countDocuments();
+    
+    res.json({ 
+      message: 'Database initialized successfully',
+      userCount,
+      listingCount,
+      adminEmail: 'admin@nu3pbnb.com',
+      adminPassword: 'password123'
+    });
+  } catch (error) {
+    console.error('❌ Database initialization failed:', error);
+    res.status(500).json({ 
+      message: 'Database initialization failed',
+      error: error.message 
+    });
+  }
+});
+
+// Temporary public endpoint for force database initialization
+app.post('/init-db/force', async (req, res) => {
+  try {
+    console.log('🔄 Public force database initialization requested via /init-db/force');
+    
+    // Force reinitialize database
+    await initializeDatabase(true);
+    
+    // Get counts after initialization
+    const User = require('./models/User');
+    const Listing = require('./models/Listing');
+    const userCount = await User.countDocuments();
+    const listingCount = await Listing.countDocuments();
+    
+    res.json({ 
+      message: 'Database force reinitialized successfully',
+      userCount,
+      listingCount,
+      adminEmail: 'admin@nu3pbnb.com',
+      adminPassword: 'password123'
+    });
+  } catch (error) {
+    console.error('❌ Database force initialization failed:', error);
+    res.status(500).json({ 
+      message: 'Database force initialization failed',
+      error: error.message 
+    });
+  }
+});
+
+// Temporary public endpoint for database status
+app.get('/db-status', async (req, res) => {
+  try {
+    const User = require('./models/User');
+    const Listing = require('./models/Listing');
+    const userCount = await User.countDocuments();
+    const listingCount = await Listing.countDocuments();
+    const adminCount = await User.countDocuments({ role: 'admin' });
+    const hostCount = await User.countDocuments({ role: 'host' });
+    const guestCount = await User.countDocuments({ role: 'guest' });
+    
+    res.json({
+      userCount,
+      listingCount,
+      adminCount,
+      hostCount,
+      guestCount,
+      isInitialized: userCount > 0 || listingCount > 0
+    });
+  } catch (error) {
+    console.error('❌ Database status check failed:', error);
+    res.status(500).json({ 
+      message: 'Database status check failed',
+      error: error.message 
+    });
+  }
+});
+
 const authRoutes = require('./routes/auth');
 console.log('Loaded routes/auth.js');
 app.use('/api/auth', authRoutes);
