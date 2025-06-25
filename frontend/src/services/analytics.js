@@ -202,7 +202,7 @@ class AnalyticsService {
       }
 
       console.log('[Analytics] Attempting session start tracking...');
-      const response = await fetch(`${API_BASE}/analytics/track/session-start`, {
+      const response = await fetch(`${API_BASE}/api/analytics/track/session-start`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -232,7 +232,7 @@ class AnalyticsService {
       console.log('[Analytics] Session start error details:', {
         message: error.message,
         stack: error.stack,
-        url: `${API_BASE}/analytics/track/session-start`
+        url: `${API_BASE}/api/analytics/track/session-start`
       });
     }
   }
@@ -243,7 +243,7 @@ class AnalyticsService {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch(`${API_BASE}/analytics/track/page-view`, {
+      const response = await fetch(`${API_BASE}/api/analytics/track/page-view`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -292,7 +292,7 @@ class AnalyticsService {
 
       const timeSpent = Math.floor((Date.now() - this.sessionStartTime) / 1000);
       
-      const response = await fetch(`${API_BASE}/analytics/track/session-end`, {
+      const response = await fetch(`${API_BASE}/api/analytics/track/session-end`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -322,7 +322,7 @@ class AnalyticsService {
 
       const timeSpent = Math.floor((Date.now() - this.sessionStartTime) / 1000);
       
-      const response = await fetch(`${API_BASE}/analytics/track/bounce`, {
+      const response = await fetch(`${API_BASE}/api/analytics/track/bounce`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -353,8 +353,11 @@ class AnalyticsService {
         return;
       }
 
-      console.log('[Analytics] Sending tracking data:', { endpoint, data });
-      const response = await fetch(`${API_BASE}${endpoint}`, {
+      // Ensure endpoint starts with /api
+      const apiEndpoint = endpoint.startsWith('/api') ? endpoint : `/api${endpoint}`;
+      
+      console.log('[Analytics] Sending tracking data:', { endpoint: apiEndpoint, data });
+      const response = await fetch(`${API_BASE}${apiEndpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -365,7 +368,7 @@ class AnalyticsService {
       });
 
       console.log('[Analytics] Tracking response:', { 
-        endpoint, 
+        endpoint: apiEndpoint, 
         status: response.status, 
         ok: response.ok,
         url: response.url 
@@ -373,15 +376,15 @@ class AnalyticsService {
 
       // Don't throw error for tracking failures - just log them as warnings
       if (!response.ok) {
-        console.warn('Tracking request failed:', endpoint, response.status, response.statusText);
+        console.warn('Tracking request failed:', apiEndpoint, response.status, response.statusText);
         console.log('[Analytics] Tracking failed details:', {
-          endpoint,
+          endpoint: apiEndpoint,
           status: response.status,
           statusText: response.statusText,
           url: response.url
         });
       } else {
-        console.log('[Analytics] Tracking successful:', endpoint);
+        console.log('[Analytics] Tracking successful:', apiEndpoint);
       }
     } catch (error) {
       // Don't log tracking errors as they're not critical
@@ -390,7 +393,7 @@ class AnalyticsService {
         endpoint,
         message: error.message,
         stack: error.stack,
-        url: `${API_BASE}${endpoint}`
+        url: `${API_BASE}/api${endpoint}`
       });
     }
   }
@@ -410,7 +413,7 @@ class AnalyticsService {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch(`${API_BASE}/analytics/heartbeat`, {
+      const response = await fetch(`${API_BASE}/api/analytics/heartbeat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
