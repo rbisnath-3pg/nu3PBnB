@@ -145,7 +145,6 @@ mongoose.connect(process.env.MONGODB_URI)
       await db.collection('listings').createIndex({ hostId: 1 });
       await db.collection('listings').createIndex({ status: 1 });
       await db.collection('listings').createIndex({ createdAt: -1 });
-      await db.collection('listings').createIndex({ location: '2dsphere' });
       
       // Booking indexes
       await db.collection('bookingrequests').createIndex({ guestId: 1 });
