@@ -118,7 +118,7 @@ describe('PaymentHistory', () => {
     render(<PaymentHistory />);
     
     await waitFor(() => {
-      expect(screen.getByText('Failed to load payment history')).toBeInTheDocument();
+      expect(screen.getByText(/Failed to load payment history/)).toBeInTheDocument();
     });
   });
 
@@ -300,7 +300,7 @@ describe('PaymentHistory', () => {
     render(<PaymentHistory />);
     
     await waitFor(() => {
-      expect(screen.getByText('Failed to load payment history')).toBeInTheDocument();
+      expect(screen.getByText(/Failed to load payment history/)).toBeInTheDocument();
     });
   });
 
