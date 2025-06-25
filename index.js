@@ -288,10 +288,10 @@ app.get('/db-status', async (req, res) => {
   }
 });
 
-// Temporary endpoint to remove problematic geospatial index
+// Temporary endpoint to remove problematic geospatial index - v2
 app.post('/fix-index', async (req, res) => {
   try {
-    console.log('🔄 Attempting to remove geospatial index on location field');
+    console.log('🔄 Attempting to remove geospatial index on location field - v2');
     
     const db = mongoose.connection.db;
     const collection = db.collection('listings');
@@ -321,7 +321,7 @@ app.post('/fix-index', async (req, res) => {
     console.log('📊 Updated indexes:', updatedIndexes.map(idx => idx.name));
     
     res.json({ 
-      message: 'Index removal attempted',
+      message: 'Index removal attempted - v2',
       previousIndexes: indexes.map(idx => idx.name),
       currentIndexes: updatedIndexes.map(idx => idx.name)
     });
