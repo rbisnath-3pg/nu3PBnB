@@ -484,8 +484,10 @@ function App() {
         setShowSignIn(false)
         setShowSuccessMessage(true)
         setTimeout(() => setShowSuccessMessage(false), 3000)
-        // Track login event
-        analyticsService.track('user_login', { method: 'email' })
+        // Track login event - only if user is authenticated
+        if (data.user && data.token) {
+          analyticsService.track('user_login', { method: 'email' })
+        }
       } else {
         showNotification('Login Failed', data.message || 'Invalid credentials', 'error')
       }
@@ -526,8 +528,10 @@ function App() {
         setShowSuccessMessage(true)
         setTimeout(() => setShowSuccessMessage(false), 3000)
         
-        // Track registration event
-        analyticsService.track('user_registration', { method: 'email' })
+        // Track registration event - only if user is authenticated
+        if (data.user && data.token) {
+          analyticsService.track('user_registration', { method: 'email' })
+        }
       } else {
         showNotification('Registration Failed', data.message || 'Registration failed', 'error')
       }
@@ -551,8 +555,10 @@ function App() {
     setSelectedListing(null)
     setShowListingDetail(false)
     setViewMode('list')
-    // Track logout event
-    analyticsService.track('user_logout')
+    // Track logout event - only if user was authenticated
+    if (user) {
+      analyticsService.track('user_logout')
+    }
     // Navigate to homepage
     navigate('/')
   }
@@ -572,8 +578,10 @@ function App() {
     setSearchQuery(query)
     setShowSearchResults(true)
     
-    // Track search event
-    analyticsService.track('search_performed', { query })
+    // Track search event - only if user is authenticated
+    if (user) {
+      analyticsService.track('search_performed', { query })
+    }
   }
 
   /**
@@ -711,8 +719,10 @@ function App() {
         setShowMessaging(false)
         showNotification('Success', 'Message sent successfully', 'success')
         
-        // Track message event
-        analyticsService.track('message_sent', { listingId: selectedListing._id })
+        // Track message event - only if user is authenticated
+        if (user) {
+          analyticsService.track('message_sent', { listingId: selectedListing._id })
+        }
       } else {
         showNotification('Error', 'Failed to send message', 'error')
       }
@@ -750,11 +760,13 @@ function App() {
         setShowReviews(false)
         showNotification('Success', 'Review submitted successfully', 'success')
         
-        // Track review event
-        analyticsService.track('review_submitted', { 
-          listingId: selectedListing._id,
-          rating: newReview.rating 
-        })
+        // Track review event - only if user is authenticated
+        if (user) {
+          analyticsService.track('review_submitted', { 
+            listingId: selectedListing._id,
+            rating: newReview.rating 
+          })
+        }
       } else {
         showNotification('Error', 'Failed to submit review', 'error')
       }
@@ -773,8 +785,10 @@ function App() {
     setShowOnboarding(false)
     showNotification('Welcome!', 'Your account has been set up successfully', 'success')
     
-    // Track onboarding completion
-    analyticsService.track('onboarding_completed', { userData })
+    // Track onboarding completion - only if user is authenticated
+    if (user) {
+      analyticsService.track('onboarding_completed', { userData })
+    }
   }
 
   /**
@@ -963,8 +977,10 @@ function App() {
           // Don't show error notification for wishlist refresh failure
         }
         
-        // Track wishlist event
-        analyticsService.track('wishlist_added', { listingId })
+        // Track wishlist event - only if user is authenticated
+        if (user) {
+          analyticsService.track('wishlist_added', { listingId })
+        }
       } else {
         showNotification('Error', 'Failed to add to wishlist', 'error')
       }
@@ -1000,8 +1016,10 @@ function App() {
           // Don't show error notification for wishlist refresh failure
         }
         
-        // Track wishlist event
-        analyticsService.track('wishlist_removed', { listingId })
+        // Track wishlist event - only if user is authenticated
+        if (user) {
+          analyticsService.track('wishlist_removed', { listingId })
+        }
       } else {
         showNotification('Error', 'Failed to remove from wishlist', 'error')
       }
@@ -1031,8 +1049,10 @@ function App() {
       showNotification('Success', 'Link copied to clipboard!', 'success')
     }
     
-    // Track share event
-    analyticsService.track('listing_shared', { listingId: listing._id })
+    // Track share event - only if user is authenticated
+    if (user) {
+      analyticsService.track('listing_shared', { listingId: listing._id })
+    }
   }
 
   /**

@@ -405,7 +405,10 @@ class AnalyticsService {
 
   // Manual tracking methods for specific events
   trackCustomEvent(eventName, data = {}) {
-    if (!this.isAuthenticated()) return;
+    if (!this.isAuthenticated()) {
+      console.debug('Analytics: Skipping custom event tracking - user not authenticated');
+      return;
+    }
     
     this.sendTrackingData('/analytics/track/custom', {
       eventName,
@@ -437,6 +440,12 @@ class AnalyticsService {
 
   // Generic track method for any event
   track(eventName, data = {}) {
+    // Add additional safety check for authentication
+    if (!this.isAuthenticated()) {
+      console.debug(`Analytics: Skipping ${eventName} tracking - user not authenticated`);
+      return;
+    }
+    
     this.trackCustomEvent(eventName, data);
   }
 }
