@@ -444,12 +444,18 @@ function App() {
     try {
       const payload = { email, password };
       console.log('[handleSignIn] Sending payload:', { ...payload, password: payload.password ? '***' : '' });
+      
+      // Log the stringified payload
+      const payloadString = JSON.stringify(payload);
+      console.log('[handleSignIn] Payload string:', payloadString);
+      console.log('[handleSignIn] Payload length:', payloadString.length);
+      
       const response = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(payload),
+        body: payloadString,
       })
 
       // Log the raw response status
