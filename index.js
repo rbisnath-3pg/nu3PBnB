@@ -294,10 +294,15 @@ app.post('/fix-index', async (req, res) => {
     console.log('🔄 Attempting to remove geospatial index on location field');
     
     const db = mongoose.connection.db;
+    const collection = db.collection('listings');
+    
+    // Get current indexes
+    const indexes = await collection.listIndexes().toArray();
+    console.log('📊 Current indexes:', indexes.map(idx => idx.name));
     
     // Try to drop the problematic index
     try {
-      await db.collection('listings').dropIndex('location_2dsphere');
+      await collection.dropIndex('location_2dsphere');
       console.log('✅ Successfully dropped location_2dsphere index');
     } catch (dropError) {
       console.log('⚠️ Could not drop location_2dsphere index:', dropError.message);
@@ -305,19 +310,20 @@ app.post('/fix-index', async (req, res) => {
     
     // Try alternative index names
     try {
-      await db.collection('listings').dropIndex('location_1');
+      await collection.dropIndex('location_1');
       console.log('✅ Successfully dropped location_1 index');
     } catch (dropError) {
       console.log('⚠️ Could not drop location_1 index:', dropError.message);
     }
     
-    // List all indexes to see what's there
-    const indexes = await db.collection('listings').indexes();
-    console.log('📊 Current indexes:', indexes.map(idx => idx.name));
+    // Get updated indexes
+    const updatedIndexes = await collection.listIndexes().toArray();
+    console.log('📊 Updated indexes:', updatedIndexes.map(idx => idx.name));
     
     res.json({ 
       message: 'Index removal attempted',
-      currentIndexes: indexes.map(idx => idx.name)
+      previousIndexes: indexes.map(idx => idx.name),
+      currentIndexes: updatedIndexes.map(idx => idx.name)
     });
   } catch (error) {
     console.error('❌ Index removal failed:', error);
