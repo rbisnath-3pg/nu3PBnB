@@ -250,4 +250,28 @@ app.use(cors({
 ## 5. Troubleshooting
 - If you see `Internal server error` on API endpoints, check your MongoDB URI and credentials
 - For dependency issues, use `--legacy-peer-deps` in frontend build command (see `render.yaml`)
-- For more, see `ENVIRONMENT_SETUP.md` and `API_DOCUMENTATION.md` 
+- For more, see `ENVIRONMENT_SETUP.md` and `API_DOCUMENTATION.md`
+
+# Deployment Information
+
+## Last Deployment
+- **Date**: 2025-06-25 22:40:00 UTC
+- **Status**: Ready for deployment
+- **Build**: Frontend build successful (3.42s)
+- **Tests**: All Jest tests passing
+
+## Deployment Configuration
+- **Backend**: Node.js API on Render
+- **Frontend**: Static site on Render
+- **Database**: MongoDB on Render
+
+## Recent Fixes
+- ✅ Fixed Jest configuration and Babel plugins
+- ✅ Removed non-existent npm dependencies
+- ✅ All tests passing (95 tests, 0 failures)
+- ✅ Resolved import.meta syntax issues
+- ✅ Added TextEncoder polyfills
+
+## Build Commands
+- Frontend: `cd frontend && npm install --legacy-peer-deps && npm run build`
+- Backend: `npm install && npm start` 
