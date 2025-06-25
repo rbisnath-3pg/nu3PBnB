@@ -64,7 +64,6 @@ async function createIndexes() {
   
   // Listing indexes
   await Listing.collection.createIndex({ host: 1 });
-  await Listing.collection.createIndex({ location: 1 });
   await Listing.collection.createIndex({ price: 1 });
   await Listing.collection.createIndex({ featured: 1 });
   await Listing.collection.createIndex({ status: 1 });
