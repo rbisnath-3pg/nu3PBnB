@@ -13,6 +13,12 @@ class AnalyticsService {
     this.beforeUnloadHandler = null;
   }
 
+  // Check if user is authenticated
+  isAuthenticated() {
+    const token = localStorage.getItem('token');
+    return !!token;
+  }
+
   // Initialize tracking
   init() {
     if (this.isTracking) return;
@@ -22,24 +28,30 @@ class AnalyticsService {
     this.currentPage = window.location.pathname;
     this.pageStartTime = Date.now();
 
-    // Start session tracking
-    this.trackSessionStart();
+    // Only start session tracking if user is authenticated
+    if (this.isAuthenticated()) {
+      this.trackSessionStart();
+    }
     
     // Set up event listeners
     this.setupEventListeners();
     
-    // Start heartbeat
-    this.startHeartbeat();
+    // Start heartbeat only if authenticated
+    if (this.isAuthenticated()) {
+      this.startHeartbeat();
+    }
     
     console.log('Analytics tracking initialized');
   }
 
   // Set up event listeners for tracking
   setupEventListeners() {
-    // Track clicks
-    document.addEventListener('click', (e) => {
-      this.trackClick(e);
-    }, true);
+    // Track clicks only if authenticated
+    if (this.isAuthenticated()) {
+      document.addEventListener('click', (e) => {
+        this.trackClick(e);
+      }, true);
+    }
 
     // Track page visibility changes
     this.visibilityChangeHandler = () => {
@@ -54,7 +66,9 @@ class AnalyticsService {
     // Track before unload (user leaving page)
     this.beforeUnloadHandler = () => {
       this.trackPageLeave();
-      this.trackSessionEnd();
+      if (this.isAuthenticated()) {
+        this.trackSessionEnd();
+      }
     };
     window.addEventListener('beforeunload', this.beforeUnloadHandler);
 
@@ -91,12 +105,16 @@ class AnalyticsService {
       this.trackPageLeave();
       this.currentPage = newPage;
       this.pageStartTime = Date.now();
-      this.trackPageView();
+      if (this.isAuthenticated()) {
+        this.trackPageView();
+      }
     }
   }
 
   // Track click events
   trackClick(event) {
+    if (!this.isAuthenticated()) return;
+    
     const element = event.target;
     const elementData = this.getElementData(element);
     
@@ -174,9 +192,11 @@ class AnalyticsService {
       if (response.ok) {
         const data = await response.json();
         this.sessionId = data.sessionId;
+      } else {
+        console.warn('Session start tracking failed:', response.status, response.statusText);
       }
     } catch (error) {
-      console.error('Error tracking session start:', error);
+      console.debug('Session start error (non-critical):', error.message);
     }
   }
 
@@ -186,7 +206,7 @@ class AnalyticsService {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      await fetch(`${API_BASE}/analytics/track/page-view`, {
+      const response = await fetch(`${API_BASE}/analytics/track/page-view`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -197,8 +217,12 @@ class AnalyticsService {
           page: this.currentPage
         })
       });
+
+      if (!response.ok) {
+        console.warn('Page view tracking failed:', response.status, response.statusText);
+      }
     } catch (error) {
-      console.error('Error tracking page view:', error);
+      console.debug('Page view error (non-critical):', error.message);
     }
   }
 
@@ -208,8 +232,8 @@ class AnalyticsService {
       const timeSpent = Math.floor((Date.now() - this.pageStartTime) / 1000);
       this.pageStartTime = null;
       
-      // Only track if user spent meaningful time on page
-      if (timeSpent > 1) {
+      // Only track if user spent meaningful time on page and is authenticated
+      if (timeSpent > 1 && this.isAuthenticated()) {
         this.sendTrackingData('/analytics/track/page-leave', {
           page: this.currentPage,
           timeSpent
@@ -231,7 +255,7 @@ class AnalyticsService {
 
       const timeSpent = Math.floor((Date.now() - this.sessionStartTime) / 1000);
       
-      await fetch(`${API_BASE}/analytics/track/session-end`, {
+      const response = await fetch(`${API_BASE}/analytics/track/session-end`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -244,8 +268,12 @@ class AnalyticsService {
           page: this.currentPage
         })
       });
+
+      if (!response.ok) {
+        console.warn('Session end tracking failed:', response.status, response.statusText);
+      }
     } catch (error) {
-      console.error('Error tracking session end:', error);
+      console.debug('Session end error (non-critical):', error.message);
     }
   }
 
@@ -257,7 +285,7 @@ class AnalyticsService {
 
       const timeSpent = Math.floor((Date.now() - this.sessionStartTime) / 1000);
       
-      await fetch(`${API_BASE}/analytics/track/bounce`, {
+      const response = await fetch(`${API_BASE}/analytics/track/bounce`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -270,8 +298,12 @@ class AnalyticsService {
           page: this.currentPage
         })
       });
+
+      if (!response.ok) {
+        console.warn('Bounce tracking failed:', response.status, response.statusText);
+      }
     } catch (error) {
-      console.error('Error tracking bounce:', error);
+      console.debug('Bounce error (non-critical):', error.message);
     }
   }
 
@@ -281,7 +313,7 @@ class AnalyticsService {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      await fetch(`${API_BASE}${endpoint}`, {
+      const response = await fetch(`${API_BASE}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -290,15 +322,21 @@ class AnalyticsService {
         },
         body: JSON.stringify(data)
       });
+
+      // Don't throw error for tracking failures - just log them as warnings
+      if (!response.ok) {
+        console.warn('Tracking request failed:', endpoint, response.status, response.statusText);
+      }
     } catch (error) {
-      console.error('Error sending tracking data:', error);
+      // Don't log tracking errors as they're not critical
+      console.debug('Tracking error (non-critical):', endpoint, error.message);
     }
   }
 
   // Start heartbeat to track active sessions
   startHeartbeat() {
     this.heartbeatInterval = setInterval(() => {
-      if (!document.hidden) {
+      if (!document.hidden && this.isAuthenticated()) {
         this.sendHeartbeat();
       }
     }, 30000); // Send heartbeat every 30 seconds
@@ -310,7 +348,7 @@ class AnalyticsService {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      await fetch(`${API_BASE}/analytics/heartbeat`, {
+      const response = await fetch(`${API_BASE}/analytics/heartbeat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -323,8 +361,14 @@ class AnalyticsService {
           timestamp: new Date().toISOString()
         })
       });
+
+      // Don't throw error for heartbeat failures - just log them
+      if (!response.ok) {
+        console.warn('Heartbeat request failed:', response.status, response.statusText);
+      }
     } catch (error) {
-      console.error('Error sending heartbeat:', error);
+      // Don't log heartbeat errors as they're not critical
+      console.debug('Heartbeat error (non-critical):', error.message);
     }
   }
 
@@ -351,14 +395,18 @@ class AnalyticsService {
       this.beforeUnloadHandler = null;
     }
 
-    // Track session end
-    this.trackSessionEnd();
+    // Track session end if authenticated
+    if (this.isAuthenticated()) {
+      this.trackSessionEnd();
+    }
     
     console.log('Analytics tracking stopped');
   }
 
   // Manual tracking methods for specific events
   trackCustomEvent(eventName, data = {}) {
+    if (!this.isAuthenticated()) return;
+    
     this.sendTrackingData('/analytics/track/custom', {
       eventName,
       page: this.currentPage,

@@ -49,7 +49,7 @@ const AdminTestResults = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE}/api/test-results`, {
+      const res = await fetch(`${API_BASE}/api/admin/test-results`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${getToken()}` }
       });
@@ -72,7 +72,7 @@ const AdminTestResults = () => {
     
     setError(null);
     try {
-      const res = await fetch(`${API_BASE}/api/test-results/${id}`, {
+      const res = await fetch(`${API_BASE}/api/admin/test-results/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${getToken()}` }
       });
@@ -130,7 +130,7 @@ const AdminTestResults = () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await debouncedFetch(`${API_BASE}/api/test-results`, {
+      const data = await debouncedFetch(`${API_BASE}/api/admin/test-results`, {
         headers: { 'Authorization': `Bearer ${getToken()}` }
       });
       if (data) {
@@ -152,7 +152,7 @@ const AdminTestResults = () => {
     
     setError(null);
     try {
-      const data = await debouncedFetch(`${API_BASE}/api/test-results/${id}`, {
+      const data = await debouncedFetch(`${API_BASE}/api/admin/test-results/${id}`, {
         headers: { 'Authorization': `Bearer ${getToken()}` }
       });
       if (data) {
@@ -225,7 +225,7 @@ const AdminTestResults = () => {
     startProgressSimulation();
     
     try {
-      const res = await fetch(`${API_BASE}/api/run-tests`, {
+      const res = await fetch(`${API_BASE}/api/admin/run-tests`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${getToken()}` }
       });
@@ -239,7 +239,7 @@ const AdminTestResults = () => {
       let pollCount = 0;
       while (!done && pollCount < 30) { // up to ~30s
         await new Promise(r => setTimeout(r, 2000)); // Increased from 1s to 2s
-        const pollData = await debouncedFetch(`${API_BASE}/api/test-results/${newRun.id}`, {
+        const pollData = await debouncedFetch(`${API_BASE}/api/admin/test-results/${newRun.id}`, {
           headers: { 'Authorization': `Bearer ${getToken()}` }
         });
         if (pollData && pollData.status !== 'running') {

@@ -535,9 +535,20 @@ router.post('/track/custom', auth, (req, res) => {
   res.json({ success: true });
 });
 
-// POST /api/analytics/heartbeat
+// POST /api/analytics/heartbeat - Allow both authenticated and unauthenticated
 router.post('/heartbeat', (req, res) => {
-  res.json({ status: 'ok' });
+  try {
+    // If user is authenticated, optionally log the heartbeat
+    if (req.user) {
+      // Could store heartbeat data for authenticated users
+      console.log(`Heartbeat from user ${req.user.id} on page ${req.body.page || 'unknown'}`);
+    }
+    
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  } catch (error) {
+    console.error('Error processing heartbeat:', error);
+    res.status(500).json({ error: 'Failed to process heartbeat' });
+  }
 });
 
 module.exports = router; 
