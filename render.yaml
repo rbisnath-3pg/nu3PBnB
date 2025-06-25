@@ -3,7 +3,6 @@ services:
   - type: web
     name: nu3pbnb-api
     env: node
-    plan: free
     buildCommand: npm install
     startCommand: npm start
     envVars:
@@ -21,7 +20,6 @@ services:
   - type: web
     name: nu3pbnb-frontend
     env: static
-    plan: free
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: ./frontend/dist
     envVars:
@@ -34,5 +32,4 @@ services:
 
 databases:
   - name: nu3pbnb-mongodb
-    databaseName: nu3pbnb
-    plan: free 
+    databaseName: nu3pbnb 
