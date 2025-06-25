@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { FaCreditCard, FaPaypal, FaLock, FaCheck, FaTimes } from 'react-icons/fa';
+import getApiBase from '../services/getApiBase';
 
-const API_BASE = import.meta.env.PROD 
-  ? 'https://nu3pbnb-api.onrender.com/api'
-  : '/api';
+const API_BASE = getApiBase();
 
 const PaymentForm = ({ booking, selectedListing, onSuccess, onCancel, paymentType = 'new' }) => {
   const [paymentMethod, setPaymentMethod] = useState('credit_card');

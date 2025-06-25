@@ -6,10 +6,9 @@ import AnalyticsDashboard from './AnalyticsDashboard';
 import Messaging from './Messaging';
 import { FaPlus, FaCheck, FaTimes, FaCalendarAlt, FaHeart } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
+import getApiBase from '../services/getApiBase';
 
-const API_BASE = import.meta.env.PROD 
-  ? 'https://nu3pbnb-api.onrender.com/api'
-  : '/api';
+const API_BASE = getApiBase();
 
 // Helper to generate random property data
 function getRandomPropertyData(hostId) {

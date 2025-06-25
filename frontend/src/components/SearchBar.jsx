@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import getApiBase from '../services/getApiBase';
 
-const API_BASE = import.meta.env.PROD 
-  ? 'https://nu3pbnb-api.onrender.com/api'
-  : '/api';
+const API_BASE = getApiBase();
 
 const SearchBar = ({ onSearch, onFiltersChange, className = '' }) => {
   const { t, i18n } = useTranslation();

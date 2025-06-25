@@ -24,6 +24,7 @@ import EditListing from './components/EditListing'
 import HomePage from './components/HomePage'
 import Spinner from './components/Spinner'
 import { FaEnvelope } from 'react-icons/fa'
+import getApiBase from './services/getApiBase'
 
 /**
  * Main App component that handles the entire application state and routing
@@ -86,9 +87,7 @@ function App() {
   const { t, i18n } = useTranslation()
   
   // API configuration
-  const API_BASE = import.meta.env.PROD 
-    ? 'https://nu3pbnb-api.onrender.com/api'
-    : '/api'
+  const API_BASE = getApiBase()
 
   // Core application state
   const [listings, setListings] = useState([])

@@ -2,10 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { faker } from '@faker-js/faker';
 import NotificationModal from './NotificationModal';
+import getApiBase from '../services/getApiBase';
 
-const API_BASE = import.meta.env.PROD 
-  ? 'https://nu3pbnb-api.onrender.com/api'
-  : '/api';
+const API_BASE = getApiBase();
 
 const UserManagement = () => {
   const { t } = useTranslation();

@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import getApiBase from '../services/getApiBase';
 
-const API_BASE = import.meta.env.PROD 
-  ? 'https://nu3pbnb-api.onrender.com/api'
-  : '/api';
+const API_BASE = getApiBase();
 
 const AnalyticsDashboard = ({ hostId, profileId, userRole }) => {
   const { user, loading: authLoading } = useAuth();

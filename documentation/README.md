@@ -29,7 +29,9 @@ This folder contains comprehensive documentation for the nu3PBnB application fol
 - **[Risk Assessment](./project-plan.md#risk-management)** - Identified risks and mitigation strategies
 - **[Change Management](./project-plan.md#deployment-strategy)** - Change control procedures
 
-### 6. Quick Reference
+### 6. Technology & Reference
+- **[Technology Stack](./technology-stack.md)** - Comprehensive technology stack documentation
+- **[Tech Quick Reference](./tech-quick-reference.md)** - Essential commands and quick reference guide
 - **[Quick Start Guide](./quick-start.md)** - Essential commands and setup instructions
 
 ## 🆕 Latest Features (January 2025)

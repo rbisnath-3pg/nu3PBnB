@@ -2,10 +2,9 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { FaPlay, FaCheck, FaTimes, FaClock, FaEye, FaTimesCircle, FaTrash, FaBroom } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
+import getApiBase from '../services/getApiBase';
 
-const API_BASE = import.meta.env.PROD 
-  ? 'https://nu3pbnb-api.onrender.com/api/admin'
-  : '/api/admin';
+const API_BASE = getApiBase();
 
 const AdminTestResults = () => {
   const { user, loading: authLoading } = useAuth();

@@ -3,10 +3,9 @@ import { useAuth } from '../contexts/AuthContext';
 import AnalyticsDashboard from './AnalyticsDashboard';
 import { useTranslation } from 'react-i18next';
 import { FaUser, FaEnvelope, FaMapMarkerAlt, FaEdit, FaSave, FaTimes, FaUpload, FaHome } from 'react-icons/fa';
+import getApiBase from '../services/getApiBase';
 
-const API_BASE = import.meta.env.PROD 
-  ? 'https://nu3pbnb-api.onrender.com/api'
-  : '/api';
+const API_BASE = getApiBase();
 
 const UserProfile = () => {
   const { user, login } = useAuth();

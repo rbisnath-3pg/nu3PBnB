@@ -10,5 +10,11 @@ module.exports = {
   ],
   plugins: [
     '@babel/plugin-transform-modules-commonjs',
+    [
+      'babel-plugin-transform-import-meta',
+      {
+        target: 'CommonJS',
+      },
+    ],
   ],
 }; 

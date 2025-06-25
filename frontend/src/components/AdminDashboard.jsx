@@ -8,10 +8,9 @@ import AdminMessaging from './AdminMessaging';
 import UserManagement from './UserManagement';
 import AdminTestResults from './AdminTestResults';
 import { FaChartBar, FaUsers, FaFileAlt, FaCreditCard, FaEnvelope, FaVial, FaCog, FaSignOutAlt } from 'react-icons/fa';
+import getApiBase from '../services/getApiBase';
 
-const API_BASE = import.meta.env.PROD 
-  ? 'https://nu3pbnb-api.onrender.com/api'
-  : '/api';
+const API_BASE = getApiBase();
 
 const AdminDashboard = () => {
   const { t } = useTranslation();

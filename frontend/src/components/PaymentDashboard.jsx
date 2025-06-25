@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { FaDollarSign, FaCreditCard, FaChartLine, FaCalendarAlt, FaUser, FaHome } from 'react-icons/fa';
 import ReceiptModal from './ReceiptModal';
+import getApiBase from '../services/getApiBase';
 
-const API_BASE = import.meta.env.PROD 
-  ? 'https://nu3pbnb-api.onrender.com/api'
-  : '/api';
+const API_BASE = getApiBase();
 
 const PaymentDashboard = ({ userRole = 'host' }) => {
   const { user } = useAuth();

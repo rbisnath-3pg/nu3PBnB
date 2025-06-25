@@ -329,11 +329,14 @@ describe('PaymentHistory', () => {
     render(<PaymentHistory />);
     
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith('/api/payments/history', {
-        headers: {
-          'Authorization': 'Bearer mock-token'
+      expect(global.fetch).toHaveBeenCalledWith(
+        'http://localhost:3000/payments/history',
+        {
+          headers: {
+            'Authorization': 'Bearer mock-token'
+          }
         }
-      });
+      );
     });
   });
 

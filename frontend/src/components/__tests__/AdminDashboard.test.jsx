@@ -195,11 +195,14 @@ describe('AdminDashboard', () => {
     );
     
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith('/api/admin/messages/unread-count', {
-        headers: {
-          Authorization: 'Bearer null'
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/admin/messages/unread-count'),
+        {
+          headers: {
+            Authorization: 'Bearer null'
+          }
         }
-      });
+      );
     });
   });
 
@@ -214,11 +217,14 @@ describe('AdminDashboard', () => {
     fireEvent.click(adminMessagingTab);
     
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith('/api/admin/messages/unread-count', {
-        headers: {
-          Authorization: 'Bearer null'
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/admin/messages/unread-count'),
+        {
+          headers: {
+            Authorization: 'Bearer null'
+          }
         }
-      });
+      );
     });
   });
 

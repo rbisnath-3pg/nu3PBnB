@@ -40,11 +40,11 @@
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "express-rate-limit": "^7.5.1",
-    "identity-obj-proxy": "^3.0.0",
     "i18next": "^25.2.1",
     "i18next-fs-backend": "^2.6.0",
     "i18next-http-backend": "^3.0.2",
     "i18next-http-middleware": "^3.7.4",
+    "identity-obj-proxy": "^3.0.0",
     "jest-environment-jsdom": "^30.0.2",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^5.7.0",
@@ -60,6 +60,7 @@
     "@babel/preset-env": "^7.27.2",
     "@babel/preset-react": "^7.27.1",
     "babel-jest": "^30.0.2",
+    "babel-plugin-transform-import-meta": "^2.3.3",
     "jest": "^30.0.2",
     "mongodb-memory-server": "^8.12.2",
     "nodemon": "^3.1.10",
@@ -90,7 +91,8 @@
     ],
     "moduleNameMapper": {
       "\\.(css|less|scss|sass)$": "identity-obj-proxy",
-      "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/__mocks__/fileMock.js"
+      "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/__mocks__/fileMock.js",
+      "^../services/getApiBase$": "<rootDir>/frontend/src/services/getApiBase.node.js"
     }
   }
 }

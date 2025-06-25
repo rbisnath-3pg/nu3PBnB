@@ -211,7 +211,10 @@ describe('AnalyticsDashboard', () => {
     render(<AnalyticsDashboard />);
     
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith('/api/analytics?timeRange=7d', expect.any(Object));
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/analytics?timeRange=7d'),
+        expect.any(Object)
+      );
     });
   });
 
@@ -285,7 +288,10 @@ describe('AnalyticsDashboard', () => {
     render(<AnalyticsDashboard hostId="host123" />);
     
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith('/api/analytics?timeRange=7d&hostId=host123', expect.any(Object));
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/analytics?timeRange=7d&hostId=host123'),
+        expect.any(Object)
+      );
     });
   });
 
@@ -293,7 +299,10 @@ describe('AnalyticsDashboard', () => {
     render(<AnalyticsDashboard userRole="admin" />);
     
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith('/api/analytics?timeRange=7d', expect.any(Object));
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/analytics?timeRange=7d'),
+        expect.any(Object)
+      );
     });
   });
 

@@ -3,14 +3,55 @@ const { TextEncoder, TextDecoder } = require('util');
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
 
-// Mock import.meta
-Object.defineProperty(global, 'import', {
-  value: {
-    meta: {
-      env: {
-        PROD: false
-      }
+// Mock import.meta for Vite compatibility
+global.import = {
+  meta: {
+    env: {
+      PROD: false,
+      DEV: true,
+      VITE_API_URL: 'http://localhost:3000/api'
     }
+  }
+};
+
+// Mock window.matchMedia
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: jest.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: jest.fn(), // deprecated
+    removeListener: jest.fn(), // deprecated
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  })),
+});
+
+// Mock IntersectionObserver
+global.IntersectionObserver = class IntersectionObserver {
+  constructor() {}
+  observe() {
+    return null;
+  }
+  disconnect() {
+    return null;
+  }
+  unobserve() {
+    return null;
+  }
+};
+
+// Mock import.meta.env for Jest
+if (typeof globalThis.import === 'undefined') {
+  globalThis.import = {};
+}
+globalThis.import.meta = {
+  env: {
+    VITE_API_URL: 'http://localhost:3000',
+    PROD: false,
+    DEV: true,
   },
-  writable: true
-}); 
+};
+process.env.VITE_API_URL = 'http://localhost:3000'; 

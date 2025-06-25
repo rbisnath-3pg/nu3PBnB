@@ -4,10 +4,9 @@ import { useTranslation } from 'react-i18next';
 import WYSIWYGEditor from './WYSIWYGEditor';
 import NotificationModal from './NotificationModal';
 import { FaEdit, FaSave, FaTimes, FaHistory, FaUndo, FaEye, FaEyeSlash } from 'react-icons/fa';
+import getApiBase from '../services/getApiBase';
 
-const API_BASE = import.meta.env.PROD 
-  ? 'https://nu3pbnb-api.onrender.com/api'
-  : '/api';
+const API_BASE = getApiBase();
 
 const ContentManager = () => {
   const { t, i18n } = useTranslation();

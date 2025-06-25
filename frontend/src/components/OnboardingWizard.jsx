@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { FaUser, FaHome, FaHeart, FaCheck, FaArrowRight, FaArrowLeft } from 'react-icons/fa';
+import getApiBase from '../services/getApiBase';
 
-const API_BASE = import.meta.env.PROD 
-  ? 'https://nu3pbnb-api.onrender.com/api'
-  : '/api';
+const API_BASE = getApiBase();
 
 const OnboardingWizard = ({ onClose, onComplete }) => {
   const [currentStep, setCurrentStep] = useState(1);
