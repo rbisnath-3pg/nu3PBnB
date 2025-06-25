@@ -111,7 +111,7 @@ const SearchBar = ({ onSearch, onFiltersChange, className = '' }) => {
         params.delete('search'); // Remove any previous search param
         params.set('city', query.trim());
       }
-      const apiUrl = `${API_BASE}/listings?${params}`;
+      const apiUrl = `${API_BASE}/api/listings?${params}`;
       console.log('[DEBUG] Fetching listings from:', apiUrl);
       const response = await fetch(apiUrl);
       if (response.ok) {

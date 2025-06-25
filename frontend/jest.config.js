@@ -8,6 +8,8 @@ module.exports = {
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '\\.(jpg|jpeg|png|gif|svg)$': '<rootDir>/__mocks__/fileMock.js',
+    '^./getApiBase\\.vite\\.js$': '<rootDir>/src/services/getApiBase.node.js',
+    '^./getApiBase\\.node\\.js$': '<rootDir>/src/services/getApiBase.node.js'
   },
   transformIgnorePatterns: [
     'node_modules/(?!(react-router|react-router-dom|vite)/)'

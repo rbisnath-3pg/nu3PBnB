@@ -25,22 +25,36 @@ const PaymentDashboard = ({ userRole = 'host' }) => {
   const fetchPayments = async () => {
     try {
       setLoading(true);
-      const endpoint = userRole === 'admin' ? `${API_BASE}/payments/admin/all` : `${API_BASE}/payments/host`;
+      const endpoint = userRole === 'admin' ? `${API_BASE}/api/payments/admin/all` : `${API_BASE}/api/payments/host`;
+      
+      console.log('[PaymentDashboard] Fetching payments from:', endpoint);
+      console.log('[PaymentDashboard] User role:', userRole);
+      console.log('[PaymentDashboard] API_BASE:', API_BASE);
+      
+      const token = localStorage.getItem('token');
+      console.log('[PaymentDashboard] Token available:', !!token);
+      
       const response = await fetch(endpoint, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${token}`
         }
       });
       
+      console.log('[PaymentDashboard] Response status:', response.status);
+      console.log('[PaymentDashboard] Response ok:', response.ok);
+      
       if (!response.ok) {
-        throw new Error('Failed to fetch payments');
+        const errorText = await response.text();
+        console.error('[PaymentDashboard] Response error text:', errorText);
+        throw new Error(`Failed to fetch payments: ${response.status} ${response.statusText}`);
       }
       
       const data = await response.json();
+      console.log('[PaymentDashboard] Payments data:', data);
       setPayments(data.payments || []);
     } catch (err) {
+      console.error('[PaymentDashboard] Fetch payments error:', err);
       setError('Failed to load payments: ' + err.message);
-      console.error('Fetch payments error:', err);
     } finally {
       setLoading(false);
     }
@@ -48,19 +62,29 @@ const PaymentDashboard = ({ userRole = 'host' }) => {
 
   const fetchStats = async () => {
     try {
-      const endpoint = userRole === 'admin' ? `${API_BASE}/payments/admin/stats` : `${API_BASE}/payments/host/stats`;
+      const endpoint = userRole === 'admin' ? `${API_BASE}/api/payments/admin/stats` : `${API_BASE}/api/payments/host/stats`;
+      
+      console.log('[PaymentDashboard] Fetching stats from:', endpoint);
+      
+      const token = localStorage.getItem('token');
       const response = await fetch(endpoint, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${token}`
         }
       });
       
+      console.log('[PaymentDashboard] Stats response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('[PaymentDashboard] Stats data:', data);
         setStats(data);
+      } else {
+        const errorText = await response.text();
+        console.error('[PaymentDashboard] Stats response error:', errorText);
       }
     } catch (err) {
-      console.error('Fetch stats error:', err);
+      console.error('[PaymentDashboard] Fetch stats error:', err);
     }
   };
 

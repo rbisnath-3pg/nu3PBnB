@@ -22,20 +22,35 @@ const PaymentHistory = () => {
   const fetchPaymentHistory = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE}/api/payments/history`, {
+      const endpoint = `${API_BASE}/api/payments/history`;
+      
+      console.log('[PaymentHistory] Fetching payment history from:', endpoint);
+      console.log('[PaymentHistory] API_BASE:', API_BASE);
+      
+      const token = localStorage.getItem('token');
+      console.log('[PaymentHistory] Token available:', !!token);
+      
+      const response = await fetch(endpoint, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         }
       });
 
+      console.log('[PaymentHistory] Response status:', response.status);
+      console.log('[PaymentHistory] Response ok:', response.ok);
+
       if (response.ok) {
         const data = await response.json();
+        console.log('[PaymentHistory] Payment history data:', data);
         setPayments(data.payments || []);
       } else {
-        setError('Failed to load payment history');
+        const errorText = await response.text();
+        console.error('[PaymentHistory] Response error text:', errorText);
+        setError(`Failed to load payment history: ${response.status} ${response.statusText}`);
       }
     } catch (error) {
-      setError('Failed to load payment history');
+      console.error('[PaymentHistory] Fetch error:', error);
+      setError(`Failed to load payment history: ${error.message}`);
     } finally {
       setLoading(false);
     }

@@ -1287,7 +1287,7 @@ function App() {
                   >
                     {user.profilePictureData ? (
                       <img
-                        src={`${API_BASE}/users/me/profile-picture?t=${Date.now()}`}
+                        src={`${API_BASE}/api/users/me/profile-picture?t=${Date.now()}`}
                         alt="Profile"
                         className="w-8 h-8 rounded-full object-cover"
                         onError={(e) => {

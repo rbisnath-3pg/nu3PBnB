@@ -135,7 +135,7 @@ const UserProfile = () => {
 
   const getProfilePictureUrl = () => {
     if (profile?.profilePictureData) {
-      return `${API_BASE}/users/me/profile-picture?t=${Date.now()}`; // Add timestamp to prevent caching
+      return `${API_BASE}/api/users/me/profile-picture?t=${Date.now()}`; // Add timestamp to prevent caching
     }
     if (profile?.profilePicture) {
       return profile.profilePicture;
