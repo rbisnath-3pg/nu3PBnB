@@ -1,4 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
+import { FaCreditCard, FaPaypal, FaLock, FaCheck, FaTimes } from 'react-icons/fa';
+
+const API_BASE = import.meta.env.PROD 
+  ? 'https://nu3pbnb-api.onrender.com/api'
+  : '/api';
 
 const PaymentForm = ({ booking, selectedListing, onSuccess, onCancel, paymentType = 'new' }) => {
   const [paymentMethod, setPaymentMethod] = useState('credit_card');
@@ -38,7 +45,7 @@ const PaymentForm = ({ booking, selectedListing, onSuccess, onCancel, paymentTyp
 
     try {
       // Make API call to process payment
-      const response = await fetch('/api/payments/process', {
+      const response = await fetch(`${API_BASE}/payments/process`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

@@ -1079,7 +1079,7 @@ function App() {
       
       if (response.ok) {
         const data = await response.json()
-        setUnreadCount(data.count || 0)
+        setUnreadCount(data.unreadCount || 0)
       }
     } catch (error) {
       console.error('Error fetching unread count:', error)
@@ -1268,7 +1268,7 @@ function App() {
                   >
                     {user.profilePictureData ? (
                       <img
-                        src={`/api/users/me/profile-picture?t=${Date.now()}`}
+                        src={`${API_BASE}/users/me/profile-picture?t=${Date.now()}`}
                         alt="Profile"
                         className="w-8 h-8 rounded-full object-cover"
                         onError={(e) => {
@@ -1572,9 +1572,11 @@ function App() {
             </div>
             <form onSubmit={handleSignIn}>
               <input
-                type="email"
+                type="text"
                 name="email"
                 placeholder="Email"
+                pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+                title="Please enter a valid email address"
                 required
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               />
@@ -1618,9 +1620,11 @@ function App() {
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               />
               <input
-                type="email"
+                type="text"
                 name="email"
                 placeholder="Email"
+                pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+                title="Please enter a valid email address"
                 required
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               />

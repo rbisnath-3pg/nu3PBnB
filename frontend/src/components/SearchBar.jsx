@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
+const API_BASE = import.meta.env.PROD 
+  ? 'https://nu3pbnb-api.onrender.com/api'
+  : '/api';
+
 const SearchBar = ({ onSearch, onFiltersChange, className = '' }) => {
   const { t, i18n } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
@@ -19,8 +23,6 @@ const SearchBar = ({ onSearch, onFiltersChange, className = '' }) => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const searchRef = useRef(null);
-
-  const API_BASE = '/api';
 
   useEffect(() => {
     // Load popular searches
@@ -42,7 +44,7 @@ const SearchBar = ({ onSearch, onFiltersChange, className = '' }) => {
       const response = await fetch(`${API_BASE}/listings/search/popular`);
       if (response.ok) {
         const data = await response.json();
-        setPopularSearches(data);
+        setPopularSearches(data.popularListings || []);
       }
     } catch (error) {
       console.error('Failed to fetch popular searches:', error);

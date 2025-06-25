@@ -1,4 +1,6 @@
-const API_BASE = '/api';
+const API_BASE = import.meta.env.PROD 
+  ? 'https://nu3pbnb-api.onrender.com/api'
+  : '/api';
 
 class AnalyticsService {
   constructor() {

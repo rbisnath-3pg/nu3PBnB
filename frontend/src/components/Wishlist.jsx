@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 
-const API_BASE = '/api';
+const API_BASE = import.meta.env.PROD 
+  ? 'https://nu3pbnb-api.onrender.com/api'
+  : '/api';
 
 const Wishlist = ({ user, token, onSelectListing }) => {
   const [wishlist, setWishlist] = useState([]);

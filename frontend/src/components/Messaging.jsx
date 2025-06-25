@@ -1,5 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
+import { FaPaperPlane, FaTimes, FaUser, FaEnvelope, FaClock, FaCheck, FaCheckDouble } from 'react-icons/fa';
+
+const API_BASE = import.meta.env.PROD 
+  ? 'https://nu3pbnb-api.onrender.com/api'
+  : '/api';
 
 const Messaging = ({ isOpen, onClose }) => {
   const { user } = useAuth();
@@ -59,7 +65,7 @@ const Messaging = ({ isOpen, onClose }) => {
 
   const loadInbox = async () => {
     try {
-      const response = await fetch(`/api/messages/inbox?page=${pagination.page}`, {
+      const response = await fetch(`${API_BASE}/messages/inbox?page=${pagination.page}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -76,7 +82,7 @@ const Messaging = ({ isOpen, onClose }) => {
 
   const loadSentMessages = async () => {
     try {
-      const response = await fetch(`/api/messages/sent?page=${pagination.page}`, {
+      const response = await fetch(`${API_BASE}/messages/sent?page=${pagination.page}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -93,7 +99,7 @@ const Messaging = ({ isOpen, onClose }) => {
 
   const loadConversations = async () => {
     try {
-      const response = await fetch('/api/messages/conversations', {
+      const response = await fetch(`${API_BASE}/messages/conversations`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -109,7 +115,7 @@ const Messaging = ({ isOpen, onClose }) => {
 
   const loadAvailableUsers = async () => {
     try {
-      const response = await fetch('/api/messages/users/available', {
+      const response = await fetch(`${API_BASE}/messages/users/available`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -125,7 +131,7 @@ const Messaging = ({ isOpen, onClose }) => {
 
   const loadConversation = async (userId) => {
     try {
-      const response = await fetch(`/api/messages/with/${userId}`, {
+      const response = await fetch(`${API_BASE}/messages/with/${userId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -142,7 +148,7 @@ const Messaging = ({ isOpen, onClose }) => {
 
   const sendMessage = async (formData, messageType = 'regular', parentMessage = null) => {
     try {
-      const response = await fetch('/api/messages', {
+      const response = await fetch(`${API_BASE}/messages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -174,7 +180,7 @@ const Messaging = ({ isOpen, onClose }) => {
     if (!confirm('Are you sure you want to delete this message?')) return;
     
     try {
-      const response = await fetch(`/api/messages/${messageId}`, {
+      const response = await fetch(`${API_BASE}/messages/${messageId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -191,7 +197,7 @@ const Messaging = ({ isOpen, onClose }) => {
 
   const markAsRead = async (messageId) => {
     try {
-      await fetch(`/api/messages/${messageId}/read`, {
+      await fetch(`${API_BASE}/messages/${messageId}/read`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`

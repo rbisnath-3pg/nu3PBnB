@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import WYSIWYGEditor from './WYSIWYGEditor';
 import NotificationModal from './NotificationModal';
+import { FaEdit, FaSave, FaTimes, FaHistory, FaUndo, FaEye, FaEyeSlash } from 'react-icons/fa';
+
+const API_BASE = import.meta.env.PROD 
+  ? 'https://nu3pbnb-api.onrender.com/api'
+  : '/api';
 
 const ContentManager = () => {
   const { t, i18n } = useTranslation();
@@ -62,7 +68,7 @@ const ContentManager = () => {
         ...filters
       });
 
-      const response = await fetch(`/api/content?${params}`, {
+      const response = await fetch(`${API_BASE}/content?${params}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -85,8 +91,8 @@ const ContentManager = () => {
       const token = localStorage.getItem('token');
       const method = editingContent._id ? 'PUT' : 'POST';
       const url = editingContent._id 
-        ? `/api/content/${editingContent._id}`
-        : '/api/content';
+        ? `${API_BASE}/content/${editingContent._id}`
+        : `${API_BASE}/content`;
 
       const response = await fetch(url, {
         method,
@@ -126,7 +132,7 @@ const ContentManager = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`/api/content/${contentId}`, {
+      const response = await fetch(`${API_BASE}/content/${contentId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -149,7 +155,7 @@ const ContentManager = () => {
   const handleViewHistory = async (contentId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`/api/content/${contentId}/history`, {
+      const response = await fetch(`${API_BASE}/content/${contentId}/history`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -171,7 +177,7 @@ const ContentManager = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`/api/content/${contentId}/restore/${version}`, {
+      const response = await fetch(`${API_BASE}/content/${contentId}/restore/${version}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

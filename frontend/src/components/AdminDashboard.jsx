@@ -7,7 +7,11 @@ import PaymentDashboard from './PaymentDashboard';
 import AdminMessaging from './AdminMessaging';
 import UserManagement from './UserManagement';
 import AdminTestResults from './AdminTestResults';
-import { FaChartBar, FaUsers, FaFileAlt, FaCreditCard, FaEnvelope, FaVial } from 'react-icons/fa';
+import { FaChartBar, FaUsers, FaFileAlt, FaCreditCard, FaEnvelope, FaVial, FaCog, FaSignOutAlt } from 'react-icons/fa';
+
+const API_BASE = import.meta.env.PROD 
+  ? 'https://nu3pbnb-api.onrender.com/api'
+  : '/api';
 
 const AdminDashboard = () => {
   const { t } = useTranslation();
@@ -35,7 +39,7 @@ const AdminDashboard = () => {
     lastFetchTime.current = now;
     
     try {
-      const response = await fetch('/api/admin/messages/unread-count', {
+      const response = await fetch(`${API_BASE}/admin/messages/unread-count`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }

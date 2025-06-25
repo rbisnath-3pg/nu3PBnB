@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
+import { FaPaperPlane, FaTimes, FaUser, FaEnvelope, FaClock, FaCheck, FaCheckDouble, FaEye } from 'react-icons/fa';
+
+const API_BASE = import.meta.env.PROD 
+  ? 'https://nu3pbnb-api.onrender.com/api'
+  : '/api';
 
 const AdminMessaging = () => {
   const { t } = useTranslation();
@@ -35,7 +41,7 @@ const AdminMessaging = () => {
 
   const loadAllMessages = async () => {
     try {
-      const response = await fetch(`/api/admin/messages?page=${pagination.page}&limit=20`, {
+      const response = await fetch(`${API_BASE}/admin/messages?page=${pagination.page}&limit=20`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -55,7 +61,7 @@ const AdminMessaging = () => {
 
   const loadAllConversations = async () => {
     try {
-      const response = await fetch('/api/admin/messages/conversations', {
+      const response = await fetch(`${API_BASE}/admin/messages/conversations`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -74,7 +80,7 @@ const AdminMessaging = () => {
 
   const loadConversation = async (conversationId) => {
     try {
-      const response = await fetch(`/api/admin/messages/conversation/${conversationId}`, {
+      const response = await fetch(`${API_BASE}/admin/messages/conversation/${conversationId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -107,7 +113,7 @@ const AdminMessaging = () => {
     if (!confirm('Are you sure you want to delete this message?')) return;
     
     try {
-      const response = await fetch(`/api/admin/messages/${messageId}`, {
+      const response = await fetch(`${API_BASE}/admin/messages/${messageId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -124,7 +130,7 @@ const AdminMessaging = () => {
 
   const markMessageAsRead = async (messageId) => {
     try {
-      const response = await fetch(`/api/admin/messages/${messageId}/read`, {
+      const response = await fetch(`${API_BASE}/admin/messages/${messageId}/read`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -145,7 +151,7 @@ const AdminMessaging = () => {
     if (!confirm('Are you sure you want to mark all messages as read?')) return;
     
     try {
-      const response = await fetch('/api/admin/messages/mark-all-read', {
+      const response = await fetch(`${API_BASE}/admin/messages/mark-all-read`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`

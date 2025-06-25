@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import AnalyticsDashboard from './AnalyticsDashboard';
+import { useTranslation } from 'react-i18next';
+import { FaUser, FaEnvelope, FaMapMarkerAlt, FaEdit, FaSave, FaTimes, FaUpload, FaHome } from 'react-icons/fa';
+
+const API_BASE = import.meta.env.PROD 
+  ? 'https://nu3pbnb-api.onrender.com/api'
+  : '/api';
 
 const UserProfile = () => {
   const { user, login } = useAuth();
@@ -15,7 +21,7 @@ const UserProfile = () => {
 
   useEffect(() => {
     if (!user) return;
-    fetch(`/api/users/me`, {
+    fetch(`${API_BASE}/users/me`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     })
       .then(res => res.json())
@@ -28,7 +34,7 @@ const UserProfile = () => {
         });
       })
       .catch(() => setError('Failed to load profile'));
-    fetch(`/api/listings?host=${user._id}`, {
+    fetch(`${API_BASE}/listings?host=${user._id}`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     })
       .then(res => res.json())
@@ -72,7 +78,7 @@ const UserProfile = () => {
       const formData = new FormData();
       formData.append('profilePicture', selectedFile);
 
-      const response = await fetch('/api/users/me/profile-picture', {
+      const response = await fetch(`${API_BASE}/users/me/profile-picture`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -86,7 +92,7 @@ const UserProfile = () => {
       }
 
       // Refresh user data to get updated profile
-      const userResponse = await fetch('/api/users/me', {
+      const userResponse = await fetch(`${API_BASE}/users/me`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       const updatedUser = await userResponse.json();
@@ -110,7 +116,7 @@ const UserProfile = () => {
     e.preventDefault();
     setError(null);
     try {
-      const res = await fetch(`/api/users/me`, {
+      const res = await fetch(`${API_BASE}/users/me`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -130,7 +136,7 @@ const UserProfile = () => {
 
   const getProfilePictureUrl = () => {
     if (profile?.profilePictureData) {
-      return `/api/users/me/profile-picture?t=${Date.now()}`; // Add timestamp to prevent caching
+      return `${API_BASE}/users/me/profile-picture?t=${Date.now()}`; // Add timestamp to prevent caching
     }
     if (profile?.profilePicture) {
       return profile.profilePicture;

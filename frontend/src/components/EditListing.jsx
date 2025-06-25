@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 import { FaHome, FaMapMarkerAlt, FaDollarSign, FaUsers, FaBed, FaBath, FaWifi, FaUpload, FaTimes, FaCheck } from 'react-icons/fa';
+
+const API_BASE = import.meta.env.PROD 
+  ? 'https://nu3pbnb-api.onrender.com/api'
+  : '/api';
 
 const EditListing = () => {
   const { id } = useParams();
@@ -34,7 +40,7 @@ const EditListing = () => {
       setError(null);
       try {
         console.info(`[EditListing][${now}] Fetching listing`, id);
-        const res = await fetch(`/api/listings/${id}`);
+        const res = await fetch(`${API_BASE}/listings/${id}`);
         if (!res.ok) throw new Error('Failed to fetch listing');
         const data = await res.json();
         const l = data.listing || data;
@@ -119,7 +125,7 @@ const EditListing = () => {
       if (imageFiles.length > 0) {
         const formData = new FormData();
         imageFiles.forEach((file) => formData.append('images', file));
-        const uploadRes = await fetch(`/api/listings/${id}/upload-images`, {
+        const uploadRes = await fetch(`${API_BASE}/listings/${id}/upload-images`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
           body: formData
@@ -128,7 +134,7 @@ const EditListing = () => {
         const uploadData = await uploadRes.json();
         uploadedImageUrls = uploadData.urls || [];
       }
-      const res = await fetch(`/api/listings/${id}`, {
+      const res = await fetch(`${API_BASE}/listings/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

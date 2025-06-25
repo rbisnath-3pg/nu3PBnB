@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, addMonths, subMonths, isBefore, isAfter, startOfDay } from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import { FaCalendar, FaCheck, FaTimes } from 'react-icons/fa';
+
+const API_BASE = import.meta.env.PROD 
+  ? 'https://nu3pbnb-api.onrender.com/api'
+  : '/api';
 
 const PropertyCalendar = ({ 
   listingId, 
@@ -21,7 +27,7 @@ const PropertyCalendar = ({
       
       setLoading(true);
       try {
-        const response = await fetch(`/api/listings/${listingId}/availability`);
+        const response = await fetch(`${API_BASE}/listings/${listingId}/availability`);
         if (response.ok) {
           const data = await response.json();
           setAvailability(data.availability || []);

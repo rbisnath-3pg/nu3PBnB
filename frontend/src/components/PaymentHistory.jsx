@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
+import { FaCreditCard, FaCalendar, FaDollarSign, FaCheck, FaTimes, FaClock } from 'react-icons/fa';
 import ReceiptModal from './ReceiptModal';
+
+const API_BASE = import.meta.env.PROD 
+  ? 'https://nu3pbnb-api.onrender.com/api'
+  : '/api';
 
 const PaymentHistory = () => {
   const [payments, setPayments] = useState([]);
@@ -17,7 +23,7 @@ const PaymentHistory = () => {
   const fetchPaymentHistory = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/payments/history', {
+      const response = await fetch(`${API_BASE}/payments/history`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

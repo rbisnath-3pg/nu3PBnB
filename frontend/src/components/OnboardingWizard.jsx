@@ -1,4 +1,11 @@
 import React, { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
+import { FaUser, FaHome, FaHeart, FaCheck, FaArrowRight, FaArrowLeft } from 'react-icons/fa';
+
+const API_BASE = import.meta.env.PROD 
+  ? 'https://nu3pbnb-api.onrender.com/api'
+  : '/api';
 
 const OnboardingWizard = ({ onClose, onComplete }) => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -79,7 +86,7 @@ const OnboardingWizard = ({ onClose, onComplete }) => {
 
   const handleComplete = async () => {
     try {
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch(`${API_BASE}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

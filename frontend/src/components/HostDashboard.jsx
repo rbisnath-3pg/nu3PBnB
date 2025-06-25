@@ -5,6 +5,11 @@ import PaymentDashboard from './PaymentDashboard';
 import AnalyticsDashboard from './AnalyticsDashboard';
 import Messaging from './Messaging';
 import { FaPlus, FaCheck, FaTimes, FaCalendarAlt, FaHeart } from 'react-icons/fa';
+import { useTranslation } from 'react-i18next';
+
+const API_BASE = import.meta.env.PROD 
+  ? 'https://nu3pbnb-api.onrender.com/api'
+  : '/api';
 
 // Helper to generate random property data
 function getRandomPropertyData(hostId) {
@@ -115,7 +120,7 @@ const HostDashboard = ({ fetchListings }) => {
       await Promise.all(
         listingIds.map(async (listingId) => {
           try {
-            const response = await fetch(`/api/users/wishlist/count/${listingId}`, {
+            const response = await fetch(`${API_BASE}/users/wishlist/count/${listingId}`, {
               headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
             if (response.ok) {
@@ -146,7 +151,7 @@ const HostDashboard = ({ fetchListings }) => {
       return;
     }
     console.log('HostDashboard user:', user);
-    const url = `/api/listings?host=${user._id}`;
+    const url = `${API_BASE}/listings?host=${user._id}`;
     console.log('Fetching host listings from:', url);
     setLoading(true);
     setError(null);
@@ -207,7 +212,7 @@ const HostDashboard = ({ fetchListings }) => {
     const property = getRandomPropertyData(user._id);
     console.log('Creating property with payload:', property);
     try {
-      const res = await fetch('/api/listings', {
+      const res = await fetch(`${API_BASE}/listings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -235,7 +240,7 @@ const HostDashboard = ({ fetchListings }) => {
       setLastCreatedId(created.listing?._id || null);
       // Refresh host listings
       setLoading(true);
-      fetch(`/api/listings?host=${user._id}&sortBy=createdAt&sortOrder=desc`, {
+      fetch(`${API_BASE}/listings?host=${user._id}&sortBy=createdAt&sortOrder=desc`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       })
         .then(async res => {
@@ -304,7 +309,7 @@ const HostDashboard = ({ fetchListings }) => {
     setError(null);
     setSuccessMessage('');
     try {
-      const res = await fetch(`/api/listings/${listingId}`, {
+      const res = await fetch(`${API_BASE}/listings/${listingId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -342,7 +347,7 @@ const HostDashboard = ({ fetchListings }) => {
     setBookingsLoading(true);
     setBookingsError(null);
     try {
-      const response = await fetch('/api/host/bookings', {
+      const response = await fetch(`${API_BASE}/host/bookings`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }
@@ -363,7 +368,7 @@ const HostDashboard = ({ fetchListings }) => {
   // Handle booking approval
   const handleApproveBooking = async (bookingId) => {
     try {
-      const response = await fetch(`/api/host/bookings/${bookingId}/approve`, {
+      const response = await fetch(`${API_BASE}/host/bookings/${bookingId}/approve`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -384,7 +389,7 @@ const HostDashboard = ({ fetchListings }) => {
   // Handle booking decline
   const handleDeclineBooking = async (bookingId) => {
     try {
-      const response = await fetch(`/api/host/bookings/${bookingId}/decline`, {
+      const response = await fetch(`${API_BASE}/host/bookings/${bookingId}/decline`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
