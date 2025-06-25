@@ -86,7 +86,9 @@ function App() {
   const { t, i18n } = useTranslation()
   
   // API configuration
-  const API_BASE = '/api'
+  const API_BASE = import.meta.env.PROD 
+    ? 'https://nu3pbnb-api.onrender.com/api'
+    : '/api'
 
   // Core application state
   const [listings, setListings] = useState([])
