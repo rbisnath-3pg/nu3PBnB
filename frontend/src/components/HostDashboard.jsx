@@ -119,7 +119,7 @@ const HostDashboard = ({ fetchListings }) => {
       await Promise.all(
         listingIds.map(async (listingId) => {
           try {
-            const response = await fetch(`${API_BASE}/users/wishlist/count/${listingId}`, {
+            const response = await fetch(`${API_BASE}/api/users/wishlist/count/${listingId}`, {
               headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });
             if (response.ok) {
@@ -150,7 +150,7 @@ const HostDashboard = ({ fetchListings }) => {
       return;
     }
     console.log('HostDashboard user:', user);
-    const url = `${API_BASE}/listings?host=${user._id}`;
+    const url = `${API_BASE}/api/listings?host=${user._id}`;
     console.log('Fetching host listings from:', url);
     setLoading(true);
     setError(null);
@@ -211,7 +211,7 @@ const HostDashboard = ({ fetchListings }) => {
     const property = getRandomPropertyData(user._id);
     console.log('Creating property with payload:', property);
     try {
-      const res = await fetch(`${API_BASE}/listings`, {
+      const res = await fetch(`${API_BASE}/api/listings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -239,7 +239,7 @@ const HostDashboard = ({ fetchListings }) => {
       setLastCreatedId(created.listing?._id || null);
       // Refresh host listings
       setLoading(true);
-      fetch(`${API_BASE}/listings?host=${user._id}&sortBy=createdAt&sortOrder=desc`, {
+      fetch(`${API_BASE}/api/listings?host=${user._id}&sortBy=createdAt&sortOrder=desc`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       })
         .then(async res => {
@@ -308,7 +308,7 @@ const HostDashboard = ({ fetchListings }) => {
     setError(null);
     setSuccessMessage('');
     try {
-      const res = await fetch(`${API_BASE}/listings/${listingId}`, {
+      const res = await fetch(`${API_BASE}/api/listings/${listingId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -346,7 +346,7 @@ const HostDashboard = ({ fetchListings }) => {
     setBookingsLoading(true);
     setBookingsError(null);
     try {
-      const response = await fetch(`${API_BASE}/host/bookings`, {
+      const response = await fetch(`${API_BASE}/api/host/bookings`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }
@@ -367,7 +367,7 @@ const HostDashboard = ({ fetchListings }) => {
   // Handle booking approval
   const handleApproveBooking = async (bookingId) => {
     try {
-      const response = await fetch(`${API_BASE}/host/bookings/${bookingId}/approve`, {
+      const response = await fetch(`${API_BASE}/api/host/bookings/${bookingId}/approve`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -388,7 +388,7 @@ const HostDashboard = ({ fetchListings }) => {
   // Handle booking decline
   const handleDeclineBooking = async (bookingId) => {
     try {
-      const response = await fetch(`${API_BASE}/host/bookings/${bookingId}/decline`, {
+      const response = await fetch(`${API_BASE}/api/host/bookings/${bookingId}/decline`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`

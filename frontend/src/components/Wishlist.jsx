@@ -10,7 +10,7 @@ const Wishlist = ({ user, token, onSelectListing }) => {
 
   useEffect(() => {
     if (!token) return;
-    fetch(`${API_BASE}/users/me/wishlist`, {
+    fetch(`${API_BASE}/api/users/me/wishlist`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -26,7 +26,7 @@ const Wishlist = ({ user, token, onSelectListing }) => {
 
   const handleRemove = async (listingId) => {
     try {
-      const res = await fetch(`${API_BASE}/users/me/wishlist/${listingId}`, {
+      const res = await fetch(`${API_BASE}/api/users/me/wishlist/${listingId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -43,7 +43,7 @@ const Wishlist = ({ user, token, onSelectListing }) => {
 
   const handleAdd = async (listingId) => {
     try {
-      const res = await fetch(`${API_BASE}/users/me/wishlist`, {
+      const res = await fetch(`${API_BASE}/api/users/me/wishlist`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

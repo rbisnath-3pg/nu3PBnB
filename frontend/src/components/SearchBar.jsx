@@ -40,7 +40,7 @@ const SearchBar = ({ onSearch, onFiltersChange, className = '' }) => {
 
   const fetchPopularSearches = async () => {
     try {
-      const response = await fetch(`${API_BASE}/listings/search/popular`);
+      const response = await fetch(`${API_BASE}/api/listings/search/popular`);
       if (response.ok) {
         const data = await response.json();
         setPopularSearches(data.popularListings || []);
@@ -57,7 +57,7 @@ const SearchBar = ({ onSearch, onFiltersChange, className = '' }) => {
     }
 
     try {
-      const response = await fetch(`${API_BASE}/listings/search/suggestions?query=${encodeURIComponent(query)}`);
+      const response = await fetch(`${API_BASE}/api/listings/search/suggestions?query=${encodeURIComponent(query)}`);
       if (response.ok) {
         const data = await response.json();
         setSuggestions(data);

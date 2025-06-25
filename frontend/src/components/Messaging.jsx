@@ -64,7 +64,7 @@ const Messaging = ({ isOpen, onClose }) => {
 
   const loadInbox = async () => {
     try {
-      const response = await fetch(`${API_BASE}/messages/inbox?page=${pagination.page}`, {
+      const response = await fetch(`${API_BASE}/api/messages/inbox?page=${pagination.page}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -81,7 +81,7 @@ const Messaging = ({ isOpen, onClose }) => {
 
   const loadSentMessages = async () => {
     try {
-      const response = await fetch(`${API_BASE}/messages/sent?page=${pagination.page}`, {
+      const response = await fetch(`${API_BASE}/api/messages/sent?page=${pagination.page}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -98,7 +98,7 @@ const Messaging = ({ isOpen, onClose }) => {
 
   const loadConversations = async () => {
     try {
-      const response = await fetch(`${API_BASE}/messages/conversations`, {
+      const response = await fetch(`${API_BASE}/api/messages/conversations`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -114,7 +114,7 @@ const Messaging = ({ isOpen, onClose }) => {
 
   const loadAvailableUsers = async () => {
     try {
-      const response = await fetch(`${API_BASE}/messages/users/available`, {
+      const response = await fetch(`${API_BASE}/api/messages/users/available`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -130,7 +130,7 @@ const Messaging = ({ isOpen, onClose }) => {
 
   const loadConversation = async (userId) => {
     try {
-      const response = await fetch(`${API_BASE}/messages/with/${userId}`, {
+      const response = await fetch(`${API_BASE}/api/messages/with/${userId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -147,7 +147,7 @@ const Messaging = ({ isOpen, onClose }) => {
 
   const sendMessage = async (formData, messageType = 'regular', parentMessage = null) => {
     try {
-      const response = await fetch(`${API_BASE}/messages`, {
+      const response = await fetch(`${API_BASE}/api/messages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -179,7 +179,7 @@ const Messaging = ({ isOpen, onClose }) => {
     if (!confirm('Are you sure you want to delete this message?')) return;
     
     try {
-      const response = await fetch(`${API_BASE}/messages/${messageId}`, {
+      const response = await fetch(`${API_BASE}/api/messages/${messageId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -196,7 +196,7 @@ const Messaging = ({ isOpen, onClose }) => {
 
   const markAsRead = async (messageId) => {
     try {
-      await fetch(`${API_BASE}/messages/${messageId}/read`, {
+      await fetch(`${API_BASE}/api/messages/${messageId}/read`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`

@@ -22,7 +22,7 @@ const PaymentHistory = () => {
   const fetchPaymentHistory = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE}/payments/history`, {
+      const response = await fetch(`${API_BASE}/api/payments/history`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

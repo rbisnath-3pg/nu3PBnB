@@ -249,7 +249,7 @@ function App() {
       setLoading(true)
       setError(null)
       const currentLanguage = (i18n.language || 'en').split('-')[0] // Get just the language code
-      const url = `${API_BASE}/listings?page=${page}&language=${currentLanguage}`
+      const url = `${API_BASE}/api/listings?page=${page}&language=${currentLanguage}`
       
       const response = await fetch(url, {
         method: 'GET',
@@ -287,7 +287,7 @@ function App() {
       setLoading(true)
       setError(null)
       const currentLanguage = (i18n.language || 'en').split('-')[0] // Get just the language code
-      const url = `${API_BASE}/listings/featured?language=${currentLanguage}`
+      const url = `${API_BASE}/api/listings/featured?language=${currentLanguage}`
       
       const response = await fetch(url, {
         method: 'GET',
@@ -322,7 +322,7 @@ function App() {
     
     try {
       setBookingsLoading(true);
-      const response = await fetch(`${API_BASE}/bookings?role=guest`, {
+      const response = await fetch(`${API_BASE}/api/bookings?role=guest`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -350,7 +350,7 @@ function App() {
     
     try {
       setPaymentsLoading(true);
-      const response = await fetch(`${API_BASE}/payments/history`, {
+      const response = await fetch(`${API_BASE}/api/payments/history`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -378,7 +378,7 @@ function App() {
     
     try {
       setWishlistLoading(true);
-      const response = await fetch(`${API_BASE}/users/me/wishlist`, {
+      const response = await fetch(`${API_BASE}/api/users/me/wishlist`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -405,7 +405,7 @@ function App() {
     if (!user) return;
     
     try {
-      const response = await fetch(`${API_BASE}/bookings/${bookingId}`, {
+      const response = await fetch(`${API_BASE}/api/bookings/${bookingId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -458,7 +458,7 @@ function App() {
       console.log('[handleSignIn] Payload string:', payloadString);
       console.log('[handleSignIn] Payload length:', payloadString.length);
       
-      const response = await fetch(`${API_BASE}/auth/login`, {
+      const response = await fetch(`${API_BASE}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -508,7 +508,7 @@ function App() {
     const password = formData.get('password')
 
     try {
-      const response = await fetch(`${API_BASE}/auth/register`, {
+      const response = await fetch(`${API_BASE}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -693,7 +693,7 @@ function App() {
     if (!user || !selectedListing) return
 
     try {
-      const response = await fetch(`${API_BASE}/messages`, {
+      const response = await fetch(`${API_BASE}/api/messages`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -732,7 +732,7 @@ function App() {
     if (!user || !selectedListing) return
 
     try {
-      const response = await fetch(`${API_BASE}/reviews`, {
+      const response = await fetch(`${API_BASE}/api/reviews`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -788,7 +788,7 @@ function App() {
     try {
       console.log('Creating booking with data:', currentBooking)
       
-      const response = await fetch(`${API_BASE}/bookings`, {
+      const response = await fetch(`${API_BASE}/api/bookings`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -943,7 +943,7 @@ function App() {
     if (!user) return
 
     try {
-      const response = await fetch(`${API_BASE}/users/me/wishlist`, {
+      const response = await fetch(`${API_BASE}/api/users/me/wishlist`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -982,7 +982,7 @@ function App() {
     if (!user) return
 
     try {
-      const response = await fetch(`${API_BASE}/users/me/wishlist/${listingId}`, {
+      const response = await fetch(`${API_BASE}/api/users/me/wishlist/${listingId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -1052,7 +1052,7 @@ function App() {
    */
   const fetchExistingBookings = async (listingId) => {
     try {
-      const response = await fetch(`${API_BASE}/bookings/listing/${listingId}`)
+      const response = await fetch(`${API_BASE}/api/bookings/listing/${listingId}`)
       if (response.ok) {
         const data = await response.json()
         setExistingBookings(data.bookings || [])
@@ -1070,7 +1070,7 @@ function App() {
     if (!user) return
 
     try {
-      const response = await fetch(`${API_BASE}/messages/unread-count`, {
+      const response = await fetch(`${API_BASE}/api/messages/unread-count`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

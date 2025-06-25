@@ -7,7 +7,7 @@ nu3PBnB is a vacation rental platform that connects property hosts with guests, 
 
 ### Primary Actors
 1. **Guest** - Users who book properties
-2. **Host** - Users who list and manage properties
+2. **Host** - Users who list and manage properties  
 3. **Administrator** - System administrators with full platform access
 
 ### Secondary Actors
@@ -144,138 +144,59 @@ nu3PBnB is a vacation rental platform that connects property hosts with guests, 
 └─────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-## Detailed Use Case Descriptions
+## Key Use Cases by Actor
 
 ### Guest Use Cases
+- **Register Account**: Create new guest account with email/password
+- **Browse Properties**: View and search available listings
+- **Book Property**: Make booking requests with payment
+- **Manage Bookings**: View history, cancel bookings, pay for bookings
+- **Manage Wishlist**: Add/remove properties from wishlist
+- **Send Messages**: Communicate with hosts
+- **Write Reviews**: Rate and review properties
+- **Manage Profile**: Update personal info, preferences, language
 
-#### 1. Register Account
-- **Description**: Create a new guest account
-- **Preconditions**: User is not logged in
-- **Postconditions**: Guest account is created and user is logged in
-- **Main Flow**:
-  1. User provides email, password, and name
-  2. System validates input
-  3. System creates account with 'guest' role
-  4. System sends welcome email
-  5. User is redirected to onboarding
-
-#### 2. Browse Properties
-- **Description**: View available property listings
-- **Preconditions**: User is authenticated
-- **Postconditions**: User can see property listings
-- **Main Flow**:
-  1. User navigates to homepage
-  2. System displays featured and recent listings
-  3. User can filter by location, price, dates
-  4. User can view listing details
-
-#### 3. Book Property
-- **Description**: Make a booking request for a property
-- **Preconditions**: User is logged in, property is available
-- **Postconditions**: Booking request is created
-- **Main Flow**:
-  1. User selects property and dates
-  2. User provides guest count and message
-  3. System calculates total price
-  4. User completes payment
-  5. System creates booking request
-  6. Host is notified of booking request
-
-#### 4. Manage Wishlist
-- **Description**: Add/remove properties from personal wishlist
-- **Preconditions**: User is logged in
-- **Postconditions**: Wishlist is updated
-- **Main Flow**:
-  1. User clicks "Add to Wishlist" on property
-  2. System adds property to user's wishlist
-  3. User can view and manage wishlist items
-
-### Host Use Cases
-
-#### 1. Create Property Listing
-- **Description**: Create a new property listing
-- **Preconditions**: User has host role
-- **Postconditions**: Property listing is created and visible
-- **Main Flow**:
-  1. Host provides property details (title, description, photos)
-  2. Host sets pricing and availability
-  3. Host specifies amenities and rules
-  4. System creates listing
-  5. Listing becomes visible to guests
-
-#### 2. Manage Booking Requests
-- **Description**: Review and respond to booking requests
-- **Preconditions**: Host has active listings with booking requests
-- **Postconditions**: Booking status is updated
-- **Main Flow**:
-  1. Host receives notification of booking request
-  2. Host reviews booking details
-  3. Host approves or declines request
-  4. System notifies guest of decision
-  5. If approved, payment is processed
-
-#### 3. View Analytics Dashboard
-- **Description**: Access property performance analytics
-- **Preconditions**: Host has active listings
-- **Postconditions**: Host can view analytics data
-- **Main Flow**:
-  1. Host navigates to analytics dashboard
-  2. System displays revenue, bookings, and performance metrics
-  3. Host can filter by time period
-  4. Host can view detailed reports
+### Host Use Cases  
+- **Create Property Listing**: Add new properties with details/photos
+- **Manage Property Listings**: Edit, update pricing, manage availability
+- **Manage Booking Requests**: Approve/decline guest bookings
+- **Respond to Messages**: Communicate with guests
+- **View Analytics Dashboard**: Monitor revenue and performance
+- **View Payment Reports**: Track earnings and transactions
 
 ### Administrator Use Cases
+- **Manage Users**: Create, update, delete user accounts
+- **Manage Content**: Create/edit platform content and translations
+- **Monitor Analytics**: View comprehensive platform metrics
+- **Manage Payments**: Process refunds, monitor payment issues
+- **Manage Messages**: Moderate conversations, send notifications
+- **Run System Tests**: Execute automated testing
+- **System Configuration**: Manage platform settings and security
 
-#### 1. Manage Users
-- **Description**: Oversee all user accounts and activities
-- **Preconditions**: User has admin role
-- **Postconditions**: User management actions are completed
-- **Main Flow**:
-  1. Admin views user management dashboard
-  2. Admin can create, update, or delete users
-  3. Admin can change user roles
-  4. Admin can view user activity logs
-
-#### 2. Monitor Analytics
-- **Description**: View comprehensive platform analytics
-- **Preconditions**: User has admin role
-- **Postconditions**: Admin has access to analytics data
-- **Main Flow**:
-  1. Admin accesses analytics dashboard
-  2. System displays platform-wide metrics
-  3. Admin can generate custom reports
-  4. Admin can export data
-
-#### 3. Run System Tests
-- **Description**: Execute automated system tests
-- **Preconditions**: User has admin role
-- **Postconditions**: Test results are available
-- **Main Flow**:
-  1. Admin triggers test execution
-  2. System runs automated tests
-  3. System displays test results
-  4. Admin can review and act on results
+### Secondary Actor Use Cases
+- **Payment System**: Process payments, validate methods, generate receipts
+- **Email Service**: Send confirmations, receipts, notifications
+- **Analytics Engine**: Track user activity, page views, behavior
 
 ## System Boundaries
 
-### Included in System
+### Included
 - User authentication and authorization
 - Property listing management
-- Booking system
-- Payment processing
-- Messaging system
-- Review system
+- Booking system with payment processing
+- Messaging and communication
+- Review and rating system
 - Analytics and reporting
 - Content management
-- Admin tools
+- Admin tools and testing
 
-### Excluded from System
-- External payment gateways (handled by Payment System actor)
-- Email delivery (handled by Email Service actor)
+### Excluded
+- External payment gateways (handled by Payment System)
+- Email delivery infrastructure (handled by Email Service)
 - Third-party integrations
 - Mobile applications (separate system)
 
-## Relationships and Dependencies
+## Relationships
 
 ### Include Relationships
 - "Book Property" includes "Process Payment"
@@ -287,22 +208,17 @@ nu3PBnB is a vacation rental platform that connects property hosts with guests, 
 - "Run System Tests" extends "Login/Logout" for admins
 - "Send Messages" extends "View Property Details" for guests
 
-### Generalization Relationships
-- All actors inherit from "User" (implicit)
-- "Guest" and "Host" are specialized user types
-- "Administrator" is a specialized user type with elevated privileges
-
 ## Notes
 
-1. **Security**: All use cases require appropriate authentication and authorization
-2. **Internationalization**: The system supports multiple languages (English, French, Spanish)
-3. **Responsive Design**: All user interfaces are mobile-responsive
-4. **Real-time Updates**: Messaging and booking status updates are real-time
-5. **Data Privacy**: User data is protected according to privacy regulations
-6. **Scalability**: The system is designed to handle high user loads
-7. **Monitoring**: All system activities are logged and monitored
-8. **Backup**: Regular data backups are performed automatically
+1. **Security**: All use cases require appropriate authentication
+2. **Internationalization**: Supports English, French, Spanish
+3. **Responsive Design**: Mobile-responsive interfaces
+4. **Real-time Updates**: Live messaging and booking status
+5. **Data Privacy**: User data protection compliance
+6. **Scalability**: High-load handling capabilities
+7. **Monitoring**: Comprehensive activity logging
+8. **Backup**: Automated data backup systems
 
 ---
 
-*This use case diagram provides a comprehensive overview of the nu3PBnB system functionality and user interactions. It serves as a foundation for system design, development, and testing activities.* 
+*This use case diagram provides a comprehensive overview of the nu3PBnB system functionality and user interactions.*

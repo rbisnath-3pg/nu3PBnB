@@ -44,7 +44,7 @@ const PaymentForm = ({ booking, selectedListing, onSuccess, onCancel, paymentTyp
 
     try {
       // Make API call to process payment
-      const response = await fetch(`${API_BASE}/payments/process`, {
+      const response = await fetch(`${API_BASE}/api/payments/process`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

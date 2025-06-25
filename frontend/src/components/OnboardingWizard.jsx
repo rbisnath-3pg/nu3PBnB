@@ -85,7 +85,7 @@ const OnboardingWizard = ({ onClose, onComplete }) => {
 
   const handleComplete = async () => {
     try {
-      const response = await fetch(`${API_BASE}/auth/register`, {
+      const response = await fetch(`${API_BASE}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

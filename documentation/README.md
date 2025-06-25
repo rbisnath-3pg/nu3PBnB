@@ -12,6 +12,7 @@ This folder contains comprehensive documentation for the nu3PBnB application fol
 ### 2. Design & Planning
 - **[Technical Design Document](./development-guide.md)** - Detailed technical specifications
 - **[Database Design](./architecture.md#data-architecture)** - Database schema and relationships
+- **[Database Schema Diagram](./database-schema.md)** - Comprehensive database schema with Mermaid diagram
 - **[API Documentation](./api-documentation.md)** - REST API specifications and endpoints
 
 ### 3. Development & Testing

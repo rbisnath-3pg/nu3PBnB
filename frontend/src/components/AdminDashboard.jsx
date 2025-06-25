@@ -38,7 +38,7 @@ const AdminDashboard = () => {
     lastFetchTime.current = now;
     
     try {
-      const response = await fetch(`${API_BASE}/admin/messages/unread-count`, {
+      const response = await fetch(`${API_BASE}/api/admin/messages/unread-count`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }

@@ -67,7 +67,7 @@ const ContentManager = () => {
         ...filters
       });
 
-      const response = await fetch(`${API_BASE}/content?${params}`, {
+      const response = await fetch(`${API_BASE}/api/content?${params}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -90,8 +90,8 @@ const ContentManager = () => {
       const token = localStorage.getItem('token');
       const method = editingContent._id ? 'PUT' : 'POST';
       const url = editingContent._id 
-        ? `${API_BASE}/content/${editingContent._id}`
-        : `${API_BASE}/content`;
+        ? `${API_BASE}/api/content/${editingContent._id}`
+        : `${API_BASE}/api/content`;
 
       const response = await fetch(url, {
         method,
@@ -131,7 +131,7 @@ const ContentManager = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE}/content/${contentId}`, {
+      const response = await fetch(`${API_BASE}/api/content/${contentId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -154,7 +154,7 @@ const ContentManager = () => {
   const handleViewHistory = async (contentId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE}/content/${contentId}/history`, {
+      const response = await fetch(`${API_BASE}/api/content/${contentId}/history`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -176,7 +176,7 @@ const ContentManager = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE}/content/${contentId}/restore/${version}`, {
+      const response = await fetch(`${API_BASE}/api/content/${contentId}/restore/${version}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

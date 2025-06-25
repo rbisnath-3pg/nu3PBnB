@@ -20,7 +20,7 @@ const UserProfile = () => {
 
   useEffect(() => {
     if (!user) return;
-    fetch(`${API_BASE}/users/me`, {
+    fetch(`${API_BASE}/api/users/me`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     })
       .then(res => res.json())
@@ -33,7 +33,7 @@ const UserProfile = () => {
         });
       })
       .catch(() => setError('Failed to load profile'));
-    fetch(`${API_BASE}/listings?host=${user._id}`, {
+    fetch(`${API_BASE}/api/listings?host=${user._id}`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     })
       .then(res => res.json())
@@ -77,7 +77,7 @@ const UserProfile = () => {
       const formData = new FormData();
       formData.append('profilePicture', selectedFile);
 
-      const response = await fetch(`${API_BASE}/users/me/profile-picture`, {
+      const response = await fetch(`${API_BASE}/api/users/me/profile-picture`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -91,7 +91,7 @@ const UserProfile = () => {
       }
 
       // Refresh user data to get updated profile
-      const userResponse = await fetch(`${API_BASE}/users/me`, {
+      const userResponse = await fetch(`${API_BASE}/api/users/me`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       const updatedUser = await userResponse.json();
@@ -115,7 +115,7 @@ const UserProfile = () => {
     e.preventDefault();
     setError(null);
     try {
-      const res = await fetch(`${API_BASE}/users/me`, {
+      const res = await fetch(`${API_BASE}/api/users/me`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

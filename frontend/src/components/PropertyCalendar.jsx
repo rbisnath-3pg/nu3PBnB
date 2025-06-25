@@ -26,7 +26,7 @@ const PropertyCalendar = ({
       
       setLoading(true);
       try {
-        const response = await fetch(`${API_BASE}/listings/${listingId}/availability`);
+        const response = await fetch(`${API_BASE}/api/listings/${listingId}/availability`);
         if (response.ok) {
           const data = await response.json();
           setAvailability(data.availability || []);

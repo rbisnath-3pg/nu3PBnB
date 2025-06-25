@@ -39,7 +39,7 @@ const EditListing = () => {
       setError(null);
       try {
         console.info(`[EditListing][${now}] Fetching listing`, id);
-        const res = await fetch(`${API_BASE}/listings/${id}`);
+        const res = await fetch(`${API_BASE}/api/listings/${id}`);
         if (!res.ok) throw new Error('Failed to fetch listing');
         const data = await res.json();
         const l = data.listing || data;
@@ -124,7 +124,7 @@ const EditListing = () => {
       if (imageFiles.length > 0) {
         const formData = new FormData();
         imageFiles.forEach((file) => formData.append('images', file));
-        const uploadRes = await fetch(`${API_BASE}/listings/${id}/upload-images`, {
+        const uploadRes = await fetch(`${API_BASE}/api/listings/${id}/upload-images`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
           body: formData
@@ -133,7 +133,7 @@ const EditListing = () => {
         const uploadData = await uploadRes.json();
         uploadedImageUrls = uploadData.urls || [];
       }
-      const res = await fetch(`${API_BASE}/listings/${id}`, {
+      const res = await fetch(`${API_BASE}/api/listings/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

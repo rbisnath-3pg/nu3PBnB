@@ -49,7 +49,7 @@ const UserManagement = () => {
     setLoading(true);
     setError(null);
     try {
-      let url = `${API_BASE}/users`;
+      let url = `${API_BASE}/api/users`;
       const token = localStorage.getItem('token');
       const res = await fetch(url, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -68,7 +68,7 @@ const UserManagement = () => {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/users/${userId}`, {
+      const res = await fetch(`${API_BASE}/api/users/${userId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -82,7 +82,7 @@ const UserManagement = () => {
   const handleRoleChange = async (userId, newRole) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/users/${userId}/role`, {
+      const res = await fetch(`${API_BASE}/api/users/${userId}/role`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -104,7 +104,7 @@ const UserManagement = () => {
     setModalLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/listings?host=${user._id}`, {
+      const res = await fetch(`${API_BASE}/api/listings?host=${user._id}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Failed to fetch listings');
@@ -125,7 +125,7 @@ const UserManagement = () => {
     setModalLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/bookings?guest=${user._id}`, {
+      const res = await fetch(`${API_BASE}/api/bookings?guest=${user._id}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Failed to fetch bookings');
@@ -161,7 +161,7 @@ const UserManagement = () => {
     setCreateError('');
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/users`, {
+      const res = await fetch(`${API_BASE}/api/users`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
