@@ -1,6 +1,8 @@
 import getApiBase from './getApiBase';
 const API_BASE = getApiBase();
 
+console.log('[Analytics] API_BASE configured as:', API_BASE);
+
 class AnalyticsService {
   constructor() {
     this.sessionId = null;
@@ -16,13 +18,19 @@ class AnalyticsService {
   // Check if user is authenticated
   isAuthenticated() {
     const token = localStorage.getItem('token');
-    return !!token;
+    const isAuth = !!token;
+    console.log('[Analytics] Authentication check:', { isAuth, hasToken: !!token });
+    return isAuth;
   }
 
   // Initialize tracking
   init() {
-    if (this.isTracking) return;
+    if (this.isTracking) {
+      console.log('[Analytics] Already tracking, skipping init');
+      return;
+    }
     
+    console.log('[Analytics] Initializing tracking service...');
     this.isTracking = true;
     this.sessionStartTime = Date.now();
     this.currentPage = window.location.pathname;
@@ -30,7 +38,10 @@ class AnalyticsService {
 
     // Only start session tracking if user is authenticated
     if (this.isAuthenticated()) {
+      console.log('[Analytics] User authenticated, starting session tracking');
       this.trackSessionStart();
+    } else {
+      console.log('[Analytics] User not authenticated, skipping session tracking');
     }
     
     // Set up event listeners
@@ -38,7 +49,10 @@ class AnalyticsService {
     
     // Start heartbeat only if authenticated
     if (this.isAuthenticated()) {
+      console.log('[Analytics] Starting heartbeat for authenticated user');
       this.startHeartbeat();
+    } else {
+      console.log('[Analytics] Skipping heartbeat - user not authenticated');
     }
     
     console.log('Analytics tracking initialized');
@@ -113,12 +127,16 @@ class AnalyticsService {
 
   // Track click events
   trackClick(event) {
-    if (!this.isAuthenticated()) return;
+    if (!this.isAuthenticated()) {
+      console.log('[Analytics] Skipping click tracking - user not authenticated');
+      return;
+    }
     
     const element = event.target;
     const elementData = this.getElementData(element);
     
     if (elementData) {
+      console.log('[Analytics] Tracking click event:', elementData);
       this.sendTrackingData('/analytics/track/click', {
         element: elementData.element,
         elementType: elementData.elementType,
@@ -126,6 +144,8 @@ class AnalyticsService {
         elementText: elementData.elementText,
         page: this.currentPage
       });
+    } else {
+      console.log('[Analytics] No element data found for click tracking');
     }
   }
 
@@ -176,8 +196,12 @@ class AnalyticsService {
   async trackSessionStart() {
     try {
       const token = localStorage.getItem('token');
-      if (!token) return;
+      if (!token) {
+        console.log('[Analytics] No token available for session start tracking');
+        return;
+      }
 
+      console.log('[Analytics] Attempting session start tracking...');
       const response = await fetch(`${API_BASE}/analytics/track/session-start`, {
         method: 'POST',
         headers: {
@@ -189,14 +213,27 @@ class AnalyticsService {
         })
       });
 
+      console.log('[Analytics] Session start response:', { status: response.status, ok: response.ok });
+
       if (response.ok) {
         const data = await response.json();
         this.sessionId = data.sessionId;
+        console.log('[Analytics] Session start successful, sessionId:', this.sessionId);
       } else {
         console.warn('Session start tracking failed:', response.status, response.statusText);
+        console.log('[Analytics] Session start failed - response details:', {
+          status: response.status,
+          statusText: response.statusText,
+          url: response.url
+        });
       }
     } catch (error) {
       console.debug('Session start error (non-critical):', error.message);
+      console.log('[Analytics] Session start error details:', {
+        message: error.message,
+        stack: error.stack,
+        url: `${API_BASE}/analytics/track/session-start`
+      });
     }
   }
 
@@ -311,8 +348,12 @@ class AnalyticsService {
   async sendTrackingData(endpoint, data) {
     try {
       const token = localStorage.getItem('token');
-      if (!token) return;
+      if (!token) {
+        console.log('[Analytics] No token available for tracking data');
+        return;
+      }
 
+      console.log('[Analytics] Sending tracking data:', { endpoint, data });
       const response = await fetch(`${API_BASE}${endpoint}`, {
         method: 'POST',
         headers: {
@@ -323,13 +364,34 @@ class AnalyticsService {
         body: JSON.stringify(data)
       });
 
+      console.log('[Analytics] Tracking response:', { 
+        endpoint, 
+        status: response.status, 
+        ok: response.ok,
+        url: response.url 
+      });
+
       // Don't throw error for tracking failures - just log them as warnings
       if (!response.ok) {
         console.warn('Tracking request failed:', endpoint, response.status, response.statusText);
+        console.log('[Analytics] Tracking failed details:', {
+          endpoint,
+          status: response.status,
+          statusText: response.statusText,
+          url: response.url
+        });
+      } else {
+        console.log('[Analytics] Tracking successful:', endpoint);
       }
     } catch (error) {
       // Don't log tracking errors as they're not critical
       console.debug('Tracking error (non-critical):', endpoint, error.message);
+      console.log('[Analytics] Tracking error details:', {
+        endpoint,
+        message: error.message,
+        stack: error.stack,
+        url: `${API_BASE}${endpoint}`
+      });
     }
   }
 
@@ -440,12 +502,16 @@ class AnalyticsService {
 
   // Generic track method for any event
   track(eventName, data = {}) {
+    console.log('[Analytics] Track method called:', { eventName, data });
+    
     // Add additional safety check for authentication
     if (!this.isAuthenticated()) {
       console.debug(`Analytics: Skipping ${eventName} tracking - user not authenticated`);
+      console.log('[Analytics] Track skipped - authentication check failed');
       return;
     }
     
+    console.log('[Analytics] Proceeding with track call:', eventName);
     this.trackCustomEvent(eventName, data);
   }
 }
