@@ -53,7 +53,13 @@ if (isDevelopment && ENABLE_VERBOSE_LOGGING) {
 
 // Middleware
 app.use(cors({
-  origin: true, // Allow all origins to ensure compatibility
+  origin: [
+    'http://localhost:5173', 
+    'http://localhost:5174', 
+    'http://localhost:5175',
+    'https://nu3pbnb.onrender.com',
+    'https://nu3pbnb-frontend.onrender.com'
+  ],
   credentials: true
 }));
 
