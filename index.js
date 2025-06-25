@@ -53,7 +53,7 @@ if (isDevelopment && ENABLE_VERBOSE_LOGGING) {
 
 // Middleware
 app.use(cors({
-  origin: corsOrigins,
+  origin: true, // Allow all origins temporarily
   credentials: true
 }));
 
