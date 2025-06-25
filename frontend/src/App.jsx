@@ -440,6 +440,15 @@ function App() {
 
     // Log the login attempt (mask password)
     console.log('[handleSignIn] Attempting login with:', { email, password: password ? '***' : '' });
+    console.log('[handleSignIn] Email length:', email?.length);
+    console.log('[handleSignIn] Password length:', password?.length);
+    console.log('[handleSignIn] Email exact value:', `"${email}"`);
+    console.log('[handleSignIn] Password exact value:', `"${password}"`);
+    
+    // Show correct admin credentials for debugging
+    console.log('[DEBUG] Correct admin credentials:');
+    console.log('[DEBUG] Email: "admin@nu3pbnb.com"');
+    console.log('[DEBUG] Password: "password123"');
 
     try {
       const payload = { email, password };
