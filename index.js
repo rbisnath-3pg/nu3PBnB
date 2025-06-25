@@ -22,6 +22,23 @@ const isProduction = process.env.NODE_ENV === 'production';
 const ENABLE_VERBOSE_LOGGING = process.env.ENABLE_VERBOSE_LOGGING === 'true';
 const API_RATE_LIMIT = parseInt(process.env.API_RATE_LIMIT) || 1000; // requests per minute
 
+// CORS configuration
+const corsOrigins = [
+  'http://localhost:5173', 
+  'http://localhost:5174', 
+  'http://localhost:5175'
+];
+
+// Add production frontend URL
+if (isProduction || process.env.CORS_ORIGIN) {
+  corsOrigins.push('https://nu3pbnb.onrender.com');
+}
+
+// Add custom CORS origin if provided
+if (process.env.CORS_ORIGIN) {
+  corsOrigins.push(process.env.CORS_ORIGIN);
+}
+
 // GLOBAL DEBUG LOGGER - only in development and when verbose logging is enabled
 if (isDevelopment && ENABLE_VERBOSE_LOGGING) {
   app.use((req, res, next) => {
@@ -36,12 +53,7 @@ if (isDevelopment && ENABLE_VERBOSE_LOGGING) {
 
 // Middleware
 app.use(cors({
-  origin: [
-    'http://localhost:5173', 
-    'http://localhost:5174', 
-    'http://localhost:5175',
-    'https://nu3pbnb.onrender.com'
-  ],
+  origin: corsOrigins,
   credentials: true
 }));
 
