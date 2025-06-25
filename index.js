@@ -188,7 +188,7 @@ app.get('/', (req, res) => {
   res.send('nu3PBnB API is running');
 });
 
-// Temporary public endpoint for database initialization (for production setup)
+// Database initialization endpoint
 app.post('/init-db', async (req, res) => {
   try {
     console.log('🔄 Public database initialization requested via /init-db');
@@ -283,52 +283,6 @@ app.get('/db-status', async (req, res) => {
     console.error('❌ Database status check failed:', error);
     res.status(500).json({ 
       message: 'Database status check failed',
-      error: error.message 
-    });
-  }
-});
-
-// Temporary endpoint to remove problematic geospatial index - v2
-app.post('/fix-index', async (req, res) => {
-  try {
-    console.log('🔄 Attempting to remove geospatial index on location field - v2');
-    
-    const db = mongoose.connection.db;
-    const collection = db.collection('listings');
-    
-    // Get current indexes
-    const indexes = await collection.listIndexes().toArray();
-    console.log('📊 Current indexes:', indexes.map(idx => idx.name));
-    
-    // Try to drop the problematic index
-    try {
-      await collection.dropIndex('location_2dsphere');
-      console.log('✅ Successfully dropped location_2dsphere index');
-    } catch (dropError) {
-      console.log('⚠️ Could not drop location_2dsphere index:', dropError.message);
-    }
-    
-    // Try alternative index names
-    try {
-      await collection.dropIndex('location_1');
-      console.log('✅ Successfully dropped location_1 index');
-    } catch (dropError) {
-      console.log('⚠️ Could not drop location_1 index:', dropError.message);
-    }
-    
-    // Get updated indexes
-    const updatedIndexes = await collection.listIndexes().toArray();
-    console.log('📊 Updated indexes:', updatedIndexes.map(idx => idx.name));
-    
-    res.json({ 
-      message: 'Index removal attempted - v2',
-      previousIndexes: indexes.map(idx => idx.name),
-      currentIndexes: updatedIndexes.map(idx => idx.name)
-    });
-  } catch (error) {
-    console.error('❌ Index removal failed:', error);
-    res.status(500).json({ 
-      message: 'Index removal failed',
       error: error.message 
     });
   }
