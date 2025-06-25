@@ -10,7 +10,7 @@ module.exports = {
     '\\.(jpg|jpeg|png|gif|svg)$': '<rootDir>/__mocks__/fileMock.js',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(react-router|react-router-dom)/)'
+    'node_modules/(?!(react-router|react-router-dom|vite)/)'
   ],
   setupFiles: ['<rootDir>/jest.setup.js']
 }; 

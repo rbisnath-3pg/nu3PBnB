@@ -8,7 +8,6 @@ module.exports = {
     '@babel/preset-react'
   ],
   plugins: [
-    '@babel/plugin-transform-modules-commonjs',
-    './babel-plugin-import-meta.js'
+    '@babel/plugin-transform-modules-commonjs'
   ]
 }; 
