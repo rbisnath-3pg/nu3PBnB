@@ -11,6 +11,7 @@ const { apiLimiter, pollingLimiter } = require('./middleware/rateLimit');
 const fs = require('fs');
 const path = require('path');
 const winston = require('winston');
+const { initializeDatabase } = require('./scripts/init-database');
 
 const app = express();
 
@@ -122,6 +123,14 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(async () => {
     logger.info('MongoDB connected');
     console.log('MongoDB connected');
+    
+    // Initialize database with seed data on first run
+    try {
+      await initializeDatabase();
+    } catch (initError) {
+      logger.error('Database initialization failed:', initError);
+      console.error('Database initialization failed:', initError);
+    }
     
     // Create indexes for better performance
     try {

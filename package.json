@@ -21,7 +21,9 @@
     "test:results:summary": "node view-test-results.js --summary",
     "dev": "cd frontend && npm run dev",
     "start": "node index.js",
-    "server": "nodemon index.js"
+    "server": "nodemon index.js",
+    "init-db": "node scripts/init-database.js",
+    "reset-db": "node scripts/init-database.js --reset"
   },
   "keywords": [],
   "author": "",
