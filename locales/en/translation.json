@@ -1,0 +1,28 @@
+{
+  "errors": {
+    "not_found": "Resource not found.",
+    "unauthorized": "Unauthorized access.",
+    "forbidden": "You do not have permission to perform this action.",
+    "validation": "Validation failed.",
+    "server": "Internal server error.",
+    "bad_request": "Bad request.",
+    "user_exists": "User already exists.",
+    "user_not_found": "User not found.",
+    "invalid_credentials": "Invalid email or password.",
+    "listing_not_found": "Listing not found.",
+    "booking_not_found": "Booking not found.",
+    "review_not_found": "Review not found.",
+    "message_not_found": "Message not found.",
+    "payment_failed": "Payment failed.",
+    "rate_limited": "Too many requests. Please try again later."
+  },
+  "success": {
+    "user_created": "User created successfully.",
+    "login_success": "Login successful.",
+    "listing_created": "Listing created successfully.",
+    "booking_created": "Booking created successfully.",
+    "review_submitted": "Review submitted successfully.",
+    "message_sent": "Message sent successfully.",
+    "payment_success": "Payment processed successfully."
+  }
+} 

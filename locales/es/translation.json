@@ -1,0 +1,28 @@
+{
+  "errors": {
+    "not_found": "Recurso no encontrado.",
+    "unauthorized": "Acceso no autorizado.",
+    "forbidden": "No tiene permiso para realizar esta acción.",
+    "validation": "La validación falló.",
+    "server": "Error interno del servidor.",
+    "bad_request": "Solicitud incorrecta.",
+    "user_exists": "El usuario ya existe.",
+    "user_not_found": "Usuario no encontrado.",
+    "invalid_credentials": "Correo electrónico o contraseña inválidos.",
+    "listing_not_found": "Anuncio no encontrado.",
+    "booking_not_found": "Reserva no encontrada.",
+    "review_not_found": "Reseña no encontrada.",
+    "message_not_found": "Mensaje no encontrado.",
+    "payment_failed": "El pago falló.",
+    "rate_limited": "Demasiadas solicitudes. Por favor, inténtelo de nuevo más tarde."
+  },
+  "success": {
+    "user_created": "Usuario creado exitosamente.",
+    "login_success": "Inicio de sesión exitoso.",
+    "listing_created": "Anuncio creado exitosamente.",
+    "booking_created": "Reserva creada exitosamente.",
+    "review_submitted": "Reseña enviada exitosamente.",
+    "message_sent": "Mensaje enviado exitosamente.",
+    "payment_success": "Pago procesado exitosamente."
+  }
+} 

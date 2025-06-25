@@ -1,0 +1,317 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "submit": "Submit",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "view": "View",
+    "add": "Add",
+    "remove": "Remove",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "retry": "Retry",
+    "refresh": "Refresh",
+    "download": "Download",
+    "upload": "Upload",
+    "share": "Share",
+    "copy": "Copy",
+    "select": "Select",
+    "all": "All",
+    "none": "None",
+    "more": "More",
+    "less": "Less",
+    "show": "Show",
+    "hide": "Hide",
+    "toggle": "Toggle",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "details": "Details",
+    "summary": "Summary",
+    "description": "Description",
+    "title": "Title",
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "phone": "Phone",
+    "address": "Address",
+    "city": "City",
+    "country": "Country",
+    "date": "Date",
+    "time": "Time",
+    "price": "Price",
+    "rating": "Rating",
+    "reviews": "Reviews",
+    "guests": "Guests",
+    "nights": "Nights",
+    "perNight": "per night",
+    "total": "Total",
+    "subtotal": "Subtotal",
+    "tax": "Tax",
+    "fees": "Fees",
+    "discount": "Discount",
+    "currency": "Currency",
+    "language": "Language",
+    "theme": "Theme",
+    "darkMode": "Dark Mode",
+    "lightMode": "Light Mode",
+    "settings": "Settings",
+    "profile": "Profile",
+    "account": "Account",
+    "logout": "Logout",
+    "login": "Login",
+    "register": "Register",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "welcome": "Welcome",
+    "hello": "Hello",
+    "goodbye": "Goodbye",
+    "thankYou": "Thank you",
+    "please": "Please",
+    "sorry": "Sorry",
+    "congratulations": "Congratulations",
+    "welcomeBack": "Welcome back",
+    "seeYouSoon": "See you soon",
+    "haveAGreatDay": "Have a great day",
+    "enjoyYourStay": "Enjoy your stay",
+    "safeTravels": "Safe travels",
+    "bonVoyage": "Bon voyage",
+    "featured": "Featured"
+  },
+  "navigation": {
+    "home": "Home",
+    "explore": "Explore",
+    "search": "Search",
+    "bookings": "Bookings",
+    "messages": "Messages",
+    "wishlist": "Wishlist",
+    "admin": "Admin",
+    "analytics": "Analytics",
+    "dashboard": "Dashboard",
+    "properties": "Properties",
+    "users": "Users",
+    "reports": "Reports",
+    "settings": "Settings",
+    "help": "Help",
+    "support": "Support",
+    "contact": "Contact",
+    "about": "About",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "faq": "FAQ",
+    "map": "Map"
+  },
+  "home": {
+    "hero": {
+      "title": "Find Your Perfect Stay",
+      "subtitle": "Discover unique accommodations around the world",
+      "searchPlaceholder": "Where do you want to go?",
+      "searchButton": "Search",
+      "featuredTitle": "Featured Properties",
+      "featuredSubtitle": "Handpicked accommodations for your next adventure"
+    },
+    "listingsTitle": "All Listings",
+    "cta": {
+      "title": "Discover Amazing Stays Worldwide",
+      "subtitle": "Join our community of travelers and hosts. Book unique accommodations, earn money hosting, and create unforgettable experiences.",
+      "getStarted": "🚀 Start Exploring",
+      "signInInstead": "Already have an account? Sign In",
+      "features": {
+        "uniqueStays": {
+          "title": "Unique Accommodations",
+          "description": "From cozy apartments to luxury villas, treehouses to houseboats. Find stays that match your style and budget."
+        },
+        "secureBooking": {
+          "title": "Secure & Easy Booking",
+          "description": "Instant booking with secure payments, real-time availability, and 24/7 customer support for peace of mind."
+        },
+        "hostEarnings": {
+          "title": "Earn as a Host",
+          "description": "Turn your extra space into income. List your property and start earning up to $3,000+ per month."
+        },
+        "globalCommunity": {
+          "title": "Global Community",
+          "description": "Connect with hosts and travelers from around the world. Share experiences and build lasting friendships."
+        },
+        "smartSearch": {
+          "title": "Smart Search & Filters",
+          "description": "Find your perfect stay with advanced filters, map view, and personalized recommendations."
+        },
+        "mobileApp": {
+          "title": "Mobile-First Experience",
+          "description": "Book, manage, and communicate on the go with our responsive mobile-optimized platform."
+        }
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome Back",
+      "subtitle": "Sign in to your account to continue",
+      "email": "Email Address",
+      "password": "Password",
+      "rememberMe": "Remember me",
+      "forgotPassword": "Forgot your password?",
+      "signIn": "Sign In",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up",
+      "or": "or",
+      "continueWithGoogle": "Continue with Google",
+      "continueWithFacebook": "Continue with Facebook"
+    },
+    "register": {
+      "title": "Create Your Account",
+      "subtitle": "Join thousands of travelers worldwide",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email Address",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "agreeToTerms": "I agree to the Terms of Service and Privacy Policy",
+      "signUp": "Sign Up",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in"
+    },
+    "onboarding": {
+      "welcome": {
+        "title": "Welcome to nu3PBnB",
+        "subtitle": "Your journey to amazing stays starts here. Let's create your account in just a few simple steps.",
+        "steps": {
+          "account": "Create your account",
+          "preferences": "Tell us about your preferences",
+          "explore": "Start exploring amazing properties"
+        }
+      },
+      "account": {
+        "title": "Account Details",
+        "subtitle": "Let's set up your account",
+        "role": "I want to",
+        "roleOptions": {
+          "guest": "Book stays as a guest",
+          "host": "Host properties",
+          "both": "Both book and host"
+        }
+      },
+      "preferences": {
+        "title": "Tell Us About Your Preferences",
+        "subtitle": "Help us personalize your experience by selecting your travel interests.",
+        "interests": "What types of stays interest you? (Select all that apply)",
+        "whyWeAsk": {
+          "title": "Why we ask this",
+          "description": "This helps us show you the most relevant properties and improve your search experience."
+        }
+      }
+    }
+  },
+  "booking": {
+    "bookNow": "Book Now",
+    "perNight": "per night",
+    "checkIn": "Check-in",
+    "checkOut": "Check-out",
+    "guests": "Guests",
+    "nights": "Nights",
+    "totalPrice": "Total Price",
+    "message": "Message to host",
+    "confirmBooking": "Confirm Booking",
+    "bookingConfirmed": "Booking Confirmed",
+    "bookingPending": "Booking Pending",
+    "bookingCancelled": "Booking Cancelled"
+  },
+  "bookings": {
+    "myBookings": "My Bookings",
+    "noBookings": "No bookings yet",
+    "noBookingsSubtext": "Start exploring properties to make your first booking!",
+    "status": {
+      "pending": "Pending",
+      "approved": "Booked",
+      "cancelled": "Cancelled",
+      "declined": "Declined"
+    },
+    "details": {
+      "checkIn": "Check-in",
+      "checkOut": "Check-out",
+      "guests": "Guests",
+      "totalPrice": "Total Price",
+      "message": "Message",
+      "viewProperty": "View Property",
+      "cancel": "Cancel"
+    }
+  },
+  "payments": {
+    "title": "Payment History",
+    "noPayments": "No payments found",
+    "amount": "Amount",
+    "status": "Status",
+    "date": "Date",
+    "bookingId": "Booking ID"
+  },
+  "wishlist": {
+    "title": "My Wishlist",
+    "noItems": "Your wishlist is empty",
+    "noItemsSubtext": "Start adding properties you love to your wishlist",
+    "addToWishlist": "Add to Wishlist",
+    "removeFromWishlist": "Remove from Wishlist",
+    "addedToWishlist": "Added to wishlist!",
+    "removedFromWishlist": "Removed from wishlist!",
+    "viewDetails": "View Details",
+    "remove": "Remove"
+  },
+  "errors": {
+    "network": "Network error. Please check your connection and try again.",
+    "server": "Server error. Please try again later.",
+    "timeout": "Request timed out. Please try again."
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Admin Dashboard",
+      "overview": "Manage your platform with comprehensive tools and insights"
+    },
+    "analytics": {
+      "title": "Analytics"
+    },
+    "users": {
+      "title": "User Management"
+    },
+    "content": {
+      "title": "Content Management"
+    },
+    "payments": {
+      "title": "Payment Management"
+    },
+    "messages": {
+      "title": "Message Management"
+    }
+  },
+  "footer": {
+    "description": "Find your perfect stay with our unique accommodations.",
+    "support": "Support",
+    "helpCenter": "Help Center",
+    "contactUs": "Contact Us",
+    "safetyInfo": "Safety Information",
+    "community": "Community",
+    "disasterRelief": "Disaster Relief",
+    "supportRefugees": "Support Refugees",
+    "combatDiscrimination": "Combating Discrimination",
+    "hosting": "Hosting",
+    "hostYourHome": "Host Your Home",
+    "hostExperience": "Host an Experience",
+    "responsibleHosting": "Responsible Hosting",
+    "legal": "Legal",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "cookiePolicy": "Cookie Policy",
+    "accessibility": "Accessibility"
+  }
+} 

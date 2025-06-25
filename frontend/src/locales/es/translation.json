@@ -1,0 +1,318 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "close": "Cerrar",
+    "submit": "Enviar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "sort": "Ordenar",
+    "view": "Ver",
+    "add": "Agregar",
+    "remove": "Eliminar",
+    "yes": "Sí",
+    "no": "No",
+    "ok": "OK",
+    "retry": "Reintentar",
+    "refresh": "Actualizar",
+    "download": "Descargar",
+    "upload": "Subir",
+    "share": "Compartir",
+    "copy": "Copiar",
+    "select": "Seleccionar",
+    "all": "Todo",
+    "none": "Ninguno",
+    "more": "Más",
+    "less": "Menos",
+    "show": "Mostrar",
+    "hide": "Ocultar",
+    "toggle": "Alternar",
+    "expand": "Expandir",
+    "collapse": "Contraer",
+    "details": "Detalles",
+    "summary": "Resumen",
+    "description": "Descripción",
+    "title": "Título",
+    "name": "Nombre",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar contraseña",
+    "phone": "Teléfono",
+    "address": "Dirección",
+    "city": "Ciudad",
+    "country": "País",
+    "date": "Fecha",
+    "time": "Hora",
+    "price": "Precio",
+    "rating": "Calificación",
+    "reviews": "Reseñas",
+    "guests": "Huéspedes",
+    "nights": "Noches",
+    "perNight": "por noche",
+    "total": "Total",
+    "subtotal": "Subtotal",
+    "tax": "Impuesto",
+    "fees": "Tarifas",
+    "discount": "Descuento",
+    "currency": "Moneda",
+    "language": "Idioma",
+    "theme": "Tema",
+    "darkMode": "Modo oscuro",
+    "lightMode": "Modo claro",
+    "settings": "Configuración",
+    "profile": "Perfil",
+    "account": "Cuenta",
+    "logout": "Cerrar sesión",
+    "login": "Iniciar sesión",
+    "register": "Registrarse",
+    "signIn": "Iniciar sesión",
+    "signUp": "Registrarse",
+    "welcome": "Bienvenido",
+    "hello": "Hola",
+    "goodbye": "Adiós",
+    "thankYou": "Gracias",
+    "please": "Por favor",
+    "sorry": "Lo siento",
+    "congratulations": "Felicitaciones",
+    "welcomeBack": "Bienvenido de vuelta",
+    "seeYouSoon": "Nos vemos pronto",
+    "haveAGreatDay": "Que tengas un gran día",
+    "enjoyYourStay": "Disfruta tu estadía",
+    "safeTravels": "Buen viaje",
+    "bonVoyage": "Buen viaje",
+    "featured": "Destacado"
+  },
+  "navigation": {
+    "home": "Inicio",
+    "explore": "Explorar",
+    "search": "Buscar",
+    "bookings": "Reservas",
+    "messages": "Mensajes",
+    "wishlist": "Lista de deseos",
+    "admin": "Administración",
+    "analytics": "Análisis",
+    "dashboard": "Panel de control",
+    "properties": "Propiedades",
+    "users": "Usuarios",
+    "reports": "Reportes",
+    "settings": "Configuración",
+    "help": "Ayuda",
+    "support": "Soporte",
+    "contact": "Contacto",
+    "about": "Acerca de",
+    "privacy": "Privacidad",
+    "terms": "Términos",
+    "faq": "Preguntas frecuentes",
+    "map": "Mapa"
+  },
+  "home": {
+    "hero": {
+      "title": "Encuentra Tu Estancia Perfecta",
+      "subtitle": "Descubre alojamientos únicos alrededor del mundo",
+      "searchPlaceholder": "¿A dónde quieres ir?",
+      "searchButton": "Buscar",
+      "featuredTitle": "Propiedades Destacadas",
+      "featuredSubtitle": "Alojamientos seleccionados para tu próxima aventura"
+    },
+    "cta": {
+      "title": "¿Listo para Comenzar Tu Viaje?",
+      "subtitle": "Únete a miles de viajeros que han descubierto estancias increíbles alrededor del mundo. Crea tu cuenta en solo unos pasos simples y desbloquea beneficios exclusivos.",
+      "getStarted": "🚀 Comenzar Ahora",
+      "signInInstead": "Iniciar Sesión en su Lugar",
+      "features": {
+        "personalized": {
+          "title": "Experiencia Personalizada",
+          "description": "Obtén recomendaciones adaptadas a tus preferencias y estilo de viaje."
+        },
+        "exclusive": {
+          "title": "Beneficios Exclusivos",
+          "description": "Accede a ofertas especiales, reservas anticipadas y descuentos solo para miembros."
+        },
+        "secure": {
+          "title": "Seguro y Confiable",
+          "description": "Tus datos están protegidos con medidas de seguridad de vanguardia."
+        }
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Bienvenido de Vuelta",
+      "subtitle": "Inicia sesión en tu cuenta para continuar",
+      "email": "Correo Electrónico",
+      "password": "Contraseña",
+      "rememberMe": "Recordarme",
+      "forgotPassword": "¿Olvidaste tu contraseña?",
+      "signIn": "Iniciar Sesión",
+      "noAccount": "¿No tienes una cuenta?",
+      "signUp": "Registrarse",
+      "or": "o",
+      "continueWithGoogle": "Continuar con Google",
+      "continueWithFacebook": "Continuar con Facebook"
+    },
+    "register": {
+      "title": "Crea Tu Cuenta",
+      "subtitle": "Únete a miles de viajeros en todo el mundo",
+      "firstName": "Nombre",
+      "lastName": "Apellido",
+      "email": "Correo Electrónico",
+      "password": "Contraseña",
+      "confirmPassword": "Confirmar Contraseña",
+      "agreeToTerms": "Acepto los Términos de Servicio y la Política de Privacidad",
+      "signUp": "Registrarse",
+      "haveAccount": "¿Ya tienes una cuenta?",
+      "signIn": "Iniciar sesión"
+    }
+  },
+  "listings": {
+    "title": "Alojamientos",
+    "searchResults": "Resultados de búsqueda",
+    "noResults": "No se encontraron resultados",
+    "filters": {
+      "title": "Filtros",
+      "priceRange": "Rango de precios",
+      "guests": "Huéspedes",
+      "bedrooms": "Habitaciones",
+      "bathrooms": "Baños",
+      "amenities": "Comodidades",
+      "propertyType": "Tipo de propiedad"
+    },
+    "sort": {
+      "title": "Ordenar por",
+      "priceLowToHigh": "Precio ascendente",
+      "priceHighToLow": "Precio descendente",
+      "rating": "Calificación",
+      "newest": "Más reciente",
+      "oldest": "Más antiguo"
+    }
+  },
+  "booking": {
+    "title": "Reserva",
+    "checkIn": "Llegada",
+    "checkOut": "Salida",
+    "guests": "Huéspedes",
+    "nights": "Noches",
+    "totalPrice": "Precio total",
+    "bookNow": "Reservar ahora",
+    "requestBooking": "Solicitar reserva",
+    "bookingConfirmed": "Reserva confirmada",
+    "bookingPending": "Reserva pendiente",
+    "perNight": "por noche"
+  },
+  "profile": {
+    "title": "Perfil",
+    "personalInfo": "Información personal",
+    "preferences": "Preferencias",
+    "security": "Seguridad",
+    "notifications": "Notificaciones",
+    "language": "Idioma",
+    "currency": "Moneda"
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Panel de Administración",
+      "overview": "Gestiona tu plataforma con herramientas e información completa"
+    },
+    "messages": {
+      "title": "Gestión de Mensajes"
+    },
+    "payments": {
+      "title": "Gestión de Pagos"
+    },
+    "users": {
+      "title": "Gestión de Usuarios"
+    },
+    "properties": {
+      "title": "Gestión de propiedades",
+      "addProperty": "Agregar propiedad",
+      "editProperty": "Editar propiedad",
+      "deleteProperty": "Eliminar propiedad",
+      "approve": "Aprobar",
+      "reject": "Rechazar"
+    },
+    "analytics": {
+      "title": "Análisis"
+    },
+    "content": {
+      "title": "Gestión de Contenido"
+    }
+  },
+  "analytics": {
+    "title": "Análisis",
+    "overview": "Resumen",
+    "userActivity": "Actividad del usuario",
+    "pageViews": "Vistas de página",
+    "userBehavior": "Comportamiento del usuario",
+    "engagement": "Compromiso",
+    "metrics": {
+      "totalUsers": "Usuarios totales",
+      "activeSessions": "Sesiones activas",
+      "pageViews": "Vistas de página",
+      "bounceRate": "Tasa de rebote",
+      "avgSessionDuration": "Duración promedio de sesión",
+      "totalListings": "Anuncios totales"
+    }
+  },
+  "payments": {
+    "title": "Pagos",
+    "history": "Historial de pagos",
+    "methods": "Métodos de pago",
+    "transactions": "Transacciones",
+    "receipt": "Recibo",
+    "status": {
+      "completed": "Completado",
+      "pending": "Pendiente",
+      "failed": "Fallido",
+      "refunded": "Reembolsado"
+    }
+  },
+  "messages": {
+    "title": "Mensajes",
+    "inbox": "Bandeja de entrada",
+    "sent": "Enviados",
+    "compose": "Componer",
+    "reply": "Responder",
+    "delete": "Eliminar",
+    "markAsRead": "Marcar como leído"
+  },
+  "wishlist": {
+    "title": "Lista de deseos",
+    "addToWishlist": "Agregar a la lista de deseos",
+    "removeFromWishlist": "Quitar de la lista de deseos",
+    "empty": "Tu lista de deseos está vacía",
+    "viewDetails": "Ver detalles"
+  },
+  "footer": {
+    "description": "Encuentra tu estancia perfecta con nuestros alojamientos únicos.",
+    "support": "Soporte",
+    "helpCenter": "Centro de ayuda",
+    "contactUs": "Contáctanos",
+    "safetyInfo": "Información de seguridad",
+    "community": "Comunidad",
+    "disasterRelief": "Ayuda en desastres",
+    "supportRefugees": "Apoyar a refugiados",
+    "combatDiscrimination": "Combatir la discriminación",
+    "hosting": "Alojamiento",
+    "hostYourHome": "Aloja tu casa",
+    "hostExperience": "Aloja una experiencia",
+    "responsibleHosting": "Alojamiento responsable",
+    "legal": "Legal",
+    "termsOfService": "Términos de servicio",
+    "privacyPolicy": "Política de privacidad",
+    "cookiePolicy": "Política de cookies",
+    "accessibility": "Accesibilidad"
+  },
+  "errors": {
+    "network": "Error de red. Por favor, verifica tu conexión e inténtalo de nuevo.",
+    "server": "Error del servidor. Por favor, inténtalo más tarde.",
+    "timeout": "La solicitud agotó el tiempo de espera. Por favor, inténtalo de nuevo."
+  }
+} 

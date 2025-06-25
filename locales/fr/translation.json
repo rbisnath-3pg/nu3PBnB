@@ -1,0 +1,28 @@
+{
+  "errors": {
+    "not_found": "Ressource non trouvée.",
+    "unauthorized": "Accès non autorisé.",
+    "forbidden": "Vous n'avez pas la permission d'effectuer cette action.",
+    "validation": "Échec de la validation.",
+    "server": "Erreur interne du serveur.",
+    "bad_request": "Mauvaise requête.",
+    "user_exists": "L'utilisateur existe déjà.",
+    "user_not_found": "Utilisateur non trouvé.",
+    "invalid_credentials": "Email ou mot de passe invalide.",
+    "listing_not_found": "Annonce non trouvée.",
+    "booking_not_found": "Réservation non trouvée.",
+    "review_not_found": "Avis non trouvé.",
+    "message_not_found": "Message non trouvé.",
+    "payment_failed": "Le paiement a échoué.",
+    "rate_limited": "Trop de requêtes. Veuillez réessayer plus tard."
+  },
+  "success": {
+    "user_created": "Utilisateur créé avec succès.",
+    "login_success": "Connexion réussie.",
+    "listing_created": "Annonce créée avec succès.",
+    "booking_created": "Réservation créée avec succès.",
+    "review_submitted": "Avis soumis avec succès.",
+    "message_sent": "Message envoyé avec succès.",
+    "payment_success": "Paiement effectué avec succès."
+  }
+} 
