@@ -351,11 +351,11 @@ async function createContentTranslations() {
     { key: 'nav.logout', title: 'Logout', content: 'Logout', section: 'footer', language: 'en' },
     { key: 'home.hero.subtitle', title: 'Discover amazing places to stay', content: 'Discover amazing places to stay', section: 'hero', language: 'en' },
     { key: 'home.featured.title', title: 'Featured Properties', content: 'Featured Properties', section: 'homepage', language: 'en' },
-    { key: 'listing.price.per_night', title: 'per night', content: 'per night', section: 'listings', language: 'en' },
-    { key: 'listing.amenities.title', title: 'Amenities', content: 'Amenities', section: 'listings', language: 'en' },
-    { key: 'booking.book_now', title: 'Book Now', content: 'Book Now', section: 'bookings', language: 'en' },
-    { key: 'auth.sign_in', title: 'Sign In', content: 'Sign In', section: 'auth', language: 'en' },
-    { key: 'auth.sign_up', title: 'Sign Up', content: 'Sign Up', section: 'auth', language: 'en' }
+    { key: 'listing.price.per_night', title: 'per night', content: 'per night', section: 'general', language: 'en' },
+    { key: 'listing.amenities.title', title: 'Amenities', content: 'Amenities', section: 'general', language: 'en' },
+    { key: 'booking.book_now', title: 'Book Now', content: 'Book Now', section: 'general', language: 'en' },
+    { key: 'auth.sign_in', title: 'Sign In', content: 'Sign In', section: 'general', language: 'en' },
+    { key: 'auth.sign_up', title: 'Sign Up', content: 'Sign Up', section: 'general', language: 'en' }
   ];
 
   for (const content of contentData) {
