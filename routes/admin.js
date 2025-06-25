@@ -6,6 +6,7 @@ const Message = require('../models/Message');
 const fs = require('fs');
 const path = require('path');
 const { exec } = require('child_process');
+const { initializeDatabase } = require('../scripts/init-database');
 
 const router = express.Router();
 
@@ -362,6 +363,96 @@ router.delete('/test-results/:id', auth, requireRole('admin'), (req, res) => {
   } catch (err) {
     console.error('Error deleting test result:', err);
     res.status(500).json({ message: 'Failed to delete test run' });
+  }
+});
+
+// Admin: Initialize database with sample data
+router.post('/init-database', async (req, res) => {
+  try {
+    console.log('🔄 Admin database initialization requested');
+    
+    // Check if there's already data in the database
+    const existingUsers = await User.countDocuments();
+    const existingListings = await Listing.countDocuments();
+    
+    if (existingUsers > 0 || existingListings > 0) {
+      return res.status(400).json({ 
+        message: 'Database already contains data. Use force=true to reinitialize.',
+        existingUsers,
+        existingListings
+      });
+    }
+    
+    // Initialize database
+    await initializeDatabase();
+    
+    // Get counts after initialization
+    const userCount = await User.countDocuments();
+    const listingCount = await Listing.countDocuments();
+    
+    res.json({ 
+      message: 'Database initialized successfully',
+      userCount,
+      listingCount
+    });
+  } catch (error) {
+    console.error('❌ Database initialization failed:', error);
+    res.status(500).json({ 
+      message: 'Database initialization failed',
+      error: error.message 
+    });
+  }
+});
+
+// Admin: Force reinitialize database (clears existing data)
+router.post('/init-database/force', async (req, res) => {
+  try {
+    console.log('🔄 Admin force database initialization requested');
+    
+    // Force reinitialize database
+    await initializeDatabase(true);
+    
+    // Get counts after initialization
+    const userCount = await User.countDocuments();
+    const listingCount = await Listing.countDocuments();
+    
+    res.json({ 
+      message: 'Database force reinitialized successfully',
+      userCount,
+      listingCount
+    });
+  } catch (error) {
+    console.error('❌ Database force initialization failed:', error);
+    res.status(500).json({ 
+      message: 'Database force initialization failed',
+      error: error.message 
+    });
+  }
+});
+
+// Admin: Get database status
+router.get('/database-status', async (req, res) => {
+  try {
+    const userCount = await User.countDocuments();
+    const listingCount = await Listing.countDocuments();
+    const adminCount = await User.countDocuments({ role: 'admin' });
+    const hostCount = await User.countDocuments({ role: 'host' });
+    const guestCount = await User.countDocuments({ role: 'guest' });
+    
+    res.json({
+      userCount,
+      listingCount,
+      adminCount,
+      hostCount,
+      guestCount,
+      isInitialized: userCount > 0 || listingCount > 0
+    });
+  } catch (error) {
+    console.error('❌ Database status check failed:', error);
+    res.status(500).json({ 
+      message: 'Database status check failed',
+      error: error.message 
+    });
   }
 });
 
