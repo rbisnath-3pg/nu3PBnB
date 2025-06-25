@@ -3,6 +3,10 @@ import { useAuth } from '../contexts/AuthContext';
 import { FaDollarSign, FaCreditCard, FaChartLine, FaCalendarAlt, FaUser, FaHome } from 'react-icons/fa';
 import ReceiptModal from './ReceiptModal';
 
+const API_BASE = import.meta.env.PROD 
+  ? 'https://nu3pbnb-api.onrender.com/api'
+  : '/api';
+
 const PaymentDashboard = ({ userRole = 'host' }) => {
   const { user } = useAuth();
   const [payments, setPayments] = useState([]);
@@ -22,7 +26,7 @@ const PaymentDashboard = ({ userRole = 'host' }) => {
   const fetchPayments = async () => {
     try {
       setLoading(true);
-      const endpoint = userRole === 'admin' ? '/api/payments/admin/all' : '/api/payments/host';
+      const endpoint = userRole === 'admin' ? `${API_BASE}/payments/admin/all` : `${API_BASE}/payments/host`;
       const response = await fetch(endpoint, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -45,7 +49,7 @@ const PaymentDashboard = ({ userRole = 'host' }) => {
 
   const fetchStats = async () => {
     try {
-      const endpoint = userRole === 'admin' ? '/api/payments/admin/stats' : '/api/payments/host/stats';
+      const endpoint = userRole === 'admin' ? `${API_BASE}/payments/admin/stats` : `${API_BASE}/payments/host/stats`;
       const response = await fetch(endpoint, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`

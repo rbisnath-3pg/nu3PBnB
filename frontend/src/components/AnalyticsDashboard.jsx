@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
+const API_BASE = import.meta.env.PROD 
+  ? 'https://nu3pbnb-api.onrender.com/api'
+  : '/api';
+
 const AnalyticsDashboard = ({ hostId, profileId, userRole }) => {
   const { user, loading: authLoading } = useAuth();
   const [analytics, setAnalytics] = useState(null);
@@ -76,7 +80,7 @@ const AnalyticsDashboard = ({ hostId, profileId, userRole }) => {
         return;
       }
       
-      let url = `/api/analytics?timeRange=${timeRange}`;
+      let url = `${API_BASE}/analytics?timeRange=${timeRange}`;
       if (profileId) {
         url += `&profileId=${profileId}`;
       } else if (hostId) {

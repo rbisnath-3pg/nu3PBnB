@@ -1,52 +1,64 @@
 # nu3PBnB - Next-Generation Vacation Rental Platform
 
-A modern, full-stack vacation rental platform built with React, Node.js, and MongoDB. Features include real-time analytics, multi-language support, comprehensive admin tools, and automated testing.
+A modern, full-stack vacation rental platform built with React 19, Node.js, and MongoDB. Features include real-time analytics, multi-language support, comprehensive admin tools, automated testing, content management, and advanced user experience features.
 
 ## 🚀 Features
 
 ### Core Functionality
-- **Property Listings**: Browse and search vacation rentals
-- **Booking System**: Complete booking workflow with payment processing
-- **User Management**: Guest and host profiles with role-based access
-- **Real-time Messaging**: Communication between guests and hosts
-- **Reviews & Ratings**: User feedback system
-- **Multi-language Support**: Internationalization (EN, ES, FR)
+- **Property Listings**: Browse and search vacation rentals with advanced filtering
+- **Booking System**: Complete booking workflow with payment processing and calendar management
+- **User Management**: Guest and host profiles with role-based access control
+- **Real-time Messaging**: Communication between guests and hosts with file attachments
+- **Reviews & Ratings**: User feedback system with moderation
+- **Multi-language Support**: Internationalization (EN, ES, FR) with language switching
+- **Wishlist Management**: Save and manage favorite properties
+- **Onboarding Wizard**: Guided setup for new users
 
 ### Admin Features
-- **Analytics Dashboard**: Real-time revenue and user analytics
-- **Content Management**: Dynamic content editing with WYSIWYG editor
-- **User Management**: Admin tools for user oversight
-- **Payment Processing**: Payment history and management
-- **Test Results**: Automated testing monitoring
+- **Analytics Dashboard**: Real-time revenue and user analytics with interactive charts
+- **Content Management**: Dynamic content editing with WYSIWYG editor and versioning
+- **User Management**: Admin tools for user oversight with bulk operations
+- **Payment Processing**: Payment history and management with receipt generation
+- **Test Results Dashboard**: Automated testing monitoring with real-time status
+- **Admin Messaging**: Centralized messaging interface for administrators
+- **System Health Monitoring**: Automated test scheduling and health checks
 
 ### Technical Features
-- **Automated Testing**: Scheduled tests running every hour
-- **Real-time Analytics**: User behavior tracking and insights
-- **Responsive Design**: Mobile-first approach
-- **Security**: JWT authentication, rate limiting, input validation
-- **Performance**: Caching, optimization, and monitoring
+- **Automated Testing**: Scheduled tests running every hour with comprehensive coverage
+- **Real-time Analytics**: User behavior tracking and insights with performance metrics
+- **Responsive Design**: Mobile-first approach with modern UI/UX
+- **Security**: JWT authentication, rate limiting, input validation, role-based access
+- **Performance**: Caching, optimization, monitoring, and database indexing
+- **Content Versioning**: Track and restore previous content versions
+- **File Upload**: Profile pictures and message attachments
 
 ## 🛠️ Tech Stack
 
 ### Backend
-- **Node.js** with Express.js
-- **MongoDB** with Mongoose ODM
+- **Node.js** with Express.js 5.1.0
+- **MongoDB** with Mongoose ODM 7.6.3
 - **JWT** for authentication
 - **Winston** for logging
 - **Jest** for testing
+- **Multer** for file uploads
+- **Node-cron** for scheduled tasks
 
 ### Frontend
-- **React 18** with Vite
+- **React 19.1.0** with Vite 6.3.5
 - **Tailwind CSS** for styling
 - **React Icons** for UI elements
 - **React Testing Library** for component testing
 - **i18next** for internationalization
+- **Chart.js** for analytics visualization
+- **Leaflet** for maps
+- **TipTap** for WYSIWYG editing
 
 ### DevOps & Testing
-- **Automated Testing**: Scheduled tests every hour
-- **Coverage Reporting**: Jest coverage reports
-- **Logging**: Comprehensive logging system
-- **Monitoring**: Real-time application monitoring
+- **Automated Testing**: Scheduled tests every hour with 23 test suites
+- **Coverage Reporting**: Jest coverage reports with detailed metrics
+- **Logging**: Comprehensive logging system with Winston
+- **Monitoring**: Real-time application monitoring and health checks
+- **Performance**: Database optimization and caching strategies
 
 ## 📦 Installation
 
@@ -88,6 +100,9 @@ A modern, full-stack vacation rental platform built with React, Node.js, and Mon
    # Start MongoDB (if not already running)
    mongod
    
+   # Initialize database
+   npm run init-db
+   
    # Seed the database with test data
    npm run seed
    ```
@@ -115,6 +130,12 @@ npm test -- --testPathPatterns=bookings
 
 # Run with coverage
 npm test -- --coverage
+
+# Run frontend tests only
+npm run test:frontend
+
+# Run backend tests only
+npm run test:backend
 ```
 
 ### Automated Testing
@@ -142,18 +163,19 @@ npm run test:scheduled:demo
 ## 📊 Analytics & Monitoring
 
 ### Admin Dashboard
-- Real-time revenue tracking
-- User activity analytics
-- Booking statistics
+- Real-time revenue tracking with interactive charts
+- User activity analytics and behavior insights
+- Booking statistics and trends
 - Payment processing metrics
 - App profitability calculations
+- System health monitoring
 
 ### Test Monitoring
-- Automated test execution
-- Success rate tracking
-- Performance metrics
-- Failure analysis
-- Coverage reporting
+- Automated test execution with real-time status
+- Success rate tracking and failure analysis
+- Performance metrics and coverage reporting
+- Historical test data and trends
+- Email notifications for test failures
 
 ## 🔧 Development
 
@@ -172,6 +194,7 @@ nu3PBnB/
 ├── middleware/              # Custom middleware
 ├── logs/                    # Application logs
 ├── documentation/           # Project documentation
+├── scripts/                 # Database and utility scripts
 └── tests/                   # Test files
 ```
 
@@ -190,6 +213,8 @@ npm run test:scheduled      # Start automated testing
 npm run test:results        # View test results
 
 # Database
+npm run init-db             # Initialize database
+npm run reset-db            # Reset database
 npm run seed                # Seed database with test data
 npm run seed:payments       # Seed payment data
 npm run seed:analytics      # Seed analytics data
@@ -197,157 +222,102 @@ npm run seed:analytics      # Seed analytics data
 # Utilities
 npm run create-admin        # Create admin user
 npm run list-users          # List all users
+npm run reset-passwords     # Reset user passwords
 ```
 
 ## 🌐 API Documentation
 
-### Authentication
-- `POST /api/auth/login` - User login
-- `POST /api/auth/register` - User registration
-- `GET /api/auth/profile` - Get user profile
+The API provides comprehensive endpoints for:
+- **Authentication**: Login, registration, password management
+- **Listings**: CRUD operations for property listings
+- **Bookings**: Booking management and calendar integration
+- **Payments**: Payment processing and history
+- **Messaging**: Real-time messaging system
+- **Reviews**: Rating and review system
+- **Users**: User management and profiles
+- **Content**: Dynamic content management
+- **Analytics**: Data analytics and reporting
 
-### Listings
-- `GET /api/listings` - Get all listings
-- `POST /api/listings` - Create new listing
-- `GET /api/listings/:id` - Get specific listing
-- `PUT /api/listings/:id` - Update listing
+See [API Documentation](./API_DOCUMENTATION.md) for detailed endpoint specifications.
 
-### Bookings
-- `GET /api/bookings` - Get user bookings
-- `POST /api/bookings` - Create booking
-- `PUT /api/bookings/:id` - Update booking status
+## 📚 Documentation
 
-### Admin
-- `GET /api/admin/analytics` - Get analytics data
-- `GET /api/admin/users` - Get all users
-- `POST /api/admin/content` - Update content
+Comprehensive documentation is available in the `documentation/` folder:
+- [Requirements](./documentation/requirements.md) - Functional and non-functional requirements
+- [Architecture](./documentation/architecture.md) - System design and architecture
+- [Development Guide](./documentation/development-guide.md) - Development setup and guidelines
+- [User Manual](./documentation/user-manual.md) - End-user instructions
+- [API Documentation](./documentation/api-documentation.md) - API specifications
+- [Testing Strategy](./documentation/testing-strategy.md) - Testing approach and procedures
 
-## 🔒 Security
+## 🔐 Security Features
 
-- JWT-based authentication
-- Role-based access control
-- Input validation and sanitization
-- Rate limiting
-- CORS configuration
-- Secure password hashing
+- **JWT Authentication**: Secure token-based authentication
+- **Role-based Access Control**: Different permissions for guests, hosts, and admins
+- **Rate Limiting**: Protection against abuse and DDoS attacks
+- **Input Validation**: Comprehensive validation for all user inputs
+- **Password Hashing**: Secure password storage with bcrypt
+- **CORS Protection**: Cross-origin resource sharing configuration
+- **File Upload Security**: Secure file upload with validation
 
-## 📈 Performance
+## 🌍 Internationalization
 
-- Database indexing
-- Query optimization
-- Caching strategies
-- Lazy loading
-- Code splitting
-- Bundle optimization
+The platform supports multiple languages:
+- **English (EN)** - Default language
+- **Spanish (ES)** - Complete translation
+- **French (FR)** - Complete translation
+
+Language switching is available throughout the application with persistent user preferences.
+
+## 📱 Responsive Design
+
+The application is built with a mobile-first approach:
+- **Mobile**: Optimized for smartphones and tablets
+- **Desktop**: Full-featured desktop experience
+- **Tablet**: Optimized tablet layout
+- **Accessibility**: WCAG compliance and screen reader support
+
+## 🚀 Deployment
+
+### Production Deployment
+```bash
+# Build frontend for production
+cd frontend
+npm run build
+cd ..
+
+# Start production server
+npm start
+```
+
+### Environment Variables
+Required environment variables:
+- `MONGODB_URI` - MongoDB connection string
+- `JWT_SECRET` - JWT signing secret
+- `PORT` - Server port (default: 3000)
+- `NODE_ENV` - Environment (development/production)
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Run the test suite
+6. Submit a pull request
 
-### Development Guidelines
-- Follow the existing code style
-- Write tests for new features
-- Update documentation as needed
-- Ensure all tests pass before submitting
-
-## 📝 License
+## 📄 License
 
 This project is licensed under the ISC License.
 
 ## 🆘 Support
 
 For support and questions:
-1. Check the documentation in `/documentation`
-2. Review the test results: `npm run test:results`
-3. Check the logs in `/logs`
-4. Run the demo: `npm run test:scheduled:demo`
-
-## 🗺️ Roadmap
-
-- [ ] Mobile app development
-- [ ] Advanced analytics dashboard
-- [ ] Payment gateway integration
-- [ ] Real-time notifications
-- [ ] Advanced search filters
-- [ ] Social media integration
-- [ ] AI-powered recommendations
-
-## 🧪 Automated Test Management (NEW)
-
-### Admin Test Dashboard Features
-- **Run All Tests Now**: Trigger a full test suite run from the admin dashboard.
-- **Progress Bar & Real-Time Status**: See live progress and current phase as tests run.
-- **Clear Test History**: Remove all previous test runs with a single click (confirmation required).
-- **Delete Individual Runs**: Remove specific test runs from the history.
-- **Detailed Results**: View summary, code coverage, and full output for each run.
-
-> **Note:** All tests pass except for `App.test.jsx`, which is skipped due to memory issues. All other suites are green and reliable.
-
-### How to Use
-1. Log in as an admin.
-2. Go to the **Test Results** section.
-3. Click **Run All Tests Now** to start a new test run.
-4. Watch the progress bar and status updates.
-5. Use **Clear History** to remove all test runs, or the trash icon to delete individual runs.
-
-## 🏆 Test Coverage & Reliability
-- 21/22 test suites pass (208/216 tests)
-- All backend and frontend features are covered
-- New endpoints for test management: `DELETE /admin/test-results` and `DELETE /admin/test-results/:id`
-- UI and API are robust and production-ready
-
-## 📚 Documentation
-- See `documentation/testing-strategy.md` for details on the test plan and best practices.
-- See `documentation/project-plan.md` for project milestones and completed features.
+- Check the [Troubleshooting Guide](./documentation/troubleshooting.md)
+- Review the [User Manual](./documentation/user-manual.md)
+- Consult the [API Documentation](./documentation/api-documentation.md)
 
 ---
 
-For more, see the full documentation in the `documentation/` folder.
-
----
-
-**Last Updated**: June 2025  
-**Version**: 1.0.0  
-**Maintainer**: nu3PBnB Development Team
-
-## 🚀 Live Demo
-- **Frontend:** https://nu3pbnb-frontend.onrender.com
-- **Backend API:** https://nu3pbnb-api.onrender.com
-
-## 🗄️ Database
-- **MongoDB Atlas** is used for production data.
-- Connection string is managed via environment variables (see `ENVIRONMENT_SETUP.md`).
-
-## 🌱 Seeding the Database
-To populate your online MongoDB Atlas database with sample listings:
-```bash
-node seed-listings.js
-```
-- The script connects to your Atlas cluster and inserts sample listings with proper GeoJSON locations.
-
-## 🧪 Testing
-- Run all tests:
-  ```bash
-  npm test
-  ```
-- Test coverage is high for listings, payments, and admin endpoints.
-- Some admin tests are failing due to missing `adminToken` setup (see `routes/__tests__/admin.test.js`).
-- For Mongoose/Jest integration, see the warning in test output and refer to [Mongoose Jest Docs](https://mongoosejs.com/docs/jest.html).
-
-## 🛠️ Deployment
-- Deployed on [Render](https://render.com) using `render.yaml`.
-- Environment variables are set in the Render dashboard.
-- See `DEPLOYMENT.md` for step-by-step deployment instructions.
-
-## 📄 Documentation
-- See `ENVIRONMENT_SETUP.md` for environment variable setup.
-- See `DEPLOYMENT.md` for cloud deployment instructions.
-- See `API_DOCUMENTATION.md` for API details.
-
----
-
-For any issues, check the logs on Render or run tests locally for more details. 
+**Last Updated**: January 2025  
+**Version**: 2.0 - Enhanced with Content Management, Admin Testing, Analytics, and Multilingual Features 
