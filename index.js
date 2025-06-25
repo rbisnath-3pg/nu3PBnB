@@ -312,12 +312,12 @@ app.post('/fix-index', async (req, res) => {
     }
     
     // List all indexes to see what's there
-    const indexes = await db.collection('listings').getIndexes();
-    console.log('📊 Current indexes:', Object.keys(indexes));
+    const indexes = await db.collection('listings').indexes();
+    console.log('📊 Current indexes:', indexes.map(idx => idx.name));
     
     res.json({ 
       message: 'Index removal attempted',
-      currentIndexes: Object.keys(indexes)
+      currentIndexes: indexes.map(idx => idx.name)
     });
   } catch (error) {
     console.error('❌ Index removal failed:', error);
