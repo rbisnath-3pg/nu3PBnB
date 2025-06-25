@@ -79,7 +79,7 @@ const AnalyticsDashboard = ({ hostId, profileId, userRole }) => {
         return;
       }
       
-      let url = `${API_BASE}/analytics?timeRange=${timeRange}`;
+      let url = `${API_BASE}/api/analytics?timeRange=${timeRange}`;
       if (profileId) {
         url += `&profileId=${profileId}`;
       } else if (hostId) {
