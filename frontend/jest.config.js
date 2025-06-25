@@ -9,4 +9,8 @@ module.exports = {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '\\.(jpg|jpeg|png|gif|svg)$': '<rootDir>/__mocks__/fileMock.js',
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!(react-router|react-router-dom)/)'
+  ],
+  setupFiles: ['<rootDir>/jest.setup.js']
 }; 
