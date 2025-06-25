@@ -13,17 +13,41 @@ const TEST_RESULTS_FILE = path.join(__dirname, '../logs/test-results.json');
 
 // Helper to read test results
 function readTestResults() {
-  if (!fs.existsSync(TEST_RESULTS_FILE)) return [];
+  // Ensure logs directory exists
+  const logsDir = path.dirname(TEST_RESULTS_FILE);
+  if (!fs.existsSync(logsDir)) {
+    fs.mkdirSync(logsDir, { recursive: true });
+  }
+  
+  if (!fs.existsSync(TEST_RESULTS_FILE)) {
+    return [];
+  }
+  
   try {
-    return JSON.parse(fs.readFileSync(TEST_RESULTS_FILE, 'utf8'));
-  } catch {
+    const data = fs.readFileSync(TEST_RESULTS_FILE, 'utf8');
+    if (!data.trim()) {
+      return [];
+    }
+    return JSON.parse(data);
+  } catch (error) {
+    console.error('Error reading test results file:', error);
     return [];
   }
 }
 
 // Helper to write test results
 function writeTestResults(results) {
-  fs.writeFileSync(TEST_RESULTS_FILE, JSON.stringify(results, null, 2));
+  try {
+    // Ensure logs directory exists
+    const logsDir = path.dirname(TEST_RESULTS_FILE);
+    if (!fs.existsSync(logsDir)) {
+      fs.mkdirSync(logsDir, { recursive: true });
+    }
+    
+    fs.writeFileSync(TEST_RESULTS_FILE, JSON.stringify(results, null, 2));
+  } catch (error) {
+    console.error('Error writing test results file:', error);
+  }
 }
 
 // Admin: View all users
@@ -314,6 +338,31 @@ router.post('/run-tests', auth, requireRole('admin'), (req, res) => {
   });
   
   res.json({ id, date, status: 'running', summary: 'Running...', coverage: '', details: '' });
+});
+
+// Clear all test results
+router.delete('/test-results', auth, requireRole('admin'), (req, res) => {
+  try {
+    // Clear the test results file
+    writeTestResults([]);
+    res.json({ message: 'Test history cleared successfully' });
+  } catch (err) {
+    console.error('Error clearing test results:', err);
+    res.status(500).json({ message: 'Failed to clear test history' });
+  }
+});
+
+// Clear specific test run
+router.delete('/test-results/:id', auth, requireRole('admin'), (req, res) => {
+  try {
+    const results = readTestResults();
+    const filteredResults = results.filter(r => r.id !== req.params.id);
+    writeTestResults(filteredResults);
+    res.json({ message: 'Test run deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting test result:', err);
+    res.status(500).json({ message: 'Failed to delete test run' });
+  }
 });
 
 module.exports = router; 

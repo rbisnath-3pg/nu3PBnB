@@ -118,7 +118,8 @@ class AnalyticsService {
     }
 
     const tagName = element.tagName.toLowerCase();
-    const className = element.className || '';
+    // Ensure className is always a string, handling both string and DOMTokenList cases
+    const className = (element.className || '').toString();
     const id = element.id || '';
     const text = element.textContent?.trim() || '';
     

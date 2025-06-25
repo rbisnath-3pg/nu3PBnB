@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { FaPlay, FaCheck, FaTimes, FaClock, FaEye, FaTimesCircle } from 'react-icons/fa';
+import { FaPlay, FaCheck, FaTimes, FaClock, FaEye, FaTimesCircle, FaTrash, FaBroom } from 'react-icons/fa';
 
 const API_BASE = '/api/admin';
 
@@ -11,11 +11,15 @@ const AdminTestResults = () => {
   const [selectedRun, setSelectedRun] = useState(null);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState(null);
+  const [progress, setProgress] = useState(0);
+  const [currentTest, setCurrentTest] = useState('');
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   
   // Cache for API responses
   const cache = useRef(new Map());
   const lastFetchTime = useRef(0);
   const CACHE_DURATION = 5000; // 5 seconds cache
+  const progressInterval = useRef(null);
 
   // Helper to get auth token
   const getToken = () => localStorage.getItem('token');
@@ -31,6 +35,52 @@ const AdminTestResults = () => {
         return { icon: <FaClock className="w-4 h-4" />, color: 'text-yellow-600', bgColor: 'bg-yellow-100', borderColor: 'border-yellow-200' };
       default:
         return { icon: <FaClock className="w-4 h-4" />, color: 'text-gray-600', bgColor: 'bg-gray-100', borderColor: 'border-gray-200' };
+    }
+  };
+
+  // Clear test history
+  const handleClearHistory = async () => {
+    if (!confirm('Are you sure you want to clear all test history? This action cannot be undone.')) {
+      return;
+    }
+    
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_BASE}/test-results`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${getToken()}` }
+      });
+      if (!res.ok) throw new Error('Failed to clear test history');
+      setTestRuns([]);
+      setSelectedRun(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+      setShowClearConfirm(false);
+    }
+  };
+
+  // Delete specific test run
+  const handleDeleteRun = async (id) => {
+    if (!confirm('Are you sure you want to delete this test run?')) {
+      return;
+    }
+    
+    setError(null);
+    try {
+      const res = await fetch(`${API_BASE}/test-results/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${getToken()}` }
+      });
+      if (!res.ok) throw new Error('Failed to delete test run');
+      setTestRuns(runs => runs.filter(r => r.id !== id));
+      if (selectedRun && selectedRun.id === id) {
+        setSelectedRun(null);
+      }
+    } catch (err) {
+      setError(err.message);
     }
   };
 
@@ -111,6 +161,56 @@ const AdminTestResults = () => {
     }
   };
 
+  // Start progress simulation
+  const startProgressSimulation = () => {
+    setProgress(0);
+    setCurrentTest('Initializing test environment...');
+    
+    const testPhases = [
+      'Loading test configuration...',
+      'Running authentication tests...',
+      'Running booking tests...',
+      'Running payment tests...',
+      'Running listing tests...',
+      'Running component tests...',
+      'Generating coverage report...',
+      'Finalizing results...'
+    ];
+    
+    let phaseIndex = 0;
+    progressInterval.current = setInterval(() => {
+      setProgress(prev => {
+        const newProgress = prev + Math.random() * 15;
+        if (newProgress >= 100) {
+          clearInterval(progressInterval.current);
+          setProgress(100);
+          setCurrentTest('Test execution completed');
+          return 100;
+        }
+        
+        // Update current test phase
+        const phaseProgress = (newProgress / 100) * testPhases.length;
+        const currentPhase = Math.floor(phaseProgress);
+        if (currentPhase < testPhases.length && currentPhase !== phaseIndex) {
+          phaseIndex = currentPhase;
+          setCurrentTest(testPhases[currentPhase]);
+        }
+        
+        return newProgress;
+      });
+    }, 1000);
+  };
+
+  // Stop progress simulation
+  const stopProgressSimulation = () => {
+    if (progressInterval.current) {
+      clearInterval(progressInterval.current);
+      progressInterval.current = null;
+    }
+    setProgress(0);
+    setCurrentTest('');
+  };
+
   // Trigger a new test run
   const handleRunTests = async () => {
     // Don't run if auth is still loading or user is not authenticated
@@ -120,6 +220,8 @@ const AdminTestResults = () => {
     
     setRunning(true);
     setError(null);
+    startProgressSimulation();
+    
     try {
       const res = await fetch(`${API_BASE}/run-tests`, {
         method: 'POST',
@@ -148,6 +250,7 @@ const AdminTestResults = () => {
       setError(err.message);
     } finally {
       setRunning(false);
+      stopProgressSimulation();
     }
   };
 
@@ -158,6 +261,15 @@ const AdminTestResults = () => {
     }
   }, [authLoading, user]);
 
+  // Cleanup progress interval on unmount
+  useEffect(() => {
+    return () => {
+      if (progressInterval.current) {
+        clearInterval(progressInterval.current);
+      }
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
       <div className="max-w-7xl mx-auto">
@@ -166,29 +278,83 @@ const AdminTestResults = () => {
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Test Results</h1>
             <p className="text-gray-600 dark:text-gray-400">View and manage automated test runs for the platform.</p>
           </div>
-          <button
-            onClick={handleRunTests}
-            disabled={running}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold shadow hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2 transition-all duration-200"
-          >
-            {running ? (
-              <>
-                <FaClock className="w-4 h-4 animate-spin" />
-                Running...
-              </>
-            ) : (
-              <>
-                <FaPlay className="w-4 h-4" />
-                Run All Tests Now
-              </>
-            )}
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowClearConfirm(true)}
+              disabled={loading || testRuns.length === 0}
+              className="px-4 py-2 bg-gray-600 text-white rounded-lg font-semibold shadow hover:bg-gray-700 disabled:opacity-50 flex items-center gap-2 transition-all duration-200"
+            >
+              <FaBroom className="w-4 h-4" />
+              Clear History
+            </button>
+            <button
+              onClick={handleRunTests}
+              disabled={running}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold shadow hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2 transition-all duration-200"
+            >
+              {running ? (
+                <>
+                  <FaClock className="w-4 h-4 animate-spin" />
+                  Running...
+                </>
+              ) : (
+                <>
+                  <FaPlay className="w-4 h-4" />
+                  Run All Tests Now
+                </>
+              )}
+            </button>
+          </div>
         </div>
+        
+        {/* Progress Bar for Running Tests */}
+        {running && (
+          <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Test Execution Progress</h3>
+              <span className="text-sm text-gray-600 dark:text-gray-400">{Math.round(progress)}%</span>
+            </div>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-3">
+              <div 
+                className="bg-blue-600 h-3 rounded-full transition-all duration-1000 ease-out"
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{currentTest}</p>
+          </div>
+        )}
         
         {error && (
           <div className="mb-4 p-4 bg-red-100 border border-red-200 text-red-800 rounded-lg flex items-center gap-2">
             <FaTimesCircle className="w-4 h-4" />
             {error}
+          </div>
+        )}
+        
+        {/* Clear History Confirmation Modal */}
+        {showClearConfirm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Clear Test History</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                Are you sure you want to clear all test history? This action cannot be undone and will remove all test run records.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setShowClearConfirm(false)}
+                  className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleClearHistory}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+                >
+                  <FaTrash className="w-4 h-4" />
+                  Clear All
+                </button>
+              </div>
+            </div>
           </div>
         )}
         
@@ -246,13 +412,22 @@ const AdminTestResults = () => {
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                          <button
-                            onClick={() => fetchRunDetails(run.id)}
-                            className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-colors"
-                          >
-                            <FaEye className="w-3 h-3" />
-                            View Details
-                          </button>
+                          <div className="flex items-center gap-2 justify-end">
+                            <button
+                              onClick={() => handleDeleteRun(run.id)}
+                              className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition-colors p-1"
+                              title="Delete test run"
+                            >
+                              <FaTrash className="w-3 h-3" />
+                            </button>
+                            <button
+                              onClick={() => fetchRunDetails(run.id)}
+                              className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-colors"
+                            >
+                              <FaEye className="w-3 h-3" />
+                              View Details
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );

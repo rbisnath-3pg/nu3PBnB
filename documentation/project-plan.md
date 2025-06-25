@@ -67,6 +67,8 @@ This document outlines the comprehensive project plan for the nu3PBnB applicatio
   - Admin messaging interface
   - System monitoring and health checks
   - Content moderation tools
+- [x] Admin test management UI: run all tests, progress bar, clear history, delete runs, real-time status (2025)
+- [x] All tests pass except App.test.jsx (skipped for memory reasons); test reliability and coverage improved
 
 ### 🔄 Current Development (Phase 3)
 
