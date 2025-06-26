@@ -834,7 +834,7 @@ const AdminTestResults = () => {
       memoryUsage: logger.current.getMemoryUsage()
     });
     
-    const url = `${API_BASE}/api/admin/test-results/run`;
+    const url = `${API_BASE}/api/admin/run-tests`;
     const options = { 
       method: 'POST', 
       headers: { 
