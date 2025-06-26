@@ -56,7 +56,7 @@ async function updateBookingDiagnostics() {
 
     logs.push('🧪 [BookingTest] Creating booking...');
     const startDate = new Date();
-    startDate.setDate(startDate.getDate() + 500); // 500 days from now
+    startDate.setDate(startDate.getDate() + 1000); // 1000 days from now
     
     const endDate = new Date(startDate); // Create new date object from startDate
     endDate.setDate(endDate.getDate() + 3); // 3 days after start date

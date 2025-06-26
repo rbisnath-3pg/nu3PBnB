@@ -677,9 +677,9 @@ class StartupTestSuite {
 
       logs.push('🧪 [BookingTest] Creating booking...');
       const startDate = new Date();
-      startDate.setDate(startDate.getDate() + 200);
+      startDate.setDate(startDate.getDate() + 1000);
       const endDate = new Date();
-      endDate.setDate(startDate.getDate() + 203);
+      endDate.setDate(startDate.getDate() + 1003);
       const bookingData = {
         listingId: testListing._id,
         startDate: startDate.toISOString(),
