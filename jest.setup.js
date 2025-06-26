@@ -9,6 +9,9 @@ global.setImmediate = global.setImmediate || ((fn, ...args) => global.setTimeout
 // Mock fetch for tests
 global.fetch = jest.fn();
 
+// Suppress Jest warnings for better test output
+process.env.SUPPRESS_JEST_WARNINGS = 'true';
+
 // Only set up browser-specific mocks if we're in a browser environment
 if (typeof window !== 'undefined') {
   // Mock localStorage
@@ -40,6 +43,7 @@ if (typeof window !== 'undefined') {
 process.env.MONGODB_URI = 'mongodb://localhost:27017/nu3pbnb_test';
 process.env.JWT_SECRET = 'test-secret-key';
 process.env.NODE_ENV = 'test';
+process.env.SUPPRESS_JEST_WARNINGS = 'true';
 
 // Mock console methods to reduce noise in tests
 global.console = {

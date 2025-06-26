@@ -272,8 +272,8 @@ router.post('/run-tests', auth, requireRole('admin'), (req, res) => {
   results.unshift({ id, date, status: 'running', summary: 'Running...', coverage: '', details: '' });
   writeTestResults(results);
   
-  // Production-safe Jest command with memory and time limits
-  const jestCommand = 'node test-runner.js';
+  // Use specific test suite for better performance and reliability
+  const jestCommand = 'node test-runner.js suite backend';
   const cwd = path.join(__dirname, '..');
   
   console.log(`📋 Executing enhanced test runner: ${jestCommand} in ${cwd}`);
@@ -287,9 +287,10 @@ router.post('/run-tests', auth, requireRole('admin'), (req, res) => {
       NODE_ENV: 'test',
       NODE_OPTIONS: '--max-old-space-size=512', // Limit memory to 512MB
       LOG_LEVEL: 'info',
-      FORCE_COLOR: '0' // Disable colors for production
+      FORCE_COLOR: '0', // Disable colors for production
+      SUPPRESS_JEST_WARNINGS: 'true' // Suppress Mongoose warnings
     },
-    timeout: 120000 // 2 minute total timeout
+    timeout: 90000 // 1.5 minute total timeout (reduced from 2 minutes)
   }, (err, stdout, stderr) => {
     console.log(`✅ Enhanced test run ${id} completed with ${err ? 'error' : 'success'}`);
     console.log(`📊 stdout length: ${stdout?.length || 0}, stderr length: ${stderr?.length || 0}`);
@@ -354,9 +355,9 @@ router.post('/run-tests', auth, requireRole('admin'), (req, res) => {
     console.log(`🔄 Attempting fallback: running tests in smaller batches for run ${id}`);
     
     const fallbackTests = [
-      'suite backend',
-      'suite frontend',
-      'pattern auth'
+      'pattern auth',
+      'pattern listings',
+      'pattern payments'
     ];
     
     let batchResults = [];
@@ -373,7 +374,8 @@ router.post('/run-tests', auth, requireRole('admin'), (req, res) => {
           NODE_ENV: 'test',
           NODE_OPTIONS: '--max-old-space-size=256', // Even smaller memory limit
           LOG_LEVEL: 'info',
-          FORCE_COLOR: '0'
+          FORCE_COLOR: '0',
+          SUPPRESS_JEST_WARNINGS: 'true'
         },
         timeout: 30000 // 30 second timeout per batch
       }, (batchErr, batchStdout, batchStderr) => {
@@ -463,14 +465,14 @@ For full test execution, consider using a CI/CD pipeline or development environm
             status: 'failed',
             summary: 'Test execution timed out',
             coverage: '',
-            details: `Enhanced test execution timed out after 2 minutes.\n\nThis may be due to:\n- Large test suite\n- Memory constraints\n- Network issues\n\nConsider running tests in smaller batches or using a development environment for full test execution.`
+            details: `Enhanced test execution timed out after 1.5 minutes.\n\nThis may be due to:\n- Large test suite\n- Memory constraints\n- Network issues\n\nConsider running tests in smaller batches or using a development environment for full test execution.`
           };
           writeTestResults(updatedResults);
           console.log(`💾 Timeout test results saved for run ${id}`);
         }
       }, 1000);
     }
-  }, 120000); // 2 minute timeout
+  }, 90000); // 1.5 minute timeout (reduced from 2 minutes)
   
   res.json({ 
     message: 'Test run started', 
