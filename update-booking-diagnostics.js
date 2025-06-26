@@ -1,8 +1,17 @@
 require('dotenv').config();
 const fetch = require('node-fetch');
 const Diagnostics = require('./models/Diagnostics');
+const mongoose = require('mongoose');
 
 const API_BASE = 'https://nu3pbnb-api.onrender.com';
+
+// Connect to MongoDB if not already connected
+if (mongoose.connection.readyState === 0) {
+  const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/nu3pbnb';
+  mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log('Connected to MongoDB for diagnostics'))
+    .catch(err => console.error('MongoDB connection error:', err.message));
+}
 
 async function updateBookingDiagnostics() {
   console.log('🔄 Updating booking diagnostics...');
@@ -51,12 +60,12 @@ async function updateBookingDiagnostics() {
       throw new Error('[BookingTest] No listings found');
     }
     
-    const testListing = listings[15];
+    const testListing = listings[10];
     logs.push(`✅ [BookingTest] Found ${listings.length} listings, using: ${testListing.title}`);
 
     logs.push('🧪 [BookingTest] Creating booking...');
     const startDate = new Date();
-    startDate.setDate(startDate.getDate() + 1000); // 1000 days from now
+    startDate.setDate(startDate.getDate() + 5000); // 5000 days from now
     
     const endDate = new Date(startDate); // Create new date object from startDate
     endDate.setDate(endDate.getDate() + 3); // 3 days after start date
