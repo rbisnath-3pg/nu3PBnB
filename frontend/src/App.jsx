@@ -1767,6 +1767,47 @@ URL: ${window.location.href}
               >
                 📋 Copy Debug Info
               </button>
+              <button 
+                className="px-3 py-1 rounded bg-purple-500 hover:bg-purple-600 text-white font-bold text-sm"
+                onClick={async (event) => {
+                  const button = event.target;
+                  const originalText = button.textContent;
+                  
+                  try {
+                    button.textContent = 'Running...';
+                    button.className = 'px-3 py-1 rounded bg-purple-600 text-white font-bold text-sm';
+                    button.disabled = true;
+                    
+                    const response = await fetch('/api/diagnostics/booking-tests/trigger', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' }
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                      button.textContent = 'Success!';
+                      button.className = 'px-3 py-1 rounded bg-green-600 text-white font-bold text-sm';
+                      setTimeout(() => {
+                        window.location.reload();
+                      }, 2000);
+                    } else {
+                      throw new Error(result.error || 'Unknown error');
+                    }
+                  } catch (error) {
+                    console.error('Failed to run diagnostics:', error);
+                    button.textContent = 'Failed';
+                    button.className = 'px-3 py-1 rounded bg-red-600 text-white font-bold text-sm';
+                    setTimeout(() => {
+                      button.textContent = originalText;
+                      button.className = 'px-3 py-1 rounded bg-purple-500 hover:bg-purple-600 text-white font-bold text-sm';
+                      button.disabled = false;
+                    }, 3000);
+                  }
+                }}
+              >
+                🚀 Run Diagnostics Now
+              </button>
             </div>
           </div>
         </div>

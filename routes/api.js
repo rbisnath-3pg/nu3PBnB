@@ -767,4 +767,29 @@ router.get('/diagnostics/booking-tests', (req, res) => {
   res.json(diagnostics.bookingTest);
 });
 
+// Manual trigger endpoint for booking diagnostics
+router.post('/diagnostics/booking-tests/trigger', async (req, res) => {
+  try {
+    console.log('🔄 Manual trigger: Running booking diagnostics...');
+    
+    // Import and run the booking diagnostics
+    const { updateBookingDiagnostics } = require('../update-booking-diagnostics');
+    const result = await updateBookingDiagnostics();
+    
+    console.log('✅ Manual trigger: Booking diagnostics completed');
+    res.json({
+      success: true,
+      message: 'Booking diagnostics completed successfully',
+      result: result
+    });
+  } catch (error) {
+    console.error('❌ Manual trigger: Booking diagnostics failed:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Booking diagnostics failed',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router; 
