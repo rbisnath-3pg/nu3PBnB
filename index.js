@@ -227,18 +227,45 @@ mongoose.connect(process.env.MONGODB_URI)
       
       // Review indexes
       await db.collection('reviews').createIndex({ listingId: 1 });
-      await db.collection('reviews').createIndex({ reviewerId: 1 });
+      await db.collection('reviews').createIndex({ rating: 1 });
       await db.collection('reviews').createIndex({ createdAt: -1 });
       
-      logger.info('MongoDB indexes created successfully');
+      console.log('Database indexes created successfully');
     } catch (indexError) {
-      logger.warn('Some indexes may already exist:', indexError.message);
+      logger.error('Failed to create database indexes:', indexError);
+      console.error('Failed to create database indexes:', indexError);
     }
   })
-  .catch((err) => {
-    logger.error({ message: 'MongoDB connection error', error: err });
-    console.error('MongoDB connection error:', err);
+  .catch(err => {
+    logger.error('MongoDB connection failed:', err);
+    console.error('MongoDB connection failed:', err);
   });
+
+// Global error handler to prevent server crashes
+process.on('uncaughtException', (err) => {
+  logger.error('Uncaught Exception:', err);
+  console.error('Uncaught Exception:', err);
+  // Don't exit the process, just log the error
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Don't exit the process, just log the error
+});
+
+// Graceful shutdown handler
+process.on('SIGTERM', () => {
+  logger.info('SIGTERM received, shutting down gracefully');
+  console.log('SIGTERM received, shutting down gracefully');
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  logger.info('SIGINT received, shutting down gracefully');
+  console.log('SIGINT received, shutting down gracefully');
+  process.exit(0);
+});
 
 app.get('/', (req, res) => {
   res.send('nu3PBnB API is running');
