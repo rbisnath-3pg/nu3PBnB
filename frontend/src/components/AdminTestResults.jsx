@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { FaPlay, FaCheck, FaTimes, FaClock, FaEye, FaTimesCircle, FaTrash, FaBroom, FaDownload, FaTerminal, FaInfoCircle, FaExclamationTriangle, FaBug } from 'react-icons/fa';
+import { FaPlay, FaCheck, FaTimes, FaClock, FaEye, FaTimesCircle, FaTrash, FaBroom, FaDownload, FaTerminal, FaInfoCircle, FaExclamationTriangle, FaBug, FaNetworkWired, FaChartLine, FaFilter, FaSearch, FaCog, FaExclamationCircle, FaCheckCircle, FaPause, FaPlayCircle } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import getApiBase from '../services/getApiBase';
 
 const API_BASE = getApiBase();
 
-// Enhanced logging system
+// Enhanced debugging system
 class TestResultsLogger {
   constructor() {
     this.logs = [];
-    this.maxLogs = 1000; // Keep last 1000 logs
+    this.maxLogs = 2000; // Increased to 2000 logs
     this.logLevels = {
       DEBUG: 0,
       INFO: 1,
@@ -18,6 +18,64 @@ class TestResultsLogger {
       ERROR: 3
     };
     this.currentLevel = this.logLevels.INFO;
+    
+    // Enhanced debugging features
+    this.networkRequests = [];
+    this.performanceMetrics = new Map();
+    this.errorTracker = {
+      errors: [],
+      errorCount: 0,
+      lastError: null
+    };
+    this.debugMode = false;
+    this.filters = {
+      level: null,
+      search: '',
+      timeRange: null,
+      component: null
+    };
+    
+    // Auto-save logs to localStorage
+    this.autoSave = true;
+    this.loadFromStorage();
+    
+    // Performance monitoring
+    this.startTime = Date.now();
+    this.sessionId = this.generateSessionId();
+  }
+
+  generateSessionId() {
+    return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  loadFromStorage() {
+    try {
+      const saved = localStorage.getItem('adminTestResults_logs');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        this.logs = parsed.logs || [];
+        this.networkRequests = parsed.networkRequests || [];
+        this.errorTracker = parsed.errorTracker || this.errorTracker;
+      }
+    } catch (error) {
+      console.warn('Failed to load logs from storage:', error);
+    }
+  }
+
+  saveToStorage() {
+    if (!this.autoSave) return;
+    
+    try {
+      const data = {
+        logs: this.logs.slice(-500), // Save last 500 logs
+        networkRequests: this.networkRequests.slice(-100),
+        errorTracker: this.errorTracker,
+        timestamp: Date.now()
+      };
+      localStorage.setItem('adminTestResults_logs', JSON.stringify(data));
+    } catch (error) {
+      console.warn('Failed to save logs to storage:', error);
+    }
   }
 
   log(level, message, data = null, context = {}) {
@@ -31,7 +89,11 @@ class TestResultsLogger {
       context: {
         ...context,
         userAgent: navigator.userAgent,
-        url: window.location.href
+        url: window.location.href,
+        sessionId: this.sessionId,
+        component: 'AdminTestResults',
+        memoryUsage: this.getMemoryUsage(),
+        networkStatus: navigator.onLine ? 'online' : 'offline'
       }
     };
 
@@ -42,12 +104,26 @@ class TestResultsLogger {
       this.logs = this.logs.slice(-this.maxLogs);
     }
 
-    // Console output with appropriate styling
+    // Enhanced console output with better formatting
+    this.outputToConsole(level, message, data, context);
+
+    // Track errors
+    if (level === 'ERROR') {
+      this.trackError(logEntry);
+    }
+
+    // Auto-save
+    this.saveToStorage();
+
+    return logEntry;
+  }
+
+  outputToConsole(level, message, data, context) {
     const levelColors = {
-      DEBUG: 'color: #6B7280',
-      INFO: 'color: #3B82F6',
-      WARN: 'color: #F59E0B',
-      ERROR: 'color: #EF4444'
+      DEBUG: 'color: #6B7280; font-weight: bold;',
+      INFO: 'color: #3B82F6; font-weight: bold;',
+      WARN: 'color: #F59E0B; font-weight: bold;',
+      ERROR: 'color: #EF4444; font-weight: bold;'
     };
 
     const levelIcons = {
@@ -57,14 +133,141 @@ class TestResultsLogger {
       ERROR: '❌'
     };
 
-    console.log(
-      `%c${levelIcons[level]} [AdminTestResults] ${message}`,
-      levelColors[level],
-      data || '',
-      context
+    const timestamp = new Date().toLocaleTimeString();
+    
+    console.groupCollapsed(
+      `%c${levelIcons[level]} [${timestamp}] ${level} - ${message}`,
+      levelColors[level]
     );
+    
+    if (data) {
+      console.log('Data:', data);
+    }
+    
+    if (Object.keys(context).length > 0) {
+      console.log('Context:', context);
+    }
+    
+    console.groupEnd();
+  }
 
-    return logEntry;
+  trackError(logEntry) {
+    this.errorTracker.errors.push(logEntry);
+    this.errorTracker.errorCount++;
+    this.errorTracker.lastError = logEntry;
+    
+    // Keep only last 50 errors
+    if (this.errorTracker.errors.length > 50) {
+      this.errorTracker.errors = this.errorTracker.errors.slice(-50);
+    }
+  }
+
+  trackNetworkRequest(url, method, startTime, endTime, status, responseSize) {
+    const request = {
+      id: Date.now() + Math.random(),
+      url,
+      method,
+      startTime,
+      endTime,
+      duration: endTime - startTime,
+      status,
+      responseSize,
+      timestamp: new Date().toISOString()
+    };
+    
+    this.networkRequests.push(request);
+    
+    // Keep only last 100 requests
+    if (this.networkRequests.length > 100) {
+      this.networkRequests = this.networkRequests.slice(-100);
+    }
+    
+    this.info('Network request completed', request);
+  }
+
+  getMemoryUsage() {
+    if (performance.memory) {
+      return {
+        used: Math.round(performance.memory.usedJSHeapSize / 1024 / 1024),
+        total: Math.round(performance.memory.totalJSHeapSize / 1024 / 1024),
+        limit: Math.round(performance.memory.jsHeapSizeLimit / 1024 / 1024)
+      };
+    }
+    return null;
+  }
+
+  getPerformanceMetrics() {
+    const metrics = {};
+    this.performanceMetrics.forEach((value, key) => {
+      metrics[key] = value;
+    });
+    return metrics;
+  }
+
+  getFilteredLogs(filters = {}) {
+    let filtered = this.logs;
+    
+    if (filters.level) {
+      filtered = filtered.filter(log => log.level === filters.level);
+    }
+    
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      filtered = filtered.filter(log => 
+        log.message.toLowerCase().includes(searchLower) ||
+        (log.data && JSON.stringify(log.data).toLowerCase().includes(searchLower))
+      );
+    }
+    
+    if (filters.timeRange) {
+      const { start, end } = filters.timeRange;
+      filtered = filtered.filter(log => {
+        const logTime = new Date(log.timestamp);
+        return logTime >= start && logTime <= end;
+      });
+    }
+    
+    return filtered;
+  }
+
+  getErrorSummary() {
+    const errors = this.errorTracker.errors;
+    const summary = {
+      total: errors.length,
+      byLevel: {},
+      byMessage: {},
+      recent: errors.slice(-10)
+    };
+    
+    errors.forEach(error => {
+      summary.byLevel[error.level] = (summary.byLevel[error.level] || 0) + 1;
+      summary.byMessage[error.message] = (summary.byMessage[error.message] || 0) + 1;
+    });
+    
+    return summary;
+  }
+
+  getNetworkSummary() {
+    const requests = this.networkRequests;
+    const summary = {
+      total: requests.length,
+      byStatus: {},
+      averageDuration: 0,
+      totalSize: 0,
+      recent: requests.slice(-10)
+    };
+    
+    if (requests.length > 0) {
+      const totalDuration = requests.reduce((sum, req) => sum + req.duration, 0);
+      summary.averageDuration = totalDuration / requests.length;
+      summary.totalSize = requests.reduce((sum, req) => sum + (req.responseSize || 0), 0);
+      
+      requests.forEach(req => {
+        summary.byStatus[req.status] = (summary.byStatus[req.status] || 0) + 1;
+      });
+    }
+    
+    return summary;
   }
 
   debug(message, data = null, context = {}) {
@@ -90,7 +293,8 @@ class TestResultsLogger {
       const errorData = error ? {
         message: error.message,
         stack: error.stack,
-        name: error.name
+        name: error.name,
+        cause: error.cause
       } : null;
       return this.log('ERROR', message, errorData, context);
     }
@@ -109,14 +313,34 @@ class TestResultsLogger {
 
   clearLogs() {
     this.logs = [];
-    this.info('Logs cleared');
+    this.networkRequests = [];
+    this.errorTracker = {
+      errors: [],
+      errorCount: 0,
+      lastError: null
+    };
+    this.performanceMetrics.clear();
+    this.info('All logs and metrics cleared');
+    this.saveToStorage();
   }
 
   exportLogs() {
     const logData = {
       exportTime: new Date().toISOString(),
+      sessionId: this.sessionId,
       totalLogs: this.logs.length,
-      logs: this.logs
+      logs: this.logs,
+      networkRequests: this.networkRequests,
+      errorSummary: this.getErrorSummary(),
+      networkSummary: this.getNetworkSummary(),
+      performanceMetrics: this.getPerformanceMetrics(),
+      filters: this.filters,
+      systemInfo: {
+        userAgent: navigator.userAgent,
+        url: window.location.href,
+        memoryUsage: this.getMemoryUsage(),
+        sessionDuration: Date.now() - this.startTime
+      }
     };
     return JSON.stringify(logData, null, 2);
   }
@@ -124,6 +348,69 @@ class TestResultsLogger {
   setLogLevel(level) {
     this.currentLevel = this.logLevels[level] || this.logLevels.INFO;
     this.info(`Log level set to ${level}`);
+  }
+
+  setDebugMode(enabled) {
+    this.debugMode = enabled;
+    this.info(`Debug mode ${enabled ? 'enabled' : 'disabled'}`);
+  }
+
+  setFilters(filters) {
+    this.filters = { ...this.filters, ...filters };
+    this.info('Filters updated', filters);
+  }
+
+  // Performance tracking methods
+  startPerformanceTimer(name) {
+    this.performanceMetrics.set(name, {
+      startTime: performance.now(),
+      name
+    });
+    this.debug(`Performance timer started: ${name}`);
+  }
+
+  endPerformanceTimer(name) {
+    const timer = this.performanceMetrics.get(name);
+    if (timer) {
+      const duration = performance.now() - timer.startTime;
+      timer.duration = duration;
+      timer.endTime = performance.now();
+      this.info(`Performance timer completed: ${name}`, { duration: `${duration.toFixed(2)}ms` });
+      return duration;
+    }
+    return null;
+  }
+
+  // Network monitoring wrapper
+  async monitorNetworkRequest(url, options = {}) {
+    const startTime = performance.now();
+    this.startPerformanceTimer(`network_${url}`);
+    
+    try {
+      const response = await fetch(url, options);
+      const endTime = performance.now();
+      
+      // Get response size if possible
+      let responseSize = 0;
+      try {
+        const clone = response.clone();
+        const text = await clone.text();
+        responseSize = new Blob([text]).size;
+      } catch (e) {
+        // Response might not be cloneable
+      }
+      
+      this.endPerformanceTimer(`network_${url}`);
+      this.trackNetworkRequest(url, options.method || 'GET', startTime, endTime, response.status, responseSize);
+      
+      return response;
+    } catch (error) {
+      const endTime = performance.now();
+      this.endPerformanceTimer(`network_${url}`);
+      this.trackNetworkRequest(url, options.method || 'GET', startTime, endTime, 'ERROR', 0);
+      this.error(`Network request failed: ${url}`, error);
+      throw error;
+    }
   }
 }
 
@@ -140,6 +427,20 @@ const AdminTestResults = () => {
   const [showLogs, setShowLogs] = useState(false);
   const [logLevel, setLogLevel] = useState('INFO');
   
+  // Enhanced debugging state
+  const [debugMode, setDebugMode] = useState(false);
+  const [showDebugPanel, setShowDebugPanel] = useState(false);
+  const [logFilters, setLogFilters] = useState({
+    level: null,
+    search: '',
+    timeRange: null
+  });
+  const [performanceData, setPerformanceData] = useState({});
+  const [networkData, setNetworkData] = useState({});
+  const [errorSummary, setErrorSummary] = useState({});
+  const [autoRefresh, setAutoRefresh] = useState(false);
+  const [refreshInterval, setRefreshInterval] = useState(5000);
+  
   // Enhanced logging instance
   const logger = useRef(new TestResultsLogger());
   
@@ -149,13 +450,15 @@ const AdminTestResults = () => {
   const CACHE_DURATION = 5000; // 5 seconds cache
   const progressInterval = useRef(null);
   const performanceTimers = useRef(new Map());
+  const autoRefreshInterval = useRef(null);
 
   // Helper to get auth token
   const getToken = () => localStorage.getItem('token');
 
-  // Performance monitoring
+  // Enhanced performance monitoring
   const startTimer = (name) => {
     performanceTimers.current.set(name, performance.now());
+    logger.current.startPerformanceTimer(name);
     logger.current.debug(`Timer started: ${name}`);
   };
 
@@ -163,12 +466,52 @@ const AdminTestResults = () => {
     const startTime = performanceTimers.current.get(name);
     if (startTime) {
       const duration = performance.now() - startTime;
+      logger.current.endPerformanceTimer(name);
       logger.current.info(`Timer completed: ${name}`, { duration: `${duration.toFixed(2)}ms` });
       performanceTimers.current.delete(name);
       return duration;
     }
     return null;
   };
+
+  // Update debug data periodically
+  useEffect(() => {
+    const updateDebugData = () => {
+      setPerformanceData(logger.current.getPerformanceMetrics());
+      setNetworkData(logger.current.getNetworkSummary());
+      setErrorSummary(logger.current.getErrorSummary());
+    };
+
+    const interval = setInterval(updateDebugData, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Auto-refresh functionality
+  useEffect(() => {
+    if (autoRefresh && !loading) {
+      autoRefreshInterval.current = setInterval(() => {
+        logger.current.info('Auto-refresh triggered');
+        fetchTestRuns();
+      }, refreshInterval);
+    } else if (autoRefreshInterval.current) {
+      clearInterval(autoRefreshInterval.current);
+      autoRefreshInterval.current = null;
+    }
+
+    return () => {
+      if (autoRefreshInterval.current) {
+        clearInterval(autoRefreshInterval.current);
+      }
+    };
+  }, [autoRefresh, refreshInterval, loading]);
+
+  // Debug mode effect
+  useEffect(() => {
+    logger.current.setDebugMode(debugMode);
+    if (debugMode) {
+      logger.current.info('Debug mode enabled');
+    }
+  }, [debugMode]);
 
   // Get status icon and color
   const getStatusInfo = (status) => {
@@ -326,31 +669,59 @@ const AdminTestResults = () => {
 
   // Fetch all test runs
   const fetchTestRuns = async () => {
-    if (authLoading || !user) {
-      logger.current.warn('Fetch test runs skipped', { authLoading, userAuthenticated: !!user });
-      return;
-    }
-    
     startTimer('fetchTestRuns');
     setLoading(true);
     setError(null);
-    const url = `${API_BASE}/api/admin/test-results`;
-    const options = { headers: { 'Authorization': `Bearer ${getToken()}` } };
     
-    logger.current.info('Fetching all test runs', { url, userId: user.id });
+    // Check cache first
+    const cacheKey = 'testRuns';
+    const cached = cache.current.get(cacheKey);
+    const now = Date.now();
+    
+    if (cached && (now - lastFetchTime.current) < CACHE_DURATION) {
+      logger.current.info('Using cached test runs data', { 
+        cacheAge: now - lastFetchTime.current,
+        cacheSize: JSON.stringify(cached).length 
+      });
+      setTestRuns(cached);
+      setLoading(false);
+      endTimer('fetchTestRuns');
+      return;
+    }
+
+    const url = `${API_BASE}/api/admin/test-results`;
+    const options = { 
+      method: 'GET', 
+      headers: { 
+        'Authorization': `Bearer ${getToken()}`,
+        'Content-Type': 'application/json'
+      } 
+    };
+    
+    logger.current.info('Fetching test runs from API', { url, method: 'GET' });
     
     try {
-      const data = await debouncedFetch(url, options);
-      if (data) {
-        setTestRuns(data);
-        logger.current.info('Test runs loaded successfully', { 
-          count: data.length,
-          runs: data.map(run => ({ id: run.id, status: run.status, date: run.date }))
-        });
+      const response = await logger.current.monitorNetworkRequest(url, options);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
+      
+      const data = await response.json();
+      logger.current.info('Test runs fetched successfully', { 
+        count: data.length,
+        responseSize: JSON.stringify(data).length 
+      });
+      
+      // Update cache
+      cache.current.set(cacheKey, data);
+      lastFetchTime.current = now;
+      
+      setTestRuns(data);
+      setError(null);
     } catch (err) {
-      setError(err.message);
-      logger.current.error('Error fetching test runs', err, { url, userId: user.id });
+      logger.current.error('Failed to fetch test runs', err, { url });
+      setError(`Failed to load test results: ${err.message}`);
     } finally {
       setLoading(false);
       endTimer('fetchTestRuns');
@@ -446,102 +817,83 @@ const AdminTestResults = () => {
 
   // Trigger a new test run
   const handleRunTests = async () => {
-    // Don't run if auth is still loading or user is not authenticated
-    if (authLoading || !user) {
-      logger.current.warn('Run tests skipped', { authLoading, userAuthenticated: !!user });
+    if (running) {
+      logger.current.warn('Test run already in progress, ignoring request');
       return;
     }
     
-    startTimer('runTests');
+    startTimer('runAllTests');
     setRunning(true);
     setError(null);
-    startProgressSimulation();
+    setProgress(0);
+    setCurrentTest('Initializing test suite...');
     
-    logger.current.info('Starting new test run', { userId: user.id, userEmail: user.email });
+    logger.current.info('Starting test run', { 
+      timestamp: new Date().toISOString(),
+      userAgent: navigator.userAgent,
+      memoryUsage: logger.current.getMemoryUsage()
+    });
+    
+    const url = `${API_BASE}/api/admin/test-results/run`;
+    const options = { 
+      method: 'POST', 
+      headers: { 
+        'Authorization': `Bearer ${getToken()}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        debugMode: debugMode,
+        includePerformance: true,
+        includeNetworkLogs: true
+      })
+    };
+    
+    logger.current.info('Initiating test run request', { url, method: 'POST' });
     
     try {
-      const res = await fetch(`${API_BASE}/api/admin/run-tests`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${getToken()}` }
-      });
+      // Start progress simulation
+      startProgressSimulation();
       
-      logger.current.info('Test run API response received', { 
-        status: res.status, 
-        ok: res.ok,
-        statusText: res.statusText 
-      });
+      const response = await logger.current.monitorNetworkRequest(url, options);
       
-      if (!res.ok) throw new Error('Failed to start test run');
-      
-      // Add the new running test to the top
-      const newRun = await res.json();
-      setTestRuns(runs => [newRun, ...runs]);
-      
-      logger.current.info('New test run created', { 
-        testRunId: newRun.id,
-        status: newRun.status,
-        summary: newRun.summary
-      });
-      
-      // Add a small delay to ensure backend has time to write to file
-      logger.current.info('Waiting for backend to initialize test run', { testRunId: newRun.id });
-      await new Promise(r => setTimeout(r, 1000));
-      
-      // Poll for completion with reduced frequency
-      let done = false;
-      let pollCount = 0;
-      const maxPolls = 30; // up to ~30s
-      
-      logger.current.info('Starting poll loop for test completion', { maxPolls });
-      
-      while (!done && pollCount < maxPolls) {
-        await new Promise(r => setTimeout(r, 2000)); // Increased from 1s to 2s
-        pollCount++;
-        
-        logger.current.debug('Polling test status', { pollCount, testRunId: newRun.id });
-        
-        try {
-          const pollData = await debouncedFetch(`${API_BASE}/api/admin/test-results/${newRun.id}`, {
-            headers: { 'Authorization': `Bearer ${getToken()}` }
-          });
-          
-          if (pollData && pollData.status !== 'running') {
-            setTestRuns(runs => runs.map(r => r.id === pollData.id ? pollData : r));
-            done = true;
-            logger.current.info('Test run completed', { 
-              testRunId: newRun.id,
-              finalStatus: pollData.status,
-              pollCount,
-              summary: pollData.summary
-            });
-          } else if (!pollData) {
-            logger.current.warn('Test run not found during polling', { 
-              testRunId: newRun.id,
-              pollCount 
-            });
-          }
-        } catch (err) {
-          logger.current.error('Error during polling', err, { 
-            testRunId: newRun.id,
-            pollCount 
-          });
-          // Continue polling even if there's an error
-        }
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       
-      if (!done) {
-        logger.current.warn('Test run polling timeout', { 
-          testRunId: newRun.id,
-          pollCount: maxPolls 
-        });
+      const data = await response.json();
+      logger.current.info('Test run initiated successfully', { 
+        testRunId: data.id,
+        estimatedDuration: data.estimatedDuration,
+        totalTests: data.totalTests 
+      });
+      
+      // Update progress with real data if available
+      if (data.progress) {
+        setProgress(data.progress);
+        setCurrentTest(data.currentTest || 'Running tests...');
       }
+      
+      // Clear cache to force refresh
+      cache.current.clear();
+      lastFetchTime.current = 0;
+      
+      // Fetch updated test runs
+      await fetchTestRuns();
+      
     } catch (err) {
-      setError(err.message);
-      logger.current.error('Error during test run', err, { userId: user.id });
+      logger.current.error('Failed to start test run', err, { url });
+      setError(`Failed to start tests: ${err.message}`);
+      stopProgressSimulation();
     } finally {
       setRunning(false);
-      stopProgressSimulation();
-      endTimer('runTests');
+      endTimer('runAllTests');
+      
+      // Stop progress simulation after a delay
+      setTimeout(() => {
+        stopProgressSimulation();
+        setProgress(0);
+        setCurrentTest('');
+      }, 2000);
     }
   };
 
@@ -552,24 +904,143 @@ const AdminTestResults = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `test-results-logs-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `admin-test-results-logs-${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
-    logger.current.info('Logs exported successfully');
+    logger.current.info('Logs exported successfully', { 
+      fileName: a.download,
+      logCount: logger.current.logs.length,
+      exportSize: logData.length 
+    });
   };
 
   // Clear logs
   const handleClearLogs = () => {
     logger.current.clearLogs();
+    setPerformanceData({});
+    setNetworkData({});
+    setErrorSummary({});
   };
 
   // Handle log level change
   const handleLogLevelChange = (newLevel) => {
     setLogLevel(newLevel);
     logger.current.setLogLevel(newLevel);
+  };
+
+  // Enhanced debugging helpers
+  const generateDebugReport = () => {
+    const report = {
+      timestamp: new Date().toISOString(),
+      sessionId: logger.current.sessionId,
+      systemInfo: {
+        userAgent: navigator.userAgent,
+        url: window.location.href,
+        memoryUsage: logger.current.getMemoryUsage(),
+        sessionDuration: Date.now() - logger.current.startTime,
+        online: navigator.onLine,
+        cacheSize: cache.current.size
+      },
+      performance: {
+        metrics: logger.current.getPerformanceMetrics(),
+        timers: Array.from(performanceTimers.current.keys())
+      },
+      network: logger.current.getNetworkSummary(),
+      errors: logger.current.getErrorSummary(),
+      logs: {
+        total: logger.current.logs.length,
+        byLevel: logger.current.logs.reduce((acc, log) => {
+          acc[log.level] = (acc[log.level] || 0) + 1;
+          return acc;
+        }, {}),
+        recent: logger.current.logs.slice(-20)
+      },
+      testRuns: {
+        total: testRuns.length,
+        byStatus: testRuns.reduce((acc, run) => {
+          acc[run.status] = (acc[run.status] || 0) + 1;
+          return acc;
+        }, {}),
+        recent: testRuns.slice(0, 5)
+      }
+    };
+    
+    return report;
+  };
+
+  const exportDebugReport = () => {
+    const report = generateDebugReport();
+    const reportData = JSON.stringify(report, null, 2);
+    const blob = new Blob([reportData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `debug-report-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    logger.current.info('Debug report exported', { 
+      fileName: a.download,
+      reportSize: reportData.length 
+    });
+  };
+
+  const clearCache = () => {
+    cache.current.clear();
+    lastFetchTime.current = 0;
+    logger.current.info('Cache cleared');
+  };
+
+  const testNetworkConnectivity = async () => {
+    logger.current.info('Testing network connectivity');
+    const testUrls = [
+      `${API_BASE}/api/admin/test-results`,
+      `${API_BASE}/api/health`,
+      'https://httpbin.org/get'
+    ];
+    
+    const results = [];
+    
+    for (const url of testUrls) {
+      try {
+        const startTime = performance.now();
+        const response = await fetch(url, { 
+          method: 'GET',
+          headers: url.includes(API_BASE) ? { 'Authorization': `Bearer ${getToken()}` } : {}
+        });
+        const endTime = performance.now();
+        
+        results.push({
+          url,
+          status: response.status,
+          duration: endTime - startTime,
+          success: response.ok
+        });
+        
+        logger.current.info(`Network test: ${url}`, { 
+          status: response.status,
+          duration: `${(endTime - startTime).toFixed(2)}ms`,
+          success: response.ok 
+        });
+      } catch (error) {
+        results.push({
+          url,
+          status: 'ERROR',
+          duration: 0,
+          success: false,
+          error: error.message
+        });
+        
+        logger.current.error(`Network test failed: ${url}`, error);
+      }
+    }
+    
+    return results;
   };
 
   useEffect(() => {
@@ -641,6 +1112,19 @@ const AdminTestResults = () => {
               <option value="ERROR">Error</option>
             </select>
             
+            {/* Debug Panel Toggle */}
+            <button
+              onClick={() => setShowDebugPanel(!showDebugPanel)}
+              className={`px-4 py-2 rounded-lg font-semibold shadow flex items-center gap-2 transition-all duration-200 ${
+                showDebugPanel 
+                  ? 'bg-purple-600 text-white hover:bg-purple-700' 
+                  : 'bg-gray-600 text-white hover:bg-gray-700'
+              }`}
+            >
+              <FaBug className="w-4 h-4" />
+              {showDebugPanel ? 'Hide Debug' : 'Show Debug'}
+            </button>
+            
             {/* Log Controls */}
             <button
               onClick={() => setShowLogs(!showLogs)}
@@ -707,8 +1191,32 @@ const AdminTestResults = () => {
                 </button>
               </div>
             </div>
+            
+            {/* Log Filters */}
+            <div className="mb-4 flex flex-wrap gap-3">
+              <select
+                value={logFilters.level || ''}
+                onChange={(e) => setLogFilters(prev => ({ ...prev, level: e.target.value || null }))}
+                className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700"
+              >
+                <option value="">All Levels</option>
+                <option value="DEBUG">Debug</option>
+                <option value="INFO">Info</option>
+                <option value="WARN">Warn</option>
+                <option value="ERROR">Error</option>
+              </select>
+              
+              <input
+                type="text"
+                placeholder="Search logs..."
+                value={logFilters.search}
+                onChange={(e) => setLogFilters(prev => ({ ...prev, search: e.target.value }))}
+                className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 flex-1 min-w-48"
+              />
+            </div>
+            
             <div className="bg-gray-900 text-green-400 rounded-lg p-4 max-h-96 overflow-y-auto font-mono text-xs">
-              {logger.current.logs.slice(-50).map((log) => (
+              {logger.current.getFilteredLogs(logFilters).slice(-50).map((log) => (
                 <div key={log.id} className="mb-1">
                   <span className="text-gray-500">[{log.timestamp}]</span>
                   <span className={`ml-2 ${
@@ -727,6 +1235,175 @@ const AdminTestResults = () => {
                   )}
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Enhanced Debug Panel */}
+        {showDebugPanel && (
+          <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <FaBug className="w-4 h-4" />
+                Debug Panel
+              </h3>
+              <div className="flex items-center gap-2">
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={debugMode}
+                    onChange={(e) => setDebugMode(e.target.checked)}
+                    className="rounded"
+                  />
+                  Debug Mode
+                </label>
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={autoRefresh}
+                    onChange={(e) => setAutoRefresh(e.target.checked)}
+                    className="rounded"
+                  />
+                  Auto-refresh
+                </label>
+                {autoRefresh && (
+                  <select
+                    value={refreshInterval}
+                    onChange={(e) => setRefreshInterval(Number(e.target.value))}
+                    className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-xs bg-white dark:bg-gray-700"
+                  >
+                    <option value={2000}>2s</option>
+                    <option value={5000}>5s</option>
+                    <option value={10000}>10s</option>
+                    <option value={30000}>30s</option>
+                  </select>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              {/* Performance Metrics */}
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2 flex items-center gap-2">
+                  <FaChartLine className="w-4 h-4" />
+                  Performance
+                </h4>
+                <div className="space-y-1 text-sm">
+                  <div>Timers: {Object.keys(performanceData).length}</div>
+                  <div>Memory: {performanceData.memoryUsage?.used || 'N/A'} MB</div>
+                  <div>Session: {Math.round((Date.now() - logger.current.startTime) / 1000)}s</div>
+                </div>
+              </div>
+
+              {/* Network Metrics */}
+              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                <h4 className="font-semibold text-green-900 dark:text-green-100 mb-2 flex items-center gap-2">
+                  <FaNetworkWired className="w-4 h-4" />
+                  Network
+                </h4>
+                <div className="space-y-1 text-sm">
+                  <div>Requests: {networkData.total || 0}</div>
+                  <div>Avg Duration: {networkData.averageDuration ? `${networkData.averageDuration.toFixed(0)}ms` : 'N/A'}</div>
+                  <div>Total Size: {networkData.totalSize ? `${Math.round(networkData.totalSize / 1024)}KB` : 'N/A'}</div>
+                </div>
+              </div>
+
+              {/* Error Summary */}
+              <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">
+                <h4 className="font-semibold text-red-900 dark:text-red-100 mb-2 flex items-center gap-2">
+                  <FaExclamationCircle className="w-4 h-4" />
+                  Errors
+                </h4>
+                <div className="space-y-1 text-sm">
+                  <div>Total: {errorSummary.total || 0}</div>
+                  <div>Recent: {errorSummary.recent?.length || 0}</div>
+                  <div>Last: {errorSummary.lastError ? new Date(errorSummary.lastError.timestamp).toLocaleTimeString() : 'N/A'}</div>
+                </div>
+              </div>
+
+              {/* System Info */}
+              <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
+                  <FaInfoCircle className="w-4 h-4" />
+                  System
+                </h4>
+                <div className="space-y-1 text-sm">
+                  <div>Online: {navigator.onLine ? 'Yes' : 'No'}</div>
+                  <div>Cache: {cache.current.size} items</div>
+                  <div>Logs: {logger.current.logs.length}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Recent Network Requests */}
+            <div className="mb-4">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Recent Network Requests</h4>
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 max-h-32 overflow-y-auto">
+                {networkData.recent?.map((req, index) => (
+                  <div key={index} className="text-xs mb-1 flex justify-between">
+                    <span className={`${req.status >= 400 ? 'text-red-600' : 'text-green-600'}`}>
+                      {req.method} {req.url.split('/').pop()}
+                    </span>
+                    <span className="text-gray-500">
+                      {req.duration.toFixed(0)}ms
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Recent Errors */}
+            <div>
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Recent Errors</h4>
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 max-h-32 overflow-y-auto">
+                {errorSummary.recent?.map((error, index) => (
+                  <div key={index} className="text-xs mb-1 text-red-600">
+                    {error.message}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Debug Actions */}
+            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Debug Actions</h4>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={testNetworkConnectivity}
+                  className="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 transition-colors flex items-center gap-1"
+                >
+                  <FaNetworkWired className="w-3 h-3" />
+                  Test Network
+                </button>
+                
+                <button
+                  onClick={clearCache}
+                  className="px-3 py-1 bg-yellow-600 text-white rounded text-xs hover:bg-yellow-700 transition-colors flex items-center gap-1"
+                >
+                  <FaBroom className="w-3 h-3" />
+                  Clear Cache
+                </button>
+                
+                <button
+                  onClick={exportDebugReport}
+                  className="px-3 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700 transition-colors flex items-center gap-1"
+                >
+                  <FaDownload className="w-3 h-3" />
+                  Export Report
+                </button>
+                
+                <button
+                  onClick={() => {
+                    logger.current.setLogLevel('DEBUG');
+                    setLogLevel('DEBUG');
+                    setDebugMode(true);
+                  }}
+                  className="px-3 py-1 bg-purple-600 text-white rounded text-xs hover:bg-purple-700 transition-colors flex items-center gap-1"
+                >
+                  <FaBug className="w-3 h-3" />
+                  Enable Debug
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -941,6 +1618,35 @@ const AdminTestResults = () => {
                 </pre>
               </div>
             </div>
+
+            {/* Debug Information (shown when debug mode is enabled) */}
+            {debugMode && (
+              <div className="mt-6">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Debug Information</label>
+                <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 border border-purple-200 dark:border-purple-700">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <h5 className="font-semibold text-purple-900 dark:text-purple-100 mb-2">Performance Context</h5>
+                      <div className="space-y-1">
+                        <div>Memory Usage: {performanceData.memoryUsage?.used || 'N/A'} MB</div>
+                        <div>Active Timers: {Object.keys(performanceData).length}</div>
+                        <div>Network Requests: {networkData.total || 0}</div>
+                        <div>Session Duration: {Math.round((Date.now() - logger.current.startTime) / 1000)}s</div>
+                      </div>
+                    </div>
+                    <div>
+                      <h5 className="font-semibold text-purple-900 dark:text-purple-100 mb-2">Error Context</h5>
+                      <div className="space-y-1">
+                        <div>Total Errors: {errorSummary.total || 0}</div>
+                        <div>Recent Errors: {errorSummary.recent?.length || 0}</div>
+                        <div>Cache Size: {cache.current.size} items</div>
+                        <div>Log Count: {logger.current.logs.length}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
