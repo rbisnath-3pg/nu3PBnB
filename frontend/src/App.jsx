@@ -1428,6 +1428,343 @@ function App() {
     fetchPropertyDiagnostics();
   }, []);
 
+  // Property View Testing Function
+  const runPropertyViewTests = async () => {
+    console.log('🧪 [PROPERTY TEST] Starting comprehensive property view tests...');
+    
+    const testResults = {
+      totalTests: 0,
+      passedTests: 0,
+      failedTests: 0,
+      errors: [],
+      logs: []
+    };
+
+    const log = (message) => {
+      console.log(`[PROPERTY TEST] ${message}`);
+      testResults.logs.push(message);
+    };
+
+    const error = (message) => {
+      console.error(`[PROPERTY TEST] ❌ ${message}`);
+      testResults.errors.push(message);
+      testResults.logs.push(`❌ ${message}`);
+    };
+
+    const success = (message) => {
+      console.log(`[PROPERTY TEST] ✅ ${message}`);
+      testResults.logs.push(`✅ ${message}`);
+      testResults.passedTests++;
+    };
+
+    try {
+      const apiBase = import.meta.env.VITE_API_URL || 'https://nu3pbnb-api.onrender.com';
+      
+      // Test 1: Public Listings Access
+      testResults.totalTests++;
+      log('Test 1: Testing public listings access (no auth required)...');
+      try {
+        const publicRes = await fetch(`${apiBase}/api/listings`);
+        if (!publicRes.ok) {
+          throw new Error(`HTTP ${publicRes.status}: ${publicRes.statusText}`);
+        }
+        const publicData = await publicRes.json();
+        const listings = publicData.listings || [];
+        
+        if (listings.length === 0) {
+          throw new Error('No listings returned');
+        }
+        
+        success(`Public listings access: Found ${listings.length} listings`);
+        log(`📊 Public listings data structure: ${JSON.stringify({
+          total: listings.length,
+          sample: listings[0] ? {
+            id: listings[0]._id,
+            title: listings[0].title,
+            price: listings[0].price,
+            location: listings[0].location
+          } : 'No sample available'
+        }, null, 2)}`);
+        
+      } catch (err) {
+        error(`Public listings access failed: ${err.message}`);
+        testResults.failedTests++;
+      }
+
+      // Test 2: Authenticated Listings Access
+      testResults.totalTests++;
+      log('Test 2: Testing authenticated listings access...');
+      try {
+        // Login first
+        const loginRes = await fetch(`${apiBase}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: 'Evelyn_Feeney68@gmail.com',
+            password: 'guest123'
+          })
+        });
+        
+        if (!loginRes.ok) {
+          throw new Error(`Login failed: HTTP ${loginRes.status}`);
+        }
+        
+        const loginData = await loginRes.json();
+        const token = loginData.token;
+        success('User login successful');
+        
+        // Test authenticated listings
+        const authRes = await fetch(`${apiBase}/api/listings`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (!authRes.ok) {
+          throw new Error(`HTTP ${authRes.status}: ${authRes.statusText}`);
+        }
+        
+        const authData = await authRes.json();
+        const authListings = authData.listings || [];
+        
+        if (authListings.length === 0) {
+          throw new Error('No authenticated listings returned');
+        }
+        
+        success(`Authenticated listings access: Found ${authListings.length} listings`);
+        log(`📊 Auth listings data structure: ${JSON.stringify({
+          total: authListings.length,
+          sample: authListings[0] ? {
+            id: authListings[0]._id,
+            title: authListings[0].title,
+            price: authListings[0].price,
+            location: authListings[0].location
+          } : 'No sample available'
+        }, null, 2)}`);
+        
+      } catch (err) {
+        error(`Authenticated listings access failed: ${err.message}`);
+        testResults.failedTests++;
+      }
+
+      // Test 3: Individual Listing Details
+      testResults.totalTests++;
+      log('Test 3: Testing individual listing details...');
+      try {
+        // Get a listing ID first
+        const listingsRes = await fetch(`${apiBase}/api/listings`);
+        if (!listingsRes.ok) {
+          throw new Error(`Failed to get listings: HTTP ${listingsRes.status}`);
+        }
+        
+        const listingsData = await listingsRes.json();
+        const listings = listingsData.listings || [];
+        
+        if (listings.length === 0) {
+          throw new Error('No listings available for detail test');
+        }
+        
+        const testListing = listings[0];
+        log(`Testing listing details for: ${testListing.title} (ID: ${testListing._id})`);
+        
+        const detailRes = await fetch(`${apiBase}/api/listings/${testListing._id}`);
+        if (!detailRes.ok) {
+          throw new Error(`HTTP ${detailRes.status}: ${detailRes.statusText}`);
+        }
+        
+        const detailData = await detailRes.json();
+        const listing = detailData.listing;
+        
+        if (!listing) {
+          throw new Error('No listing detail returned');
+        }
+        
+        success(`Listing detail retrieved: ${listing.title}`);
+        log(`📊 Listing detail structure: ${JSON.stringify({
+          id: listing._id,
+          title: listing.title,
+          price: listing.price,
+          location: listing.location,
+          description: listing.description ? listing.description.substring(0, 100) + '...' : 'No description',
+          images: listing.images ? listing.images.length : 0
+        }, null, 2)}`);
+        
+      } catch (err) {
+        error(`Individual listing details failed: ${err.message}`);
+        testResults.failedTests++;
+      }
+
+      // Test 4: Featured Listings
+      testResults.totalTests++;
+      log('Test 4: Testing featured listings...');
+      try {
+        const featuredRes = await fetch(`${apiBase}/api/listings/featured`);
+        if (!featuredRes.ok) {
+          throw new Error(`HTTP ${featuredRes.status}: ${featuredRes.statusText}`);
+        }
+        
+        const featuredData = await featuredRes.json();
+        const featuredListings = featuredData.listings || [];
+        
+        success(`Featured listings: Found ${featuredListings.length} featured listings`);
+        log(`📊 Featured listings structure: ${JSON.stringify({
+          total: featuredListings.length,
+          samples: featuredListings.slice(0, 3).map(l => ({
+            id: l._id,
+            title: l.title,
+            featured: l.featured
+          }))
+        }, null, 2)}`);
+        
+      } catch (err) {
+        error(`Featured listings failed: ${err.message}`);
+        testResults.failedTests++;
+      }
+
+      // Test 5: Search Functionality
+      testResults.totalTests++;
+      log('Test 5: Testing search functionality...');
+      try {
+        const searchRes = await fetch(`${apiBase}/api/listings/search?q=apartment`);
+        if (!searchRes.ok) {
+          throw new Error(`HTTP ${searchRes.status}: ${searchRes.statusText}`);
+        }
+        
+        const searchData = await searchRes.json();
+        const searchResults = searchData.listings || [];
+        
+        success(`Search functionality: Found ${searchResults.length} results for "apartment"`);
+        log(`📊 Search results structure: ${JSON.stringify({
+          query: 'apartment',
+          total: searchResults.length,
+          samples: searchResults.slice(0, 3).map(l => ({
+            id: l._id,
+            title: l.title,
+            relevance: l.relevance || 'N/A'
+          }))
+        }, null, 2)}`);
+        
+      } catch (err) {
+        error(`Search functionality failed: ${err.message}`);
+        testResults.failedTests++;
+      }
+
+      // Test 6: Pagination
+      testResults.totalTests++;
+      log('Test 6: Testing pagination...');
+      try {
+        const page2Res = await fetch(`${apiBase}/api/listings?page=2&limit=5`);
+        if (!page2Res.ok) {
+          throw new Error(`HTTP ${page2Res.status}: ${page2Res.statusText}`);
+        }
+        
+        const page2Data = await page2Res.json();
+        const page2Listings = page2Data.listings || [];
+        
+        success(`Pagination: Page 2 returned ${page2Listings.length} listings`);
+        log(`📊 Pagination structure: ${JSON.stringify({
+          page: 2,
+          limit: 5,
+          total: page2Listings.length,
+          hasNext: page2Data.hasNextPage || false,
+          hasPrev: page2Data.hasPrevPage || false
+        }, null, 2)}`);
+        
+      } catch (err) {
+        error(`Pagination failed: ${err.message}`);
+        testResults.failedTests++;
+      }
+
+      // Test 7: Frontend State Management
+      testResults.totalTests++;
+      log('Test 7: Testing frontend state management...');
+      try {
+        // Check if listings are loaded in frontend state
+        if (listings && listings.length > 0) {
+          success(`Frontend state: ${listings.length} listings loaded`);
+          log(`📊 Frontend state structure: ${JSON.stringify({
+            total: listings.length,
+            loading: loading,
+            error: error,
+            sample: listings[0] ? {
+              id: listings[0]._id,
+              title: listings[0].title
+            } : 'No sample'
+          }, null, 2)}`);
+        } else {
+          throw new Error('No listings in frontend state');
+        }
+        
+      } catch (err) {
+        error(`Frontend state management failed: ${err.message}`);
+        testResults.failedTests++;
+      }
+
+      // Test 8: Featured Listings State
+      testResults.totalTests++;
+      log('Test 8: Testing featured listings state...');
+      try {
+        if (featuredListings && featuredListings.length > 0) {
+          success(`Featured state: ${featuredListings.length} featured listings loaded`);
+          log(`📊 Featured state structure: ${JSON.stringify({
+            total: featuredListings.length,
+            currentIndex: featuredIndex,
+            sample: featuredListings[0] ? {
+              id: featuredListings[0]._id,
+              title: featuredListings[0].title
+            } : 'No sample'
+          }, null, 2)}`);
+        } else {
+          throw new Error('No featured listings in frontend state');
+        }
+        
+      } catch (err) {
+        error(`Featured listings state failed: ${err.message}`);
+        testResults.failedTests++;
+      }
+
+      // Final Summary
+      console.log('\n🎯 [PROPERTY TEST] FINAL SUMMARY:');
+      console.log(`📊 Total Tests: ${testResults.totalTests}`);
+      console.log(`✅ Passed: ${testResults.passedTests}`);
+      console.log(`❌ Failed: ${testResults.failedTests}`);
+      console.log(`📈 Success Rate: ${((testResults.passedTests / testResults.totalTests) * 100).toFixed(1)}%`);
+      
+      if (testResults.errors.length > 0) {
+        console.log('\n❌ [PROPERTY TEST] DETAILED ERRORS:');
+        testResults.errors.forEach((error, index) => {
+          console.log(`  ${index + 1}. ${error}`);
+        });
+      }
+      
+      console.log('\n📝 [PROPERTY TEST] DETAILED LOGS:');
+      testResults.logs.forEach((log, index) => {
+        console.log(`  ${index + 1}. ${log}`);
+      });
+
+      // Update property diagnostics state
+      setPropertyDiagnostics({
+        lastRun: new Date().toISOString(),
+        success: testResults.failedTests === 0,
+        errors: testResults.errors,
+        logs: testResults.logs
+      });
+
+      return testResults;
+      
+    } catch (err) {
+      console.error('❌ [PROPERTY TEST] Test suite failed:', err);
+      error(`Test suite failed: ${err.message}`);
+      
+      setPropertyDiagnostics({
+        lastRun: new Date().toISOString(),
+        success: false,
+        errors: [err.message],
+        logs: testResults.logs
+      });
+      
+      return testResults;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <AppHeader
@@ -1682,7 +2019,7 @@ function App() {
                     <div>
                       <strong>🔧 Troubleshooting Steps:</strong>
                       <ol className="list-decimal ml-4 mt-1 text-xs space-y-1">
-                        <li>Run booking diagnostics script in Render shell: <code>node update-booking-diagnostics.js</code></li>
+                        <li>Run booking diagnostics script in Render shell: node update-booking-diagnostics.js</li>
                         <li>Check MongoDB connection in production</li>
                         <li>Verify booking test dates (should be 10,000+ days in future)</li>
                         <li>Check if diagnostics are being saved to MongoDB</li>
@@ -1855,6 +2192,98 @@ URL: ${window.location.href}
                 </span>
               </div>
               
+              {/* Status Summary */}
+              <div className="mb-3">
+                {propertyDiagnostics.success ? (
+                  <div className="text-green-800">✅ All property view tests passed successfully!</div>
+                ) : (
+                  <div className="text-red-800">
+                    ❌ Property view test failed! 
+                    <span className="ml-2 text-sm opacity-75">
+                      {propertyDiagnostics.errors && propertyDiagnostics.errors.length > 0 
+                        ? `${propertyDiagnostics.errors.length} error(s) detected` 
+                        : 'No specific errors available'}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Detailed Error Information */}
+              {propertyDiagnostics.errors && propertyDiagnostics.errors.length > 0 && (
+                <div className="mb-3">
+                  <details className="bg-red-50 border border-red-200 rounded">
+                    <summary className="cursor-pointer font-semibold p-2 hover:bg-red-100 text-red-800">
+                      🔍 Detailed Errors ({propertyDiagnostics.errors.length})
+                    </summary>
+                    <div className="p-3 text-sm">
+                      {propertyDiagnostics.errors.map((error, index) => (
+                        <div key={index} className="mb-2 p-2 bg-red-100 rounded">
+                          <strong>Error #{index + 1}:</strong> {error}
+                        </div>
+                      ))}
+                      
+                      {/* Common Error Solutions */}
+                      <div className="mt-3 p-2 bg-yellow-100 rounded text-yellow-800">
+                        <strong>💡 Common Solutions:</strong>
+                        <ul className="mt-1 ml-4 list-disc text-xs">
+                          <li>API endpoint connectivity issues</li>
+                          <li>Authentication token problems</li>
+                          <li>Database connection failures</li>
+                          <li>Frontend state management issues</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </details>
+                </div>
+              )}
+
+              {/* Debug Information */}
+              <div className="mb-3">
+                <details className="bg-gray-50 border border-gray-200 rounded">
+                  <summary className="cursor-pointer font-semibold p-2 hover:bg-gray-100">
+                    🔧 Debug Information & Troubleshooting
+                  </summary>
+                  <div className="p-3 text-sm space-y-2">
+                    <div>
+                      <strong>Property Diagnostics Data:</strong>
+                      <pre className="bg-gray-100 rounded p-2 text-xs mt-1 overflow-auto max-h-32">
+                        {JSON.stringify(propertyDiagnostics, null, 2)}
+                      </pre>
+                    </div>
+                    
+                    <div>
+                      <strong>API Endpoint Status:</strong>
+                      <div className="text-xs mt-1">
+                        • Endpoint: <code>/api/diagnostics/property-tests</code><br/>
+                        • Expected: <code>{'{"lastRun": "timestamp", "success": true/false, "errors": [], "logs": []}'}</code><br/>
+                        • Current: <code>{propertyDiagnostics.lastRun ? 'Has data' : 'No data (null values)'}</code>
+                      </div>
+                    </div>
+
+                    <div>
+                      <strong>🔧 Troubleshooting Steps:</strong>
+                      <ol className="list-decimal ml-4 mt-1 text-xs space-y-1">
+                        <li>Run property view tests in browser console: <code>runPropertyViewTests()</code></li>
+                        <li>Check API endpoints connectivity</li>
+                        <li>Verify authentication flow</li>
+                        <li>Check frontend state management</li>
+                        <li>Review browser console for detailed logs</li>
+                      </ol>
+                    </div>
+
+                    <div>
+                      <strong>📊 Current State Analysis:</strong>
+                      <div className="text-xs mt-1">
+                        • <strong>lastRun:</strong> {propertyDiagnostics.lastRun ? '✅ Has timestamp' : '❌ Never run'}<br/>
+                        • <strong>success:</strong> {propertyDiagnostics.success !== null ? `✅ ${propertyDiagnostics.success}` : '❌ Unknown'}<br/>
+                        • <strong>errors:</strong> {propertyDiagnostics.errors && propertyDiagnostics.errors.length > 0 ? `❌ ${propertyDiagnostics.errors.length} errors` : '✅ No errors'}<br/>
+                        • <strong>logs:</strong> {propertyDiagnostics.logs && propertyDiagnostics.logs.length > 0 ? `✅ ${propertyDiagnostics.logs.length} log entries` : '❌ No logs'}
+                      </div>
+                    </div>
+                  </div>
+                </details>
+              </div>
+
               {/* Debug Logs */}
               {propertyDiagnostics.logs && propertyDiagnostics.logs.length > 0 && (
                 <details className="bg-blue-50 border border-blue-200 rounded">
@@ -1870,10 +2299,114 @@ URL: ${window.location.href}
             
             <div className="flex flex-col gap-2 ml-4">
               <button 
+                className="px-3 py-1 rounded bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold text-sm"
+                onClick={() => setShowDiagnostics(false)}
+              >
+                Dismiss
+              </button>
+              <button 
                 className="px-3 py-1 rounded bg-blue-500 hover:bg-blue-600 text-white font-bold text-sm"
                 onClick={() => window.location.reload()}
               >
                 Refresh
+              </button>
+              <button 
+                className="px-3 py-1 rounded bg-green-500 hover:bg-green-600 text-white font-bold text-sm"
+                onClick={(event) => {
+                  const diagnosticInfo = `
+Property View Diagnostics Report
+===============================
+
+Status: ${propertyDiagnostics.success ? '✅ PASSED' : '❌ FAILED'}
+Last Run: ${propertyDiagnostics.lastRun ? new Date(propertyDiagnostics.lastRun).toLocaleString() : 'Never'}
+
+${propertyDiagnostics.success ? '✅ All property view tests passed successfully!' : '❌ Property view test failed!'}
+
+${propertyDiagnostics.errors && propertyDiagnostics.errors.length > 0 ? `
+🔍 Detailed Errors:
+${propertyDiagnostics.errors.map((err, i) => `Error #${i + 1}: ${err}`).join('\n')}
+` : ''}
+
+🔧 Debug Information:
+API Endpoint: /api/diagnostics/property-tests
+Expected Format: {"lastRun": "timestamp", "success": true/false, "errors": [], "logs": []}
+Current Status: ${propertyDiagnostics.lastRun ? 'Has data' : 'No data (null values)'}
+
+📊 Current State Analysis:
+• lastRun: ${propertyDiagnostics.lastRun ? '✅ Has timestamp' : '❌ Never run'}
+• success: ${propertyDiagnostics.success !== null ? `✅ ${propertyDiagnostics.success}` : '❌ Unknown'}
+• errors: ${propertyDiagnostics.errors && propertyDiagnostics.errors.length > 0 ? `❌ ${propertyDiagnostics.errors.length} errors` : '✅ No errors'}
+• logs: ${propertyDiagnostics.logs && propertyDiagnostics.logs.length > 0 ? `✅ ${propertyDiagnostics.logs.length} log entries` : '❌ No logs'}
+
+🔧 Troubleshooting Steps:
+1. Run property view tests in browser console: runPropertyViewTests()
+2. Check API endpoints connectivity
+3. Verify authentication flow
+4. Check frontend state management
+5. Review browser console for detailed logs
+
+Raw Diagnostics Data:
+${JSON.stringify(propertyDiagnostics, null, 2)}
+
+${propertyDiagnostics.logs && propertyDiagnostics.logs.length > 0 ? `
+Debug Logs:
+${propertyDiagnostics.logs.map((log, i) => `${i + 1}: ${log}`).join('\n')}
+` : ''}
+
+Generated: ${new Date().toLocaleString()}
+URL: ${window.location.href}
+                  `.trim();
+                  
+                  navigator.clipboard.writeText(diagnosticInfo).then(() => {
+                    // Show a temporary success message
+                    const button = event.target;
+                    const originalText = button.textContent;
+                    button.textContent = 'Copied!';
+                    button.className = 'px-3 py-1 rounded bg-green-600 text-white font-bold text-sm';
+                    setTimeout(() => {
+                      button.textContent = originalText;
+                      button.className = 'px-3 py-1 rounded bg-green-500 hover:bg-green-600 text-white font-bold text-sm';
+                    }, 2000);
+                  }).catch(err => {
+                    console.error('Failed to copy to clipboard:', err);
+                    alert('Failed to copy to clipboard. Please select and copy the text manually.');
+                  });
+                }}
+              >
+                📋 Copy Debug Info
+              </button>
+              <button 
+                className="px-3 py-1 rounded bg-purple-500 hover:bg-purple-600 text-white font-bold text-sm"
+                onClick={async (event) => {
+                  const button = event.target;
+                  const originalText = button.textContent;
+                  
+                  try {
+                    button.textContent = 'Running...';
+                    button.className = 'px-3 py-1 rounded bg-purple-600 text-white font-bold text-sm';
+                    button.disabled = true;
+                    
+                    // Run the property view tests
+                    await runPropertyViewTests();
+                    
+                    button.textContent = 'Success!';
+                    button.className = 'px-3 py-1 rounded bg-green-600 text-white font-bold text-sm';
+                    setTimeout(() => {
+                      window.location.reload();
+                    }, 2000);
+                  } catch (error) {
+                    console.error('Failed to run property tests:', error);
+                    button.textContent = 'Failed';
+                    button.className = 'px-3 py-1 rounded bg-red-600 text-white font-bold text-sm';
+                    setTimeout(() => {
+                      button.textContent = originalText;
+                      button.className = 'px-3 py-1 rounded bg-purple-500 hover:bg-purple-600 text-white font-bold text-sm';
+                      button.disabled = false;
+                    }, 3000);
+                  }
+                }}
+              >
+                🚀 Run Property Tests
               </button>
             </div>
           </div>
