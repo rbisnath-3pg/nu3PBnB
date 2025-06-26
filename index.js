@@ -357,6 +357,40 @@ app.get('/', (req, res) => {
   res.send('nu3PBnB API is running');
 });
 
+// Public diagnostics endpoint (no auth required)
+app.get('/api/diagnostics', async (req, res) => {
+  try {
+    const Diagnostics = require('./models/Diagnostics');
+    const diag = await Diagnostics.findOne({ key: 'bookingTest' });
+    
+    if (diag) {
+      res.json({
+        bookingTest: {
+          lastRun: diag.lastRun,
+          success: diag.success,
+          errors: diag.errors || [],
+          logs: diag.logs || []
+        }
+      });
+    } else {
+      res.json({
+        bookingTest: {
+          lastRun: null,
+          success: null,
+          errors: [],
+          logs: []
+        }
+      });
+    }
+  } catch (error) {
+    console.error('❌ Public diagnostics retrieval failed:', error);
+    res.status(500).json({ 
+      message: 'Failed to retrieve diagnostics',
+      error: error.message 
+    });
+  }
+});
+
 // Database initialization endpoint
 app.post('/init-db', async (req, res) => {
   try {

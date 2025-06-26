@@ -63,6 +63,51 @@ router.get('/listings', auth, requireRole('admin'), async (req, res) => {
   res.json(listings);
 });
 
+// Admin: Dashboard endpoint
+router.get('/dashboard', auth, requireRole('admin'), async (req, res) => {
+  try {
+    // Get counts for dashboard
+    const userCount = await User.countDocuments();
+    const listingCount = await Listing.countDocuments();
+    const messageCount = await Message.countDocuments();
+    const unreadMessageCount = await Message.countDocuments({ read: false });
+    
+    // Get recent activity
+    const recentUsers = await User.find()
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .select('name email role createdAt');
+    
+    const recentListings = await Listing.find()
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .select('title location price createdAt');
+    
+    const recentMessages = await Message.find()
+      .populate('sender', 'name email')
+      .populate('recipient', 'name email')
+      .sort({ createdAt: -1 })
+      .limit(5);
+    
+    res.json({
+      stats: {
+        totalUsers: userCount,
+        totalListings: listingCount,
+        totalMessages: messageCount,
+        unreadMessages: unreadMessageCount
+      },
+      recentActivity: {
+        users: recentUsers,
+        listings: recentListings,
+        messages: recentMessages
+      }
+    });
+  } catch (err) {
+    console.error('Admin dashboard error:', err);
+    res.status(500).json({ message: 'Failed to load dashboard data' });
+  }
+});
+
 // Admin: Get all messages (paginated)
 router.get('/messages', auth, requireRole('admin'), async (req, res) => {
   try {
@@ -634,6 +679,71 @@ router.get('/database-status', async (req, res) => {
     console.error('❌ Database status check failed:', error);
     res.status(500).json({ 
       message: 'Database status check failed',
+      error: error.message 
+    });
+  }
+});
+
+// Admin: Get diagnostics information
+router.get('/diagnostics', auth, requireRole('admin'), async (req, res) => {
+  try {
+    const Diagnostics = require('../models/Diagnostics');
+    const diag = await Diagnostics.findOne({ key: 'bookingTest' });
+    
+    if (diag) {
+      res.json({
+        bookingTest: {
+          lastRun: diag.lastRun,
+          success: diag.success,
+          errors: diag.errors || [],
+          logs: diag.logs || []
+        }
+      });
+    } else {
+      res.json({
+        bookingTest: {
+          lastRun: null,
+          success: null,
+          errors: [],
+          logs: []
+        }
+      });
+    }
+  } catch (error) {
+    console.error('❌ Diagnostics retrieval failed:', error);
+    res.status(500).json({ 
+      message: 'Failed to retrieve diagnostics',
+      error: error.message 
+    });
+  }
+});
+
+// Admin: Trigger booking diagnostics manually
+router.post('/trigger-diagnostics', auth, requireRole('admin'), async (req, res) => {
+  try {
+    console.log('🔄 Manual booking diagnostics triggered by admin');
+    
+    // Import and run the booking diagnostics
+    const { updateBookingDiagnostics } = require('../update-booking-diagnostics');
+    await updateBookingDiagnostics();
+    
+    // Get the updated diagnostics
+    const Diagnostics = require('../models/Diagnostics');
+    const diag = await Diagnostics.findOne({ key: 'bookingTest' });
+    
+    res.json({
+      message: 'Booking diagnostics completed successfully',
+      diagnostics: {
+        lastRun: diag?.lastRun || new Date(),
+        success: diag?.success || false,
+        errors: diag?.errors || [],
+        logs: diag?.logs || []
+      }
+    });
+  } catch (error) {
+    console.error('❌ Manual diagnostics trigger failed:', error);
+    res.status(500).json({ 
+      message: 'Failed to trigger diagnostics',
       error: error.message 
     });
   }
