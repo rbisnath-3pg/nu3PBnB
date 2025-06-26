@@ -1,3 +1,3 @@
 export default function getApiBase() {
-  return import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  return import.meta.env.VITE_API_URL || 'https://nu3pbnb-api.onrender.com';
 } 

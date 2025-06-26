@@ -1,9 +1,11 @@
 // Automatic login testing service
 // Attempts to log in with a set of test credentials and returns a summary
 
-const API_BASE = import.meta && import.meta.env && import.meta.env.VITE_API_BASE
-  ? import.meta.env.VITE_API_BASE
-  : (typeof window !== 'undefined' ? window.API_BASE : 'https://nu3pbnb-api.onrender.com');
+const API_BASE = import.meta && import.meta.env && import.meta.env.VITE_API_URL
+  ? import.meta.env.VITE_API_URL
+  : (typeof window !== 'undefined' && window.API_BASE) 
+    ? window.API_BASE 
+    : 'https://nu3pbnb-api.onrender.com';
 
 const TEST_USERS = [
   { email: 'admin_robbie@google.com', password: 'admin123', role: 'admin' },
@@ -17,6 +19,12 @@ const TEST_USERS = [
 export default async function testLogins() {
   console.log('[LOGIN TEST] Starting automated login tests...');
   console.log('[LOGIN TEST] API Base URL:', API_BASE);
+  console.log('[LOGIN TEST] Environment check:', {
+    hasImportMeta: !!import.meta,
+    hasEnv: !!(import.meta && import.meta.env),
+    viteApiUrl: import.meta?.env?.VITE_API_URL,
+    windowApiBase: typeof window !== 'undefined' ? window.API_BASE : 'N/A'
+  });
   console.log('[LOGIN TEST] Test users:', TEST_USERS.map(u => ({ email: u.email, role: u.role })));
   
   const results = [];
@@ -32,14 +40,15 @@ export default async function testLogins() {
     
     try {
       const payload = { email: user.email, password: user.password };
+      const loginUrl = `${API_BASE}/api/auth/login`;
       console.log(`[LOGIN TEST] [${totalTests}/${TEST_USERS.length}] Sending login request:`, {
-        url: `${API_BASE}/api/auth/login`,
+        url: loginUrl,
         method: 'POST',
         payload: { ...payload, password: '[REDACTED]' }
       });
       
       const startTime = Date.now();
-      const response = await fetch(`${API_BASE}/api/auth/login`, {
+      const response = await fetch(loginUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -56,8 +65,16 @@ export default async function testLogins() {
       
       let data;
       try {
-        data = await response.json();
-        console.log(`[LOGIN TEST] [${totalTests}/${TEST_USERS.length}] Response data:`, data);
+        const responseText = await response.text();
+        console.log(`[LOGIN TEST] [${totalTests}/${TEST_USERS.length}] Raw response text:`, responseText);
+        
+        if (responseText.trim()) {
+          data = JSON.parse(responseText);
+          console.log(`[LOGIN TEST] [${totalTests}/${TEST_USERS.length}] Parsed response data:`, data);
+        } else {
+          console.warn(`[LOGIN TEST] [${totalTests}/${TEST_USERS.length}] Empty response text`);
+          data = {};
+        }
       } catch (parseError) {
         console.error(`[LOGIN TEST] [${totalTests}/${TEST_USERS.length}] JSON parse error:`, parseError);
         data = {};
