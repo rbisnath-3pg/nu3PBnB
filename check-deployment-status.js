@@ -38,7 +38,7 @@ async function testLoginFunctionality() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        email: 'admin_robbie@google.com',
+        email: 'admin@nu3pbnb.com',
         password: 'admin123'
       }),
       timeout: 10000
