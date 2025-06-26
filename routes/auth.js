@@ -462,11 +462,17 @@ router.post('/login', async (req, res) => {
     let { email, password } = req.body;
     const normalizedEmail = email && typeof email === 'string' ? email.toLowerCase() : email;
     
+    // Explicit logging for diagnosis
+    console.log('[LOGIN][DEBUG] Raw email:', email);
+    console.log('[LOGIN][DEBUG] Normalized email:', normalizedEmail);
+    console.log('[LOGIN][DEBUG] Password provided:', !!password);
+    
     // Log login attempt
     authLogger.logLoginAttempt(normalizedEmail, context);
     
     // Validate input
     if (!normalizedEmail || !password) {
+      console.warn('[LOGIN][WARN] Missing email or password');
       authLogger.logLoginFailure(normalizedEmail, 'Missing email or password', context);
       return res.status(401).json({ message: 'Invalid credentials' });
     }
@@ -474,12 +480,14 @@ router.post('/login', async (req, res) => {
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(normalizedEmail)) {
+      console.warn('[LOGIN][WARN] Invalid email format:', normalizedEmail);
       authLogger.logLoginFailure(normalizedEmail, 'Invalid email format', context);
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
     // Validate password length
     if (password.length < 1) {
+      console.warn('[LOGIN][WARN] Empty password');
       authLogger.logLoginFailure(normalizedEmail, 'Empty password', context);
       return res.status(401).json({ message: 'Invalid credentials' });
     }
@@ -489,9 +497,16 @@ router.post('/login', async (req, res) => {
     // Find user
     const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
+      console.warn('[LOGIN][WARN] No user found for email:', normalizedEmail);
       authLogger.logLoginFailure(normalizedEmail, 'User not found', context);
       return res.status(401).json({ message: 'Invalid credentials' });
     }
+    console.log('[LOGIN][DEBUG] User found:', {
+      _id: user._id,
+      email: user.email,
+      role: user.role,
+      name: user.name
+    });
 
     authLogger.debug('User found, verifying password', { 
       userId: user._id, 
@@ -501,7 +516,9 @@ router.post('/login', async (req, res) => {
 
     // Verify password
     const isMatch = await bcrypt.compare(password, user.password);
+    console.log('[LOGIN][DEBUG] Password match result:', isMatch);
     if (!isMatch) {
+      console.warn('[LOGIN][WARN] Password did not match for user:', normalizedEmail);
       authLogger.logLoginFailure(normalizedEmail, 'Invalid password', context);
       return res.status(401).json({ message: 'Invalid credentials' });
     }
@@ -510,6 +527,7 @@ router.post('/login', async (req, res) => {
       userId: user._id,
       email: authLogger.maskEmail(normalizedEmail)
     }, context);
+    console.log('[LOGIN][DEBUG] Login successful for user:', normalizedEmail);
 
     // Generate JWT token
     const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: '1d' });
@@ -547,10 +565,11 @@ router.post('/login', async (req, res) => {
   } catch (err) {
     const responseTime = Date.now() - startTime;
     
+    console.error('[LOGIN][ERROR] Login error occurred:', err);
     authLogger.error('Login error occurred', err, {
       ...context,
       responseTime: `${responseTime}ms`,
-      email: authLogger.maskEmail(normalizedEmail)
+      email: authLogger.maskEmail(email)
     });
 
     // Log security event for unexpected errors
