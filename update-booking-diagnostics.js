@@ -61,15 +61,35 @@ async function updateBookingDiagnostics() {
     }
     
     const testListing = listings[19];
-    logs.push(`✅ [BookingTest] Found ${listings.length} listings, using: ${testListing.title}`);
+    logs.push(`✅ [BookingTest] Found ${listings.length} listings, using: ${testListing.title} (${testListing._id})`);
+    logs.push(`[BookingTest] Full listing object: ${JSON.stringify(testListing)}`);
 
-    logs.push('🧪 [BookingTest] Creating booking...');
+    // Log the booking dates
     const startDate = new Date();
     startDate.setDate(startDate.getDate() + 20000); // 20000 days from now
     
     const endDate = new Date(startDate); // Create new date object from startDate
     endDate.setDate(endDate.getDate() + 3); // 3 days after start date
     
+    logs.push(`[BookingTest] Using startDate: ${startDate.toISOString()}, endDate: ${endDate.toISOString()}`);
+
+    // Try to fetch existing bookings for this listing and date range (if endpoint exists)
+    try {
+      const availRes = await fetch(`${API_BASE}/api/listings/${testListing._id}/availability`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (availRes.ok) {
+        const availData = await availRes.json();
+        logs.push(`[BookingTest] Existing bookings for this listing:`);
+        logs.push(JSON.stringify(availData.bookings || [], null, 2));
+      } else {
+        logs.push(`[BookingTest] Could not fetch existing bookings: ${availRes.status}`);
+      }
+    } catch (err) {
+      logs.push(`[BookingTest] Error fetching existing bookings: ${err.message}`);
+    }
+
+    logs.push('🧪 [BookingTest] Creating booking...');
     const bookingData = {
       listingId: testListing._id,
       startDate: startDate.toISOString(),
@@ -88,8 +108,9 @@ async function updateBookingDiagnostics() {
     });
     
     if (!bookingRes.ok) {
-      const err = await bookingRes.json().catch(() => ({}));
-      throw new Error(`[BookingTest] Booking creation failed: ${bookingRes.status} - ${err.message || bookingRes.statusText}`);
+      const errBody = await bookingRes.text();
+      logs.push(`[BookingTest] Booking creation failed. Response body: ${errBody}`);
+      throw new Error(`[BookingTest] Booking creation failed: ${bookingRes.status} - ${errBody}`);
     }
     
     const bookingResult = await bookingRes.json();
@@ -272,11 +293,11 @@ async function updatePropertyViewDiagnostics() {
     
     const listingDetail = await listingDetailRes.json();
     
-    if (!listingDetail.listing) {
+    if (!listingDetail._id || !listingDetail.title) {
       throw new Error('[PropertyTest] No listing detail returned');
     }
     
-    logs.push(`✅ [PropertyTest] Listing detail retrieved: ${listingDetail.listing.title}`);
+    logs.push(`✅ [PropertyTest] Listing detail retrieved: ${listingDetail.title}`);
     
     // Test 4: Featured listings
     logs.push('🧪 [PropertyTest] Testing featured listings...');
@@ -295,7 +316,7 @@ async function updatePropertyViewDiagnostics() {
     
     // Test 5: Search functionality
     logs.push('🧪 [PropertyTest] Testing search functionality...');
-    const searchRes = await fetch(`${API_BASE}/api/listings/search?q=apartment`, { 
+    const searchRes = await fetch(`${API_BASE}/api/listings/search/advanced?query=apartment`, { 
       headers: { Authorization: `Bearer ${token}` } 
     });
     
@@ -304,7 +325,7 @@ async function updatePropertyViewDiagnostics() {
     }
     
     const searchData = await searchRes.json();
-    const searchResults = searchData.listings || [];
+    const searchResults = searchData.data || [];
     
     logs.push(`✅ [PropertyTest] Search returned ${searchResults.length} results`);
     
