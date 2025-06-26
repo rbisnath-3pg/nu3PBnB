@@ -445,59 +445,66 @@ function App() {
     const email = formData.get('email');
     const password = formData.get('password');
 
-    // Log the login attempt (mask password)
-    frontendAuthLogger.logLoginAttempt(email);
-    frontendAuthLogger.debug('Form data lengths', { emailLength: email?.length, passwordLength: password?.length });
-    frontendAuthLogger.logFormValidation('email', email, !!email);
-    frontendAuthLogger.logFormValidation('password', password, !!password);
+    // Diagnostic: Form submission
+    console.log('%c[LOGIN] Form submitted', 'color: #3B82F6; font-weight: bold;', { email, password: password ? '***' : '' });
+    if (!email || !password) {
+      console.warn('%c[LOGIN] Missing email or password', 'color: #F59E0B; font-weight: bold;', { email, password });
+    }
 
     try {
       const payload = { email, password };
-      frontendAuthLogger.debug('Prepared login payload', { ...payload, password: password ? '***' : '' });
       const payloadString = JSON.stringify(payload);
-      frontendAuthLogger.debug('Payload stringified', { length: payloadString.length });
+      console.log('%c[LOGIN] Payload constructed', 'color: #6366F1; font-weight: bold;', { payload: { ...payload, password: password ? '***' : '' }, payloadString });
 
       const url = `${API_BASE}/api/auth/login`;
       const networkStart = Date.now();
-      frontendAuthLogger.logNetworkRequest(url, 'POST');
+      console.log('%c[LOGIN] Sending network request', 'color: #0EA5E9; font-weight: bold;', { url, method: 'POST' });
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: payloadString,
       });
       const networkTime = Date.now() - networkStart;
-      frontendAuthLogger.logNetworkResponse(url, response.status, networkTime);
+      console.log('%c[LOGIN] Network response received', 'color: #0EA5E9; font-weight: bold;', { status: response.status, networkTime: `${networkTime}ms` });
 
       let data;
       try {
         data = await response.json();
-        frontendAuthLogger.debug('Parsed response JSON', data);
+        console.log('%c[LOGIN] Response JSON parsed', 'color: #22C55E; font-weight: bold;', data);
       } catch (parseErr) {
-        frontendAuthLogger.error('Error parsing response JSON', parseErr);
+        console.error('%c[LOGIN] Error parsing response JSON', 'color: #EF4444; font-weight: bold;', parseErr);
         data = {};
       }
 
       if (response.ok) {
         closeNotification();
-        frontendAuthLogger.logLocalStorageOperation('set', 'token', '***');
         localStorage.setItem('token', data.token);
         login(data.user, data.token);
         setShowSignIn(false);
         setShowSuccessMessage(true);
         setTimeout(() => setShowSuccessMessage(false), 3000);
         if (data.user && data.token) {
-          frontendAuthLogger.logLoginSuccess(data.user);
+          console.log('%c[LOGIN] Login successful', 'color: #22C55E; font-weight: bold;', { user: data.user });
           analyticsService.track('user_login', { method: 'email' });
+        } else {
+          console.warn('%c[LOGIN] Login response missing user or token', 'color: #F59E0B; font-weight: bold;', data);
         }
       } else {
-        frontendAuthLogger.logLoginFailure(email, data.message || 'Invalid credentials');
+        console.warn('%c[LOGIN] Login failed', 'color: #F59E0B; font-weight: bold;', { status: response.status, message: data.message });
         showNotification('Login Failed', data.message || 'Invalid credentials', 'error');
       }
+      // Diagnostic: User state after login attempt
+      setTimeout(() => {
+        console.log('%c[LOGIN] User state after attempt', 'color: #6366F1; font-weight: bold;', { user });
+      }, 100);
     } catch (error) {
-      frontendAuthLogger.logNetworkError(`${API_BASE}/api/auth/login`, error);
-      frontendAuthLogger.error('Login error', error);
+      console.error('%c[LOGIN] Network or unexpected error', 'color: #EF4444; font-weight: bold;', error);
       showNotification('Login Error', 'Network error. Please try again.', 'error');
     }
+    // Diagnostic: End of login attempt
+    setTimeout(() => {
+      console.log('%c[LOGIN] Login attempt complete', 'color: #3B82F6; font-weight: bold;');
+    }, 200);
   }
 
   /**
