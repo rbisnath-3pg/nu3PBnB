@@ -32,6 +32,8 @@ const HomePage = ({
   listings,
   featuredListings,
   showListingDetail,
+  selectedListing,
+  setSelectedListing,
   
   // Translation and internationalization
   t,
@@ -41,7 +43,6 @@ const HomePage = ({
   handleShareListing,
   handleAddToWishlist,
   handleBookNow,
-  setSelectedListing,
   setSelectedStartDate,
   setSelectedEndDate,
   setShowListingDetail,
