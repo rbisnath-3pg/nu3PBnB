@@ -36,10 +36,10 @@
   "devDependencies": {
     "@babel/core": "^7.27.4",
     "@babel/plugin-transform-modules-commonjs": "^7.27.1",
+    "@babel/plugin-transform-runtime": "^7.27.1",
     "@babel/preset-env": "^7.27.2",
     "@babel/preset-react": "^7.27.1",
     "@babel/runtime": "^7.27.1",
-    "@babel/plugin-transform-runtime": "^7.27.1",
     "@eslint/js": "^9.25.0",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
