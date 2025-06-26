@@ -2,6 +2,10 @@
   "name": "frontend",
   "private": true,
   "version": "0.0.0",
+  "description": "nu3PBnB Frontend - React-based property booking interface",
+  "author": "Robbie Bisnath <robbie.bisnath@protonmail.com>",
+  "license": "MIT",
+  "copyright": "Copyright (c) 2025 Robbie Bisnath. All rights reserved.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

@@ -1,4 +1,6 @@
-# nu3PBnB - Next-Generation Vacation Rental Platform
+# nu3PBnB
+
+**Copyright (c) 2025 Robbie Bisnath (robbie.bisnath@protonmail.com). All rights reserved.**
 
 A modern, full-stack vacation rental platform built with React 19, Node.js, and MongoDB. Features include real-time analytics, multi-language support, comprehensive admin tools, automated testing, content management, and advanced user experience features.
 

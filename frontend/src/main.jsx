@@ -1,3 +1,11 @@
+/**
+ * nu3PBnB Frontend Main Entry Point
+ * Copyright (c) 2025 Robbie Bisnath (robbie.bisnath@protonmail.com). All rights reserved.
+ * 
+ * React application entry point for the nu3PBnB property booking platform.
+ * Initializes the app with routing, authentication, and analytics.
+ */
+
 console.log('main.jsx loaded')
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
