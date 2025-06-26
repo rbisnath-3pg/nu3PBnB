@@ -1463,6 +1463,7 @@ function App() {
           handleShareListing={handleShareListing}
           handleAddToWishlist={handleAddToWishlist}
           handleRemoveFromWishlist={handleRemoveFromWishlist}
+          handleBookNow={handleBookNow}
           handleUnifiedPaymentSuccess={handleUnifiedPaymentSuccess}
           handlePaymentCancel={handlePaymentCancel}
         />

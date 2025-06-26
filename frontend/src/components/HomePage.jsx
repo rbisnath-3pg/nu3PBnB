@@ -39,7 +39,10 @@ const HomePage = ({
   setFeaturedIndex,
   handleShareListing,
   handleAddToWishlist,
+  handleBookNow,
   setSelectedListing,
+  setSelectedStartDate,
+  setSelectedEndDate,
   setShowListingDetail,
   setShowOnboarding,
   setShowSignIn,
@@ -62,6 +65,11 @@ const HomePage = ({
   // Payment handlers
   handleUnifiedPaymentSuccess,
   handlePaymentCancel,
+  
+  // Payment modal state
+  setCurrentBooking,
+  setPaymentType,
+  setShowPaymentModal,
 }) => {
   console.log('[HomePage] listings:', listings, 'user:', user, 'loading:', loading, 'error:', error, 'showSearchResults:', showSearchResults);
   console.log('[HomePage] featuredProperty:', featuredProperty, 'featuredListings:', featuredListings, 'featuredIndex:', featuredIndex);
@@ -361,6 +369,72 @@ const HomePage = ({
       </div>
     );
   }
+
+  // Booking form state
+  const [bookingForm, setBookingForm] = useState({
+    startDate: '',
+    endDate: '',
+    guests: 1
+  });
+  const [bookingFormError, setBookingFormError] = useState('');
+
+  // Booking form handlers
+  const handleBookingFormChange = (field, value) => {
+    setBookingForm(prev => ({ ...prev, [field]: value }));
+    setBookingFormError(''); // Clear error when user makes changes
+  };
+
+  const handleRequestBooking = async (e) => {
+    e.preventDefault();
+    
+    if (!user) {
+      setShowSignIn(true);
+      return;
+    }
+
+    // Validate form
+    if (!bookingForm.startDate || !bookingForm.endDate) {
+      setBookingFormError('Please select check-in and check-out dates');
+      return;
+    }
+
+    const startDate = new Date(bookingForm.startDate);
+    const endDate = new Date(bookingForm.endDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (startDate < today) {
+      setBookingFormError('Check-in date cannot be in the past');
+      return;
+    }
+
+    if (endDate <= startDate) {
+      setBookingFormError('Check-out date must be after check-in date');
+      return;
+    }
+
+    // Calculate booking details
+    const nights = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+    const totalPrice = nights * selectedListing.price;
+
+    // Create booking object
+    const booking = {
+      listingId: selectedListing._id,
+      startDate: startDate,
+      endDate: endDate,
+      guests: bookingForm.guests,
+      totalPrice,
+      message: 'Booking request'
+    };
+
+    // Set the booking data for the payment modal
+    setCurrentBooking(booking);
+    setPaymentType('new'); // Set payment type for new booking
+    setShowPaymentModal(true);
+    
+    // Close the listing detail modal
+    setShowListingDetail(false);
+  };
 
   return (
     <>
@@ -1510,6 +1584,140 @@ const HomePage = ({
           listing={selectedPayment.booking?.listing}
           user={selectedPayment.user}
         />
+      )}
+
+      {/* Property Detail Modal/Page */}
+      {showListingDetail && selectedListing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30 backdrop-blur-sm">
+          <div className="relative bg-gray-50 rounded-3xl shadow-2xl max-w-5xl w-full mx-4 my-12 flex flex-col md:flex-row overflow-hidden">
+            {/* Left: Image and Details */}
+            <div className="md:w-2/3 w-full p-8 flex flex-col">
+              {/* Close Button */}
+              <button
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl font-bold z-10"
+                onClick={() => setShowListingDetail(false)}
+                aria-label="Close"
+              >
+                &times;
+              </button>
+              {/* Main Image */}
+              <img
+                src={selectedListing.photos && selectedListing.photos.length > 0 ? selectedListing.photos[0] : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=400&fit=crop'}
+                alt={selectedListing.title}
+                className="w-full h-64 object-cover rounded-2xl shadow mb-6"
+              />
+              {/* Title, Location, Rating */}
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">{selectedListing.title}</h2>
+              <div className="flex items-center text-gray-600 mb-2">
+                <FaMapMarkerAlt className="mr-1" /> {selectedListing.location}
+                {selectedListing.averageRating && (
+                  <span className="ml-4 flex items-center text-yellow-500 font-semibold">
+                    <FaStar className="mr-1" />
+                    {selectedListing.averageRating.toFixed(1)}
+                    <span className="text-gray-500 font-normal ml-2">({selectedListing.reviewCount || 0} reviews)</span>
+                  </span>
+                )}
+              </div>
+              {/* Features */}
+              <div className="flex space-x-6 text-gray-700 mb-6">
+                <span>🛏️ {selectedListing.bedrooms || 1} bedroom</span>
+                <span>🚿 {selectedListing.bathrooms || 1} bathroom</span>
+                <span>👥 Up to {selectedListing.maxGuests || 2} guests</span>
+              </div>
+              {/* About this place */}
+              <div className="bg-white rounded-2xl shadow p-6 mb-6">
+                <h3 className="font-semibold text-lg mb-2">About this place</h3>
+                <p className="text-gray-700 text-base">{selectedListing.description || 'No description provided.'}</p>
+              </div>
+              {/* What this place offers */}
+              {selectedListing.amenities && selectedListing.amenities.length > 0 && (
+                <div className="bg-white rounded-2xl shadow p-6 mb-6">
+                  <h3 className="font-semibold text-lg mb-2">What this place offers</h3>
+                  <ul className="grid grid-cols-2 gap-2 text-green-700 text-sm">
+                    {selectedListing.amenities.map((a, i) => (
+                      <li key={i} className="flex items-center"><span className="mr-2">•</span>{a}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {/* Hosted by */}
+              {selectedListing.host && (
+                <div className="bg-white rounded-2xl shadow p-6">
+                  <h3 className="font-semibold text-lg mb-2">Hosted by {selectedListing.host.name || 'Host'}</h3>
+                  <div className="flex items-center space-x-4">
+                    <img
+                      src={selectedListing.host.profilePicture || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(selectedListing.host.name || 'Host')}
+                      alt={selectedListing.host.name || 'Host'}
+                      className="w-12 h-12 rounded-full border object-cover"
+                    />
+                    <div>
+                      <div className="font-semibold text-gray-900">{selectedListing.host.name || 'Host'}</div>
+                      <div className="text-gray-500 text-sm">Member since {selectedListing.host.createdAt ? new Date(selectedListing.host.createdAt).toLocaleDateString() : 'N/A'}</div>
+                      {selectedListing.averageRating && (
+                        <div className="flex items-center text-yellow-500 text-sm mt-1">
+                          <FaStar className="mr-1" /> {selectedListing.averageRating.toFixed(1)} rating
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            {/* Right: Booking Card */}
+            <div className="md:w-1/3 w-full bg-white p-8 flex flex-col justify-start items-stretch border-l border-gray-100">
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-2xl font-bold text-gray-900">${selectedListing.price}</span>
+                  <span className="text-gray-500">/ night</span>
+                </div>
+                <form className="space-y-3" onSubmit={handleRequestBooking}>
+                  <div className="flex space-x-2">
+                    <input 
+                      type="date" 
+                      name="startDate"
+                      value={bookingForm.startDate}
+                      onChange={(e) => handleBookingFormChange('startDate', e.target.value)}
+                      className="flex-1 px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-green-400 text-gray-800 text-sm" 
+                      placeholder="Check-in" 
+                    />
+                    <input 
+                      type="date" 
+                      name="endDate"
+                      value={bookingForm.endDate}
+                      onChange={(e) => handleBookingFormChange('endDate', e.target.value)}
+                      className="flex-1 px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-green-400 text-gray-800 text-sm" 
+                      placeholder="Check-out" 
+                    />
+                  </div>
+                  <select 
+                    name="guests"
+                    value={bookingForm.guests}
+                    onChange={(e) => handleBookingFormChange('guests', parseInt(e.target.value))}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-green-400 text-gray-800 text-sm"
+                  >
+                    <option value={1}>1 guest</option>
+                    <option value={2}>2 guests</option>
+                    <option value={3}>3 guests</option>
+                    <option value={4}>4 guests</option>
+                  </select>
+                  {bookingFormError && (
+                    <div className="text-red-500 text-sm mt-2">{bookingFormError}</div>
+                  )}
+                  <button 
+                    type="submit" 
+                    className="w-full py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow transition-colors text-base mt-2"
+                  >
+                    Request to Book
+                  </button>
+                </form>
+              </div>
+              <div className="flex items-center space-x-4 mt-4">
+                <button className="text-gray-400 hover:text-gray-700" title="Share"><FaShare /></button>
+                <button className="text-gray-400 hover:text-gray-700" title="Add to Wishlist"><FaHeart /></button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

@@ -560,13 +560,13 @@ const HostDashboard = ({ fetchListings }) => {
                 <div className="text-gray-600 dark:text-gray-400 text-center py-8">No properties found. Click above to create one!</div>
               ) : (
                 <>
-                  <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {paginatedListings.map(listing => (
                       <li
                         key={listing._id}
-                        className={`bg-white dark:bg-gray-800 rounded-lg shadow p-6 flex flex-col justify-between border hover:shadow-lg transition-shadow ${listing._id === lastCreatedId ? 'border-4 border-green-500 ring-2 ring-green-300' : 'border-gray-200 dark:border-gray-700'}`}
+                        className={`bg-white rounded-2xl shadow-lg border border-gray-100 flex flex-col overflow-hidden hover:shadow-2xl transition-shadow ${listing._id === lastCreatedId ? 'border-4 border-green-500 ring-2 ring-green-300' : ''}`}
                       >
-                        <div className="w-full h-48 mb-4 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                        <div className="w-full h-48 mb-0 overflow-hidden bg-gray-100 flex items-center justify-center">
                           {listing.photos && listing.photos.length > 0 ? (
                             <img
                               src={listing.photos[0]}
@@ -578,38 +578,42 @@ const HostDashboard = ({ fetchListings }) => {
                             <span className="text-gray-400">No image</span>
                           )}
                         </div>
-                        <div>
-                          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{listing.title}</h3>
-                          <div className="text-gray-600 dark:text-gray-400 mb-1">{listing.city}, {listing.country}</div>
-                          <div className="text-gray-500 dark:text-gray-400 text-sm mb-2">
-                            Type: {listing.type} | Price: ${listing.price} | Max Guests: {listing.maxGuests}
+                        <div className="p-5 flex-1 flex flex-col">
+                          <h3 className="font-bold text-gray-900 text-base mb-1 line-clamp-2">{listing.title}</h3>
+                          <div className="text-gray-500 text-xs mb-1 flex items-center">
+                            <span className="mr-1">📍</span>{listing.city}, {listing.country}
                           </div>
-                          <div className="text-gray-700 dark:text-gray-300 text-sm mb-4 line-clamp-3">{listing.description}</div>
-                          <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center text-pink-600 dark:text-pink-400">
+                          <p className="text-gray-600 text-xs mb-2 line-clamp-2 flex-1">{listing.description}</p>
+                          <div className="flex items-center justify-between mt-auto pt-2">
+                            <span className="text-lg font-bold text-gray-900">${listing.price} <span className="text-xs font-normal text-gray-500">/ night</span></span>
+                            <div className="flex items-center text-xs text-gray-600">
+                              <span className="mr-1">⭐</span>{listing.averageRating ? listing.averageRating.toFixed(1) : '4.8'}
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between mt-4">
+                            <div className="flex items-center text-pink-600">
                               <FaHeart className="w-4 h-4 mr-1" />
                               <span className="text-sm font-medium">
                                 {favoritesCounts[listing._id] || 0} favorites
                               </span>
                             </div>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => {
+                                  navigate(`/host/listings/${listing._id}/edit`);
+                                }}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-semibold shadow"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteProperty(listing._id)}
+                                className="px-4 py-2 bg-white border border-red-500 text-red-600 font-semibold rounded-lg hover:bg-red-50 transition-colors text-xs shadow"
+                              >
+                                Delete
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex justify-end mt-4 gap-2">
-                          <button
-                            onClick={() => {
-                              console.log('[HostDashboard] Edit button clicked for listing:', listing._id);
-                              navigate(`/host/listings/${listing._id}/edit`);
-                            }}
-                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDeleteProperty(listing._id)}
-                            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
-                          >
-                            Delete
-                          </button>
                         </div>
                       </li>
                     ))}

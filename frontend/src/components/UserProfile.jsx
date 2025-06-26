@@ -257,16 +257,33 @@ const UserProfile = () => {
       
       {user?.role === 'host' && (
         <div>
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">My Listings</h3>
+          <h3 className="text-lg font-bold text-gray-900 mb-4">My Listings</h3>
           {listings.length === 0 ? (
             <div className="text-gray-500 text-center py-4">You have no listings yet.</div>
           ) : (
-            <div className="grid grid-cols-1 gap-4 max-h-60 overflow-y-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-h-96 overflow-y-auto">
               {listings.map(listing => (
-                <div key={listing._id} className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-1">{listing.title}</h4>
-                  <div className="text-gray-600 dark:text-gray-300 text-sm mb-1">{listing.city}, {listing.country}</div>
-                  <div className="text-gray-500 dark:text-gray-400 text-xs">Type: {listing.type} | Price: ${listing.price}</div>
+                <div key={listing._id} className="bg-white rounded-2xl shadow-lg border border-gray-100 flex flex-col overflow-hidden hover:shadow-2xl transition-shadow">
+                  {listing.photos && listing.photos.length > 0 && (
+                    <img
+                      src={listing.photos[0]}
+                      alt={listing.title}
+                      className="w-full h-40 object-cover"
+                    />
+                  )}
+                  <div className="p-5 flex-1 flex flex-col">
+                    <h4 className="font-bold text-gray-900 text-base mb-1 line-clamp-2">{listing.title}</h4>
+                    <div className="text-gray-500 text-xs mb-1 flex items-center">
+                      <span className="mr-1">📍</span>{listing.city}, {listing.country}
+                    </div>
+                    <p className="text-gray-600 text-xs mb-2 line-clamp-2 flex-1">{listing.description}</p>
+                    <div className="flex items-center justify-between mt-auto pt-2">
+                      <span className="text-lg font-bold text-gray-900">${listing.price} <span className="text-xs font-normal text-gray-500">/ night</span></span>
+                      <div className="flex items-center text-xs text-gray-600">
+                        <span className="mr-1">⭐</span>{listing.averageRating ? listing.averageRating.toFixed(1) : '4.8'}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>

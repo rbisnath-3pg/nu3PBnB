@@ -39,33 +39,27 @@ async function seedProductionDatabase() {
         role: 'admin'
       },
       {
-        email: 'davonte_runolfsdottir-russel@hotmail.com',
+        email: 'Raul50@gmail.com',
         password: 'host123',
-        name: 'Davonte Runolfsdottir-Russel',
+        name: 'Raul Host',
         role: 'host'
       },
       {
-        email: 'georgette_klocko@hotmail.com',
+        email: 'Ashtyn.Barrows99@gmail.com',
         password: 'host123',
-        name: 'Georgette Klocko',
+        name: 'Ashtyn Barrows',
         role: 'host'
       },
       {
-        email: 'josh15@hotmail.com',
-        password: 'host123',
-        name: 'Josh',
-        role: 'host'
-      },
-      {
-        email: 'patience_kutch78@hotmail.com',
+        email: 'Evelyn_Feeney68@gmail.com',
         password: 'guest123',
-        name: 'Patience Kutch',
+        name: 'Evelyn Feeney',
         role: 'guest'
       },
       {
-        email: 'rubie.maggio38@gmail.com',
+        email: 'Kristopher32@hotmail.com',
         password: 'guest123',
-        name: 'Rubie Maggio',
+        name: 'Kristopher Guest',
         role: 'guest'
       }
     ];
