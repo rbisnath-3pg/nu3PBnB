@@ -18,7 +18,6 @@ import UserProfile from './components/UserProfile'
 import PropertyCalendar from './components/PropertyCalendar'
 import { useAuth } from './contexts/AuthContext'
 import { useTranslation } from 'react-i18next'
-import LanguageSwitcher from './components/LanguageSwitcher'
 import Footer from './components/Footer'
 import analyticsService from './services/analytics'
 import HostDashboard from './components/HostDashboard'
@@ -85,7 +84,7 @@ function AppRoutes(props) {
   );
 }
 
-function AppHeader({ user, onLogin, onRegister, onLanguageChange, onLogout }) {
+function AppHeader({ user, onLogin, onRegister, onLogout }) {
   const [menuOpen, setMenuOpen] = React.useState(false);
   return (
     <header className="fixed top-0 left-0 w-full z-40 bg-black bg-opacity-60 backdrop-blur-md border-b border-black/10 flex items-center justify-between px-8 py-3 h-20">
@@ -129,12 +128,6 @@ function AppHeader({ user, onLogin, onRegister, onLanguageChange, onLogout }) {
               ) : (
                 <>
                   <button
-                    onClick={() => { setMenuOpen(false); onLanguageChange(); }}
-                    className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
-                  >
-                    Language
-                  </button>
-                  <button
                     onClick={() => { setMenuOpen(false); onLogout(); }}
                     className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
                   >
@@ -142,9 +135,6 @@ function AppHeader({ user, onLogin, onRegister, onLanguageChange, onLogout }) {
                   </button>
                 </>
               )}
-              <div className="px-4 py-2 border-t border-gray-200">
-                <LanguageSwitcher />
-              </div>
             </div>
           )}
         </div>
@@ -633,20 +623,48 @@ function App() {
    * Clears authentication state and redirects to home
    */
   const handleSignOut = () => {
-    localStorage.removeItem('token')
     logout()
+    setShowSignIn(false)
+    setShowSignUp(false)
+    setShowProfile(false)
     setShowAdminDashboard(false)
-    setShowAnalytics(false)
     setShowHostDashboard(false)
-    setShowSearchResults(false)
+    setShowAnalytics(false)
+    setShowMessages(false)
+    setShowMessaging(false)
+    setShowReviews(false)
+    setShowWishlist(false)
+    setShowOnboarding(false)
+    setShowPaymentModal(false)
+    setShowSuccessMessage(false)
+    setNotification({ show: false, title: '', message: '', type: 'info' })
+    setConfirmation({ show: false, title: '', message: '', onConfirm: null })
+    setCurrentBooking(null)
     setSelectedListing(null)
     setShowListingDetail(false)
-    setViewMode('list')
-    // Track logout event - only if user was authenticated
-    if (user) {
-      analyticsService.track('user_logout')
-    }
-    // Navigate to homepage
+    setShowSearchResults(false)
+    setSearchResults([])
+    setSearchQuery('')
+    setViewMode('grid')
+    setFeaturedIndex(0)
+    setCurrentImageIndex(0)
+    setImageLoading({})
+    setUserBookings([])
+    setUserPayments([])
+    setUserWishlist([])
+    setMessages([])
+    setNewMessage('')
+    setUnreadCount(0)
+    setReviews([])
+    setNewReview({ rating: 5, comment: '' })
+    setExistingBookings([])
+    setSelectedStartDate(null)
+    setSelectedEndDate(null)
+    setPaymentType('new')
+    setBookingsLoading(false)
+    setPaymentsLoading(false)
+    setWishlistLoading(false)
+    setLoginTestError(null)
     navigate('/')
   }
 
@@ -1771,7 +1789,6 @@ function App() {
         user={user}
         onLogin={() => setShowSignIn(true)}
         onRegister={() => setShowSignUp(true)}
-        onLanguageChange={handleDarkModeToggle}
         onLogout={handleSignOut}
       />
       <div className="pt-20">
