@@ -60,12 +60,12 @@ async function updateBookingDiagnostics() {
       throw new Error('[BookingTest] No listings found');
     }
     
-    const testListing = listings[15];
+    const testListing = listings[19];
     logs.push(`✅ [BookingTest] Found ${listings.length} listings, using: ${testListing.title}`);
 
     logs.push('🧪 [BookingTest] Creating booking...');
     const startDate = new Date();
-    startDate.setDate(startDate.getDate() + 10000); // 10000 days from now
+    startDate.setDate(startDate.getDate() + 20000); // 20000 days from now
     
     const endDate = new Date(startDate); // Create new date object from startDate
     endDate.setDate(endDate.getDate() + 3); // 3 days after start date
