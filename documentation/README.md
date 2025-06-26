@@ -1,163 +1,274 @@
-# nu3PBnB - Software Development Life Cycle (SDLC) Documentation
+# nu3PBnB Documentation v1.0.0.0
 
-This folder contains comprehensive documentation for the nu3PBnB application following industry-standard SDLC practices. **Updated January 2025 to reflect React 19, enhanced content management, admin testing, analytics, multilingual features, and advanced user experience improvements.**
+**Comprehensive documentation for the nu3PBnB property booking platform**
 
-## 📋 Documentation Structure
+## 📚 Documentation Overview
 
-### 1. Requirements & Analysis
-- **[Requirements Document](./requirements.md)** - Functional and non-functional requirements with use cases
-- **[Use Case Specifications](./use-cases.md)** - Detailed use case descriptions and scenarios
-- **[System Architecture](./architecture.md)** - High-level system design and architecture
+This directory contains comprehensive documentation for nu3PBnB v1.0.0.0, a full-featured property booking platform with real-time availability, secure payments, and multi-language support.
 
-### 2. Design & Planning
-- **[Technical Design Document](./development-guide.md)** - Detailed technical specifications
-- **[Database Design](./architecture.md#data-architecture)** - Database schema and relationships
-- **[Database Schema Diagram](./database-schema.md)** - Comprehensive database schema with Mermaid diagram
-- **[API Documentation](./api-documentation.md)** - REST API specifications and endpoints
+## 🗂️ Documentation Structure
 
-### 3. Development & Testing
-- **[Development Guide](./development-guide.md)** - Setup, coding standards, and development workflow
-- **[Testing Strategy](./testing-strategy.md)** - Test plans, strategies, and procedures
-- **[Deployment Guide](./installation-guide.md#production-deployment)** - Production deployment instructions
+### 📖 User Documentation
+- **[User Manual](user-manual.md)** - Complete guide for guests and hosts
+- **[Host Guide](host-guide.md)** - Property management and optimization
+- **[Admin Guide](admin-guide.md)** - System administration and monitoring
+- **[Troubleshooting](troubleshooting.md)** - Common issues and solutions
 
-### 4. User Documentation
-- **[User Manual](./user-manual.md)** - End-user instructions and guides
-- **[Installation Guide](./installation-guide.md)** - System installation and setup
-- **[Troubleshooting Guide](./troubleshooting.md)** - Common issues and solutions
+### 🔧 Technical Documentation
+- **[API Documentation](api-documentation.md)** - Complete API reference
+- **[Database Schema](database-schema.md)** - Database design and relationships
+- **[Architecture Overview](architecture.md)** - System design and patterns
+- **[Development Guide](development-guide.md)** - Development setup and guidelines
+- **[Installation Guide](installation-guide.md)** - Setup and configuration
+- **[Deployment Guide](deployment.md)** - Production deployment instructions
 
-### 5. Project Management
-- **[Project Plan](./project-plan.md)** - Timeline, milestones, and resource allocation
-- **[Risk Assessment](./project-plan.md#risk-management)** - Identified risks and mitigation strategies
-- **[Change Management](./project-plan.md#deployment-strategy)** - Change control procedures
+### 📋 Project Documentation
+- **[Requirements](requirements.md)** - Functional and non-functional requirements
+- **[Project Plan](project-plan.md)** - Development roadmap and milestones
+- **[Testing Strategy](testing-strategy.md)** - Testing approach and procedures
+- **[Technology Stack](technology-stack.md)** - Technologies and frameworks used
+- **[Quick Start](quick-start.md)** - Fast setup and getting started
 
-### 6. Technology & Reference
-- **[Technology Stack](./technology-stack.md)** - Comprehensive technology stack documentation
-- **[Tech Quick Reference](./tech-quick-reference.md)** - Essential commands and quick reference guide
-- **[Quick Start Guide](./quick-start.md)** - Essential commands and setup instructions
+### 🎨 Design Documentation
+- **[Use Cases](use-cases.md)** - User scenarios and workflows
+- **[Use Case Diagram](use-case-diagram.md)** - Visual representation of use cases
+- **[Tech Quick Reference](tech-quick-reference.md)** - Technology overview
 
-## 🆕 Latest Features (January 2025)
+## 🚀 Quick Start
 
-### React 19 Upgrade
-- **React 19.1.0**: Latest React features and performance improvements
-- **Vite 6.3.5**: Enhanced build tooling and development experience
-- **Modern Hooks**: Improved state management and side effects
-- **Performance Optimization**: Better rendering and memory management
+### Live Demo
+- **Frontend**: https://nu3pbnb.onrender.com
+- **API**: https://nu3pbnb-api.onrender.com
 
-### Enhanced Content Management System
-- **WYSIWYG Editor**: Rich text editing with TipTap integration
-- **Content Versioning**: Track and restore previous versions with change history
-- **Multilingual Support**: Content management in English, French, and Spanish
-- **Section Management**: Organize content by sections (hero, about, footer, legal, help, homepage)
-- **Content Types**: Support for HTML, Markdown, plain text, and JSON content
-- **Bulk Operations**: Create, update, and delete multiple content items
-- **Search & Filtering**: Advanced content search and filtering capabilities
-- **Real-time Preview**: Live preview of content changes
+### Test Accounts
+```
+Admin: admin@nu3pbnb.com / admin123
+Host: Raul50@gmail.com / password123
+Guest: Evelyn_Feeney68@gmail.com / password123
+```
 
-### Advanced Admin Dashboard
-- **Test Results Dashboard**: Monitor automated test runs with real-time status updates
-- **Admin Messaging**: Centralized messaging interface for administrators with conversation management
-- **User Management**: Advanced user profile and role management with bulk operations
-- **Analytics Dashboard**: Real-time analytics and reporting with interactive charts
-- **System Health Monitoring**: Automated test scheduling and health checks
-- **Content Management Interface**: Full CRUD operations for site content
-- **Payment Analytics**: Comprehensive payment tracking and financial reporting
+## 🛠️ Installation
 
-### Enhanced User Experience
-- **Onboarding Wizard**: Multi-step guided setup for new users with preference collection
-- **Wishlist Management**: Save and manage favorite properties with notifications
-- **Enhanced Search**: Advanced filtering, geolocation search, and saved searches
-- **Payment Dashboard**: Comprehensive payment tracking and management
-- **Property Calendar**: Interactive calendar for booking management
-- **User Profiles**: Enhanced user profiles with preferences and activity history
-- **Dark Mode**: Complete dark mode support throughout the application
-- **Responsive Design**: Mobile-first approach with modern UI/UX
+### Prerequisites
+- **Node.js** >= 18.0.0
+- **npm** >= 8.0.0
+- **MongoDB** (local or cloud)
+- **Git**
 
-### Technical Enhancements
-- **Multilingual i18n**: Full internationalization support with language switching
-- **Advanced Analytics**: Real-time data tracking, user behavior analysis, and performance metrics
-- **Enhanced Security**: Improved authentication, role-based access control, and rate limiting
-- **Performance Optimization**: Database indexing, caching, and query optimization
-- **Automated Testing**: Scheduled test runs with comprehensive coverage (23 test suites)
-- **Real-time Updates**: WebSocket-like polling for live data updates
-- **File Upload System**: Secure file uploads for profile pictures and message attachments
+### Quick Setup
+```bash
+# Clone repository
+git clone https://github.com/rbisnath-3pg/nu3pbnb.git
+cd nu3pbnb
 
-### Messaging System Enhancements
-- **Real-time Messaging**: Live message updates with unread count tracking
-- **Conversation Management**: Organized conversation threads and history
-- **File Attachments**: Support for image and document sharing
-- **Message Search**: Advanced search and filtering of messages
-- **Admin Oversight**: Administrative message monitoring and management
-- **Push Notifications**: Real-time notification system
+# Install dependencies
+npm install
+cd frontend && npm install && cd ..
 
-### Payment System Improvements
-- **Payment History**: Comprehensive payment tracking and receipt generation
-- **Multiple Payment Methods**: Support for various payment gateways
-- **Payment Analytics**: Revenue tracking and financial reporting
-- **Automated Processing**: Streamlined payment approval and processing
-- **Receipt Management**: Digital receipt generation and storage
-- **Payment Dashboard**: User-friendly payment management interface
+# Setup environment
+cp .env.example .env
+# Configure your environment variables
 
-### Testing & Quality Assurance
-- **Automated Testing**: 23 test suites running on scheduled intervals
-- **Test Coverage**: Comprehensive coverage for all major features
-- **Real-time Monitoring**: Live test execution monitoring
-- **Performance Testing**: Load testing and performance optimization
-- **Security Testing**: Automated security vulnerability scanning
-- **Integration Testing**: End-to-end testing of all system components
+# Initialize database
+npm run init-db
 
-## 🎯 Quick Start
+# Start development servers
+npm run server  # Backend
+npm run dev     # Frontend
+```
 
-1. **For Developers**: Start with [Installation Guide](./installation-guide.md) and [Development Guide](./development-guide.md)
-2. **For Users**: Begin with [User Manual](./user-manual.md)
-3. **For Stakeholders**: Review [Requirements Document](./requirements.md) and [Project Plan](./project-plan.md)
-4. **For API Integration**: Use [API Documentation](./api-documentation.md)
-5. **For Architecture Understanding**: Study [System Architecture](./architecture.md) and [Use Cases](./use-cases.md)
+## 🔌 API Reference
 
-## 📝 Document Maintenance
+### Authentication
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `GET /api/auth/profile` - Get user profile
 
-- All documents are maintained in Markdown format for easy version control
-- Update documents when making significant changes to the system
-- Review and update documentation during each release cycle
-- **All documentation updated to reflect January 2025 feature additions and React 19 upgrade**
+### Properties
+- `GET /api/listings` - Get all properties
+- `GET /api/listings/:id` - Get property details
+- `POST /api/listings` - Create property (hosts)
+- `PUT /api/listings/:id` - Update property
 
-## 🔗 Related Resources
+### Bookings
+- `POST /api/bookings` - Create booking request
+- `GET /api/bookings` - Get user bookings
+- `PUT /api/bookings/:id` - Update booking status
 
-- [Main Project README](../README.md)
-- [API Documentation](../API_DOCUMENTATION.md)
-- [Payment Setup Guide](../PAYMENT_SETUP.md)
-- [Performance Optimization Guide](../PERFORMANCE_OPTIMIZATION.md)
-- [Scheduled Tests Guide](../SCHEDULED_TESTS.md)
-- [Environment Setup Guide](../ENVIRONMENT_SETUP.md)
-- [Deployment Guide](../DEPLOYMENT.md)
+### Payments
+- `POST /api/payments/process` - Process payment
+- `GET /api/payments` - Get payment history
 
-## 🚀 Technology Stack Updates
+### Admin
+- `GET /api/admin/users` - Get all users
+- `GET /api/admin/analytics` - Get analytics data
 
-### Frontend (React 19)
-- **React 19.1.0**: Latest React with improved performance
-- **Vite 6.3.5**: Fast build tooling and development server
-- **Tailwind CSS**: Utility-first CSS framework
-- **Chart.js**: Interactive data visualization
-- **Leaflet**: Interactive maps
-- **TipTap**: Rich text editor
-- **React Icons**: Comprehensive icon library
+## 🧪 Testing
 
-### Backend (Node.js)
-- **Express.js 5.1.0**: Latest Express framework
-- **MongoDB 5.7.0**: Latest MongoDB driver
-- **Mongoose 7.6.3**: Latest ODM with improved performance
-- **JWT**: Secure authentication
-- **Multer**: File upload handling
-- **Node-cron**: Scheduled task management
-- **Winston**: Advanced logging
+### Run Tests
+```bash
+# All tests
+npm test
 
-### Testing & Quality
-- **Jest 30.0.2**: Latest testing framework
-- **React Testing Library**: Component testing
-- **Supertest**: API testing
-- **MongoDB Memory Server**: In-memory database for testing
-- **Coverage Reporting**: Comprehensive test coverage
+# Specific test suites
+npm run test:backend
+npm run test:frontend
+npm run test:api
+
+# With coverage
+npm run test:ci
+```
+
+### Test Coverage
+- **90%+ test coverage** across the application
+- **Unit tests** for all components and functions
+- **Integration tests** for API endpoints
+- **End-to-end tests** for critical user flows
+
+## 📊 Features
+
+### Core Features
+- ✅ **Complete booking system** with real-time availability
+- ✅ **Payment processing** with automatic approval
+- ✅ **Multi-language support** (EN, ES, FR)
+- ✅ **User role management** (Guests, Hosts, Admins)
+- ✅ **Property listing management** with advanced search
+- ✅ **Real-time messaging** between users
+- ✅ **Review and rating system** with moderation
+- ✅ **Wishlist functionality** for favorites
+- ✅ **Onboarding wizard** for new users
+
+### Admin Features
+- ✅ **Analytics dashboard** with real-time metrics
+- ✅ **Content management system** with WYSIWYG editor
+- ✅ **User management** with bulk operations
+- ✅ **Payment history** and receipt generation
+- ✅ **System health monitoring** with automated tests
+- ✅ **Admin messaging interface** for support
+
+### Technical Features
+- ✅ **Responsive design** for all devices
+- ✅ **Progressive Web App** capabilities
+- ✅ **Real-time notifications** and updates
+- ✅ **Image optimization** and CDN support
+- ✅ **SEO optimization** for discoverability
+- ✅ **Automated testing** with comprehensive coverage
+- ✅ **Performance monitoring** and optimization
+
+## 🔒 Security
+
+### Authentication & Authorization
+- **JWT token management** with refresh mechanisms
+- **Role-based access control** (RBAC)
+- **Password policies** with secure hashing
+- **Session management** with timeouts
+
+### Data Protection
+- **Input validation** and sanitization
+- **SQL injection prevention**
+- **XSS protection** with CSP
+- **CORS configuration** for security
+- **File upload security** with validation
+
+## 🌍 Internationalization
+
+### Supported Languages
+- **English** (default)
+- **Spanish** (complete translation)
+- **French** (complete translation)
+
+### Features
+- **Dynamic language switching** without reload
+- **Localized content** and interfaces
+- **Cultural adaptation** for regions
+- **Persistent language preferences**
+
+## 📱 Mobile Support
+
+### Responsive Design
+- **Mobile-first approach**
+- **Touch-friendly interfaces**
+- **Optimized performance** for mobile
+- **Offline capabilities** with service workers
+
+### Progressive Web App
+- **Installable** on mobile devices
+- **Offline functionality** for core features
+- **Push notifications** for updates
+- **App-like experience** on mobile
+
+## 🚀 Deployment
+
+### Production Environment
+- **Live demo**: https://nu3pbnb.onrender.com
+- **API endpoint**: https://nu3pbnb-api.onrender.com
+- **Database**: MongoDB Atlas
+- **CDN**: Static assets and images
+
+### Environment Variables
+```bash
+MONGODB_URI=your_production_mongodb_uri
+JWT_SECRET=your_production_jwt_secret
+NODE_ENV=production
+PORT=3000
+```
+
+## 📈 Performance
+
+### Optimization
+- **Database indexing** for faster queries
+- **Image compression** and optimization
+- **Code splitting** for smaller bundles
+- **Lazy loading** for better performance
+- **Caching strategies** for static content
+
+### Monitoring
+- **Real-time performance** monitoring
+- **Error tracking** and alerting
+- **Resource utilization** tracking
+- **User experience** metrics
+
+## 🤝 Contributing
+
+### Development Guidelines
+- Follow **ESLint** configuration
+- Write **comprehensive tests**
+- Update **documentation** for new features
+- Follow **conventional commits** format
+
+### Getting Started
+1. **Fork** the repository
+2. **Create** a feature branch
+3. **Make** your changes
+4. **Test** thoroughly
+5. **Submit** a pull request
+
+## 📞 Support
+
+### Contact Information
+- **Issues**: [GitHub Issues](https://github.com/rbisnath-3pg/nu3pbnb/issues)
+- **Email**: robbie.bisnath@3pillarglobal.com
+- **Documentation**: [Full Documentation](documentation/)
+
+### Resources
+- **[User Manual](user-manual.md)** - End-user instructions
+- **[API Documentation](api-documentation.md)** - Technical reference
+- **[Troubleshooting](troubleshooting.md)** - Common issues
+- **[Development Guide](development-guide.md)** - Developer setup
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **3Pillar Global** for project support
+- **React** and **Node.js** communities
+- **MongoDB** for database technology
+- **Vite** for build tooling
+- **Tailwind CSS** for styling
 
 ---
 
-*Last Updated: January 2025*  
-*Version: 2.0 - Enhanced with React 19, Content Management, Admin Testing, Analytics, and Multilingual Features* 
+**nu3PBnB v1.0.0.0 Documentation**  
+**Built with ❤️ by Robbie Bisnath at 3Pillar Global** 

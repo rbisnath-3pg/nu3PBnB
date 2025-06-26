@@ -1,8 +1,20 @@
 {
   "name": "nu3pbnb",
-  "version": "1.0.0",
-  "description": "nu3PBnB - A comprehensive property booking platform",
+  "version": "1.0.0.0",
+  "description": "nu3PBnB - A comprehensive property booking platform with real-time availability, secure payments, and multi-language support",
   "main": "index.js",
+  "homepage": "https://nu3pbnb.onrender.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rbisnath-3pg/nu3pbnb.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rbisnath-3pg/nu3pbnb/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
   "scripts": {
     "build": "echo 'Build completed - skipping tests for production'",
     "test": "jest --coverage --verbose --runInBand --detectOpenHandles --logHeapUsage",
