@@ -199,45 +199,44 @@ mongoose.connect(process.env.MONGODB_URI)
       // User indexes
       await db.collection('users').createIndex({ email: 1 }, { unique: true });
       await db.collection('users').createIndex({ role: 1 });
-      await db.collection('users').createIndex({ createdAt: -1 });
       
       // Listing indexes
-      await db.collection('listings').createIndex({ hostId: 1 });
-      await db.collection('listings').createIndex({ status: 1 });
-      await db.collection('listings').createIndex({ createdAt: -1 });
+      await db.collection('listings').createIndex({ host: 1 });
+      await db.collection('listings').createIndex({ city: 1 });
+      await db.collection('listings').createIndex({ category: 1 });
+      await db.collection('listings').createIndex({ featured: 1 });
       
       // Booking indexes
-      await db.collection('bookingrequests').createIndex({ guestId: 1 });
-      await db.collection('bookingrequests').createIndex({ listingId: 1 });
-      await db.collection('bookingrequests').createIndex({ status: 1 });
-      await db.collection('bookingrequests').createIndex({ startDate: 1 });
-      await db.collection('bookingrequests').createIndex({ createdAt: -1 });
+      await db.collection('bookings').createIndex({ guest: 1 });
+      await db.collection('bookings').createIndex({ listing: 1 });
+      await db.collection('bookings').createIndex({ startDate: 1, endDate: 1 });
       
       // Payment indexes
-      await db.collection('payments').createIndex({ bookingId: 1 });
-      await db.collection('payments').createIndex({ status: 1 });
-      await db.collection('payments').createIndex({ createdAt: -1 });
+      await db.collection('payments').createIndex({ booking: 1 });
+      await db.collection('payments').createIndex({ user: 1 });
       
       // Message indexes
-      await db.collection('messages').createIndex({ senderId: 1 });
-      await db.collection('messages').createIndex({ recipientId: 1 });
-      await db.collection('messages').createIndex({ read: 1 });
-      await db.collection('messages').createIndex({ createdAt: -1 });
-      
-      // UserActivity indexes
-      await db.collection('useractivities').createIndex({ userId: 1 });
-      await db.collection('useractivities').createIndex({ action: 1 });
-      await db.collection('useractivities').createIndex({ timestamp: -1 });
-      
-      // Review indexes
-      await db.collection('reviews').createIndex({ listingId: 1 });
-      await db.collection('reviews').createIndex({ rating: 1 });
-      await db.collection('reviews').createIndex({ createdAt: -1 });
+      await db.collection('messages').createIndex({ sender: 1 });
+      await db.collection('messages').createIndex({ recipient: 1 });
+      await db.collection('messages').createIndex({ booking: 1 });
       
       console.log('Database indexes created successfully');
     } catch (indexError) {
-      logger.error('Failed to create database indexes:', indexError);
-      console.error('Failed to create database indexes:', indexError);
+      logger.error('Database index creation failed:', indexError);
+      console.error('Database index creation failed:', indexError);
+    }
+    
+    // Run startup tests in production
+    if (isProduction) {
+      try {
+        console.log('🧪 Running startup tests...');
+        const { runStartupTests } = require('./startup-tests');
+        await runStartupTests();
+        console.log('✅ Startup tests completed');
+      } catch (testError) {
+        logger.error('Startup tests failed:', testError);
+        console.error('❌ Startup tests failed:', testError);
+      }
     }
   })
   .catch(err => {
