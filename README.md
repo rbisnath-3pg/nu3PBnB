@@ -4,6 +4,8 @@
 
 A modern, full-stack vacation rental platform built with React 19, Node.js, and MongoDB. Features include real-time analytics, multi-language support, comprehensive admin tools, automated testing, content management, and advanced user experience features.
 
+**Last Deployment**: June 26, 2025
+
 ## 🚀 Features
 
 ### Core Functionality
