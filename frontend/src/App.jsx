@@ -1702,6 +1702,71 @@ function App() {
               >
                 Refresh
               </button>
+              <button 
+                className="px-3 py-1 rounded bg-green-500 hover:bg-green-600 text-white font-bold text-sm"
+                onClick={(event) => {
+                  const diagnosticInfo = `
+Booking Diagnostics Report
+==========================
+
+Status: ${diagnostics.success ? '✅ PASSED' : '❌ FAILED'}
+Last Run: ${diagnostics.lastRun ? new Date(diagnostics.lastRun).toLocaleString() : 'Never'}
+
+${diagnostics.success ? '✅ All booking tests passed successfully!' : '❌ Booking test failed!'}
+
+${diagnostics.errors && diagnostics.errors.length > 0 ? `
+🔍 Detailed Errors:
+${diagnostics.errors.map((err, i) => `Error #${i + 1}: ${err}`).join('\n')}
+` : ''}
+
+🔧 Debug Information:
+API Endpoint: /api/diagnostics/booking-tests
+Expected Format: {"lastRun": "timestamp", "success": true/false, "errors": [], "logs": []}
+Current Status: ${diagnostics.lastRun ? 'Has data' : 'No data (null values)'}
+
+📊 Current State Analysis:
+• lastRun: ${diagnostics.lastRun ? '✅ Has timestamp' : '❌ Never run'}
+• success: ${diagnostics.success !== null ? `✅ ${diagnostics.success}` : '❌ Unknown'}
+• errors: ${diagnostics.errors && diagnostics.errors.length > 0 ? `❌ ${diagnostics.errors.length} errors` : '✅ No errors'}
+• logs: ${diagnostics.logs && diagnostics.logs.length > 0 ? `✅ ${diagnostics.logs.length} log entries` : '❌ No logs'}
+
+🔧 Troubleshooting Steps:
+1. Run booking diagnostics script in Render shell: node update-booking-diagnostics.js
+2. Check MongoDB connection in production
+3. Verify booking test dates (should be 10,000+ days in future)
+4. Check if diagnostics are being saved to MongoDB
+5. Restart backend to reload diagnostics from database
+
+Raw Diagnostics Data:
+${JSON.stringify(diagnostics, null, 2)}
+
+${diagnostics.logs && diagnostics.logs.length > 0 ? `
+Debug Logs:
+${diagnostics.logs.map((log, i) => `${i + 1}: ${log}`).join('\n')}
+` : ''}
+
+Generated: ${new Date().toLocaleString()}
+URL: ${window.location.href}
+                  `.trim();
+                  
+                  navigator.clipboard.writeText(diagnosticInfo).then(() => {
+                    // Show a temporary success message
+                    const button = event.target;
+                    const originalText = button.textContent;
+                    button.textContent = 'Copied!';
+                    button.className = 'px-3 py-1 rounded bg-green-600 text-white font-bold text-sm';
+                    setTimeout(() => {
+                      button.textContent = originalText;
+                      button.className = 'px-3 py-1 rounded bg-green-500 hover:bg-green-600 text-white font-bold text-sm';
+                    }, 2000);
+                  }).catch(err => {
+                    console.error('Failed to copy to clipboard:', err);
+                    alert('Failed to copy to clipboard. Please select and copy the text manually.');
+                  });
+                }}
+              >
+                📋 Copy Debug Info
+              </button>
             </div>
           </div>
         </div>
