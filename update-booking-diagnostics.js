@@ -197,4 +197,10 @@ async function updateBookingDiagnostics() {
   return diagnosticsData;
 }
 
-updateBookingDiagnostics().catch(console.error); 
+// Export the function for use in index.js
+module.exports = { updateBookingDiagnostics };
+
+// Only run if this file is executed directly
+if (require.main === module) {
+  updateBookingDiagnostics().catch(console.error);
+} 

@@ -306,6 +306,16 @@ mongoose.connect(process.env.MONGODB_URI)
         const { runStartupTests } = require('./startup-tests');
         await runStartupTests();
         console.log('✅ Startup tests completed');
+        
+        // Also run booking diagnostics to ensure they're always up-to-date
+        console.log('🔄 Running booking diagnostics...');
+        try {
+          const { updateBookingDiagnostics } = require('./update-booking-diagnostics');
+          await updateBookingDiagnostics();
+          console.log('✅ Booking diagnostics completed');
+        } catch (diagError) {
+          console.error('❌ Booking diagnostics failed:', diagError.message);
+        }
       } catch (testError) {
         logger.error('Startup tests failed:', testError);
         console.error('❌ Startup tests failed:', testError);
