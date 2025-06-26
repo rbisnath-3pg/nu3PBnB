@@ -1827,7 +1827,7 @@ function App() {
     }
 
     // Check for potential blank page scenarios
-    if (showListingDetail && selectedListing) {
+    if (showListingDetail && selectedListing && typeof selectedListing === 'object') {
       diagnostics.checks.listingDetailHasData = !!(selectedListing.title && selectedListing.description);
       if (!diagnostics.checks.listingDetailHasData) {
         diagnostics.issues.push('Selected listing missing data for detail page');

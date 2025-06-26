@@ -393,6 +393,12 @@ const HomePage = ({
       return;
     }
 
+    // Safety check for selectedListing
+    if (!selectedListing || typeof selectedListing !== 'object' || !selectedListing._id) {
+      setBookingFormError('No listing selected for booking');
+      return;
+    }
+
     // Validate form
     if (!bookingForm.startDate || !bookingForm.endDate) {
       setBookingFormError('Please select check-in and check-out dates');
@@ -416,7 +422,7 @@ const HomePage = ({
 
     // Calculate booking details
     const nights = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-    const totalPrice = nights * selectedListing.price;
+    const totalPrice = nights * (selectedListing.price || 0);
 
     // Create booking object
     const booking = {
@@ -1588,7 +1594,7 @@ const HomePage = ({
       )}
 
       {/* Property Detail Modal/Page */}
-      {showListingDetail && selectedListing && (
+      {showListingDetail && selectedListing && typeof selectedListing === 'object' && selectedListing._id && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30 backdrop-blur-sm">
           <div className="relative bg-gray-50 rounded-3xl shadow-2xl max-w-5xl w-full mx-4 my-12 flex flex-col md:flex-row overflow-hidden">
             {/* Left: Image and Details */}
@@ -1604,13 +1610,13 @@ const HomePage = ({
               {/* Main Image */}
               <img
                 src={selectedListing.photos && selectedListing.photos.length > 0 ? selectedListing.photos[0] : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=400&fit=crop'}
-                alt={selectedListing.title}
+                alt={selectedListing.title || 'Property'}
                 className="w-full h-64 object-cover rounded-2xl shadow mb-6"
               />
               {/* Title, Location, Rating */}
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">{selectedListing.title}</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">{selectedListing.title || 'Property'}</h2>
               <div className="flex items-center text-gray-600 mb-2">
-                <FaMapMarkerAlt className="mr-1" /> {selectedListing.location}
+                <FaMapMarkerAlt className="mr-1" /> {selectedListing.location || 'Location not specified'}
                 {selectedListing.averageRating && (
                   <span className="ml-4 flex items-center text-yellow-500 font-semibold">
                     <FaStar className="mr-1" />
@@ -1668,7 +1674,7 @@ const HomePage = ({
             <div className="md:w-1/3 w-full bg-white p-8 flex flex-col justify-start items-stretch border-l border-gray-100">
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-2xl font-bold text-gray-900">${selectedListing.price}</span>
+                  <span className="text-2xl font-bold text-gray-900">${selectedListing.price || 0}</span>
                   <span className="text-gray-500">/ night</span>
                 </div>
                 <form className="space-y-3" onSubmit={handleRequestBooking}>
