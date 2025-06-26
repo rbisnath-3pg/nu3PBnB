@@ -223,32 +223,137 @@ const HomePage = ({
   // Show login test error banner if present
   if (loginTestError) {
     return (
-      <div className="p-8 text-center bg-red-100 text-red-800 rounded-lg max-w-2xl mx-auto mt-12">
-        <h2 className="text-2xl font-bold mb-4">Automatic Login Test Results</h2>
-        <p className="mb-2">Below are the results of the automatic login test for all test users. <b>Failures are highlighted.</b> Check the browser console for full details.</p>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border border-red-300 bg-white text-gray-900 mb-4">
+      <div className="p-8 text-center bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900 dark:to-orange-900 text-red-800 dark:text-red-200 rounded-lg max-w-6xl mx-auto mt-12">
+        <h2 className="text-3xl font-bold mb-4">🔍 Automatic Login Test Results</h2>
+        <div className="mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-300">{loginTestError.tested}</div>
+              <div className="text-sm">Total Tests</div>
+            </div>
+            <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
+              <div className="text-2xl font-bold text-green-600 dark:text-green-300">{loginTestError.passed}</div>
+              <div className="text-sm">Passed</div>
+            </div>
+            <div className="p-3 bg-red-100 dark:bg-red-900 rounded-lg">
+              <div className="text-2xl font-bold text-red-600 dark:text-red-300">{loginTestError.failed}</div>
+              <div className="text-sm">Failed</div>
+            </div>
+            <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
+              <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-300">{loginTestError.successRate}%</div>
+              <div className="text-sm">Success Rate</div>
+            </div>
+          </div>
+        </div>
+        
+        <p className="mb-4 text-lg">
+          {loginTestError.success ? 
+            '🎉 All login tests passed successfully!' : 
+            '⚠️ Some login tests failed. Check the detailed results below and browser console for full logs.'
+          }
+        </p>
+        
+        <div className="overflow-x-auto mb-6">
+          <table className="w-full text-left text-sm border border-gray-300 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
             <thead>
-              <tr>
-                <th className="px-2 py-1 border-b">Email</th>
-                <th className="px-2 py-1 border-b">Role</th>
-                <th className="px-2 py-1 border-b">Status</th>
-                <th className="px-2 py-1 border-b">Result</th>
+              <tr className="bg-gray-100 dark:bg-gray-700">
+                <th className="px-3 py-2 border-b">Email</th>
+                <th className="px-3 py-2 border-b">Role</th>
+                <th className="px-3 py-2 border-b">Status</th>
+                <th className="px-3 py-2 border-b">Response Time</th>
+                <th className="px-3 py-2 border-b">Result</th>
+                <th className="px-3 py-2 border-b">Details</th>
               </tr>
             </thead>
             <tbody>
               {loginTestError.results.map((r, i) => (
-                <tr key={i} className={r.passed ? 'bg-green-100' : 'bg-red-200 font-bold'}>
-                  <td className="px-2 py-1 border-b">{r.email}</td>
-                  <td className="px-2 py-1 border-b">{r.role}</td>
-                  <td className="px-2 py-1 border-b">{r.status}</td>
-                  <td className="px-2 py-1 border-b">{r.passed ? '✅ Success' : '❌ Failed'}</td>
+                <tr key={i} className={r.passed ? 'bg-green-50 dark:bg-green-900' : 'bg-red-50 dark:bg-red-900 font-semibold'}>
+                  <td className="px-3 py-2 border-b font-mono text-xs">{r.email}</td>
+                  <td className="px-3 py-2 border-b">
+                    <span className={`px-2 py-1 rounded text-xs font-bold ${
+                      r.role === 'admin' ? 'bg-purple-200 text-purple-800 dark:bg-purple-800 dark:text-purple-200' :
+                      r.role === 'host' ? 'bg-blue-200 text-blue-800 dark:bg-blue-800 dark:text-blue-200' :
+                      'bg-green-200 text-green-800 dark:bg-green-800 dark:text-green-200'
+                    }`}>
+                      {r.role}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2 border-b">
+                    <span className={`px-2 py-1 rounded text-xs font-bold ${
+                      r.status === 200 ? 'bg-green-200 text-green-800 dark:bg-green-800 dark:text-green-200' :
+                      r.status === 'network-error' ? 'bg-red-200 text-red-800 dark:bg-red-800 dark:text-red-200' :
+                      'bg-yellow-200 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-200'
+                    }`}>
+                      {r.status} {r.statusText}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2 border-b text-xs">
+                    {r.responseTime ? `${r.responseTime}ms` : 'N/A'}
+                  </td>
+                  <td className="px-3 py-2 border-b">
+                    {r.passed ? 
+                      <span className="text-green-600 dark:text-green-400 font-bold">✅ Success</span> : 
+                      <span className="text-red-600 dark:text-red-400 font-bold">❌ Failed</span>
+                    }
+                  </td>
+                  <td className="px-3 py-2 border-b text-xs">
+                    {r.error ? (
+                      <details className="cursor-pointer">
+                        <summary className="text-red-600 dark:text-red-400">Error Details</summary>
+                        <div className="mt-1 p-2 bg-red-100 dark:bg-red-800 rounded text-xs">
+                          <div><strong>Type:</strong> {r.error.type}</div>
+                          <div><strong>Message:</strong> {r.error.message}</div>
+                        </div>
+                      </details>
+                    ) : r.validation ? (
+                      <details className="cursor-pointer">
+                        <summary className="text-blue-600 dark:text-blue-400">Validation</summary>
+                        <div className="mt-1 p-2 bg-blue-100 dark:bg-blue-800 rounded text-xs">
+                          <div>Response OK: {r.validation.responseOk ? '✅' : '❌'}</div>
+                          <div>Has User: {r.validation.hasUser ? '✅' : '❌'}</div>
+                          <div>Has Token: {r.validation.hasToken ? '✅' : '❌'}</div>
+                          <div>Email Match: {r.validation.emailMatch ? '✅' : '❌'}</div>
+                          <div>Role Match: {r.validation.roleMatch ? '✅' : '❌'}</div>
+                        </div>
+                      </details>
+                    ) : (
+                      <span className="text-gray-500">No details</span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        <pre className="text-xs bg-red-200 p-2 rounded overflow-x-auto text-left max-h-96">{JSON.stringify(loginTestError, null, 2)}</pre>
+        
+        <div className="text-left">
+          <h3 className="text-lg font-bold mb-2">📋 Test Configuration</h3>
+          <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded text-sm font-mono">
+            <div><strong>API Base:</strong> {loginTestError.apiBase}</div>
+            <div><strong>Timestamp:</strong> {loginTestError.timestamp}</div>
+            <div><strong>Network Errors:</strong> {loginTestError.networkErrors}</div>
+          </div>
+        </div>
+        
+        <div className="mt-6">
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-semibold mr-4"
+          >
+            🔄 Run Tests Again
+          </button>
+          <button
+            onClick={() => window.open('https://nu3pbnb-api.onrender.com/api/test', '_blank')}
+            className="px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-semibold"
+          >
+            🧪 Test API Directly
+          </button>
+        </div>
+        
+        <details className="mt-6 text-left">
+          <summary className="cursor-pointer text-lg font-bold mb-2">📊 Full JSON Response</summary>
+          <pre className="text-xs bg-gray-100 dark:bg-gray-800 p-4 rounded overflow-x-auto text-left max-h-96 border">{JSON.stringify(loginTestError, null, 2)}</pre>
+        </details>
       </div>
     );
   }

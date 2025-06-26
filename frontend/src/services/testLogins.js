@@ -6,60 +6,175 @@ const API_BASE = import.meta && import.meta.env && import.meta.env.VITE_API_BASE
   : (typeof window !== 'undefined' ? window.API_BASE : 'https://nu3pbnb-api.onrender.com');
 
 const TEST_USERS = [
-  { email: 'admin@nu3pbnb.com', password: 'admin123', role: 'admin' },
-  { email: 'davonte_runolfsdottir-russel@hotmail.com', password: 'host123', role: 'host' },
-  { email: 'georgette_klocko@hotmail.com', password: 'host123', role: 'host' },
-  { email: 'josh15@hotmail.com', password: 'host123', role: 'host' },
-  { email: 'patience_kutch78@hotmail.com', password: 'guest123', role: 'guest' },
-  { email: 'rubie.maggio38@gmail.com', password: 'guest123', role: 'guest' },
+  { email: 'admin_robbie@google.com', password: 'admin123', role: 'admin' },
+  { email: 'host_davonte@hotmail.com', password: 'host123', role: 'host' },
+  { email: 'host_georgette@hotmail.com', password: 'host123', role: 'host' },
+  { email: 'host_josh@hotmail.com', password: 'host123', role: 'host' },
+  { email: 'guest_patience@hotmail.com', password: 'guest123', role: 'guest' },
+  { email: 'guest_rubie@gmail.com', password: 'guest123', role: 'guest' },
 ];
 
 export default async function testLogins() {
+  console.log('[LOGIN TEST] Starting automated login tests...');
+  console.log('[LOGIN TEST] API Base URL:', API_BASE);
+  console.log('[LOGIN TEST] Test users:', TEST_USERS.map(u => ({ email: u.email, role: u.role })));
+  
   const results = [];
   let allPassed = true;
+  let totalTests = 0;
+  let passedTests = 0;
+  let failedTests = 0;
+  let networkErrors = 0;
 
   for (const user of TEST_USERS) {
+    totalTests++;
+    console.log(`[LOGIN TEST] [${totalTests}/${TEST_USERS.length}] Testing ${user.role} user: ${user.email}`);
+    
     try {
       const payload = { email: user.email, password: user.password };
-      console.log('[LOGIN TEST] Attempting login:', payload);
+      console.log(`[LOGIN TEST] [${totalTests}/${TEST_USERS.length}] Sending login request:`, {
+        url: `${API_BASE}/api/auth/login`,
+        method: 'POST',
+        payload: { ...payload, password: '[REDACTED]' }
+      });
+      
+      const startTime = Date.now();
       const response = await fetch(`${API_BASE}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      const data = await response.json().catch(() => ({}));
-      const passed = response.ok && data.user && data.user.email === user.email && data.user.role === user.role && !!data.token;
+      const endTime = Date.now();
+      const responseTime = endTime - startTime;
+      
+      console.log(`[LOGIN TEST] [${totalTests}/${TEST_USERS.length}] Response received:`, {
+        status: response.status,
+        statusText: response.statusText,
+        responseTime: `${responseTime}ms`,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+      
+      let data;
+      try {
+        data = await response.json();
+        console.log(`[LOGIN TEST] [${totalTests}/${TEST_USERS.length}] Response data:`, data);
+      } catch (parseError) {
+        console.error(`[LOGIN TEST] [${totalTests}/${TEST_USERS.length}] JSON parse error:`, parseError);
+        data = {};
+      }
+      
+      // Detailed validation
+      const hasUser = !!data.user;
+      const hasToken = !!data.token;
+      const emailMatch = data.user && data.user.email === user.email;
+      const roleMatch = data.user && data.user.role === user.role;
+      const responseOk = response.ok;
+      
+      console.log(`[LOGIN TEST] [${totalTests}/${TEST_USERS.length}] Validation results:`, {
+        responseOk,
+        hasUser,
+        hasToken,
+        emailMatch,
+        roleMatch,
+        expectedEmail: user.email,
+        actualEmail: data.user?.email,
+        expectedRole: user.role,
+        actualRole: data.user?.role
+      });
+      
+      const passed = responseOk && hasUser && hasToken && emailMatch && roleMatch;
+      
+      if (passed) {
+        passedTests++;
+        console.log(`[LOGIN TEST] [${totalTests}/${TEST_USERS.length}] ✅ SUCCESS: ${user.email} (${user.role})`);
+      } else {
+        failedTests++;
+        allPassed = false;
+        console.error(`[LOGIN TEST] [${totalTests}/${TEST_USERS.length}] ❌ FAILED: ${user.email} (${user.role})`, {
+          responseOk,
+          hasUser,
+          hasToken,
+          emailMatch,
+          roleMatch,
+          data
+        });
+      }
+      
       results.push({
         email: user.email,
         role: user.role,
         status: response.status,
+        statusText: response.statusText,
+        responseTime,
         passed,
+        validation: {
+          responseOk,
+          hasUser,
+          hasToken,
+          emailMatch,
+          roleMatch
+        },
         response: data,
+        error: null
       });
-      if (!passed) {
-        allPassed = false;
-        console.error('[LOGIN TEST] Failed:', { user, response: data });
-      } else {
-        console.log('[LOGIN TEST] Success:', { user, response: data });
-      }
+      
     } catch (err) {
+      networkErrors++;
+      failedTests++;
       allPassed = false;
+      console.error(`[LOGIN TEST] [${totalTests}/${TEST_USERS.length}] 🌐 NETWORK ERROR: ${user.email} (${user.role})`, {
+        error: err.message,
+        stack: err.stack,
+        user
+      });
+      
       results.push({
         email: user.email,
         role: user.role,
         status: 'network-error',
+        statusText: 'Network Error',
+        responseTime: null,
         passed: false,
-        error: err.message,
+        validation: {
+          responseOk: false,
+          hasUser: false,
+          hasToken: false,
+          emailMatch: false,
+          roleMatch: false
+        },
+        response: null,
+        error: {
+          message: err.message,
+          type: err.name,
+          stack: err.stack
+        }
       });
-      console.error('[LOGIN TEST] Network error:', { user, error: err });
     }
   }
 
-  console.log('[LOGIN TEST] Summary:', results);
-  return {
+  const summary = {
     success: allPassed,
-    tested: TEST_USERS.length,
+    tested: totalTests,
+    passed: passedTests,
+    failed: failedTests,
+    networkErrors,
+    successRate: totalTests > 0 ? (passedTests / totalTests * 100).toFixed(1) : 0,
     results,
     timestamp: new Date().toISOString(),
+    apiBase: API_BASE
   };
+
+  console.log('[LOGIN TEST] 🎯 FINAL SUMMARY:', {
+    success: allPassed,
+    totalTests,
+    passedTests,
+    failedTests,
+    networkErrors,
+    successRate: `${summary.successRate}%`,
+    timestamp: summary.timestamp
+  });
+  
+  console.log('[LOGIN TEST] 📊 DETAILED RESULTS:', results);
+  
+  return summary;
 } 
