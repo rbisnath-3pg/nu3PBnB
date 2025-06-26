@@ -642,8 +642,17 @@ class StartupTestSuite {
   }
 
   async testBookingFunctionality() {
-    this.logger.info('Testing booking functionality...');
-
+    this.logger.info('Testing booking functionality... (DISABLED - No booking data should be created)');
+    
+    // DISABLED - No booking data should be created
+    this.logger.addTestResult('Booking Functionality', 
+      'SKIPPED',
+      { reason: 'Booking tests disabled to prevent booking data creation' }
+    );
+    
+    return;
+    
+    /*
     const TEST_USER = {
       email: 'guest_patience@hotmail.com',
       password: 'guest123'
@@ -746,6 +755,7 @@ class StartupTestSuite {
         logs
       }
     };
+    */
   }
 }
 

@@ -11,6 +11,10 @@ mongoose.connect('mongodb://localhost:27017/nu3pbnb', {
 });
 
 async function createTestBookings() {
+  console.log('❌ Test booking creation DISABLED - No booking data should be created');
+  return;
+  
+  /*
   try {
     console.log('Creating test bookings and payments for all guests...');
 
@@ -93,6 +97,7 @@ async function createTestBookings() {
   } finally {
     mongoose.connection.close();
   }
+  */
 }
 
 createTestBookings(); 

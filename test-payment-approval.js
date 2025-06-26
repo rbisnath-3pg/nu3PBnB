@@ -56,7 +56,8 @@ async function testPaymentApproval() {
     await listing.save();
     console.log('Created test listing:', listing.title);
 
-    // Create test booking (pending)
+    // Create test booking (pending) - DISABLED
+    /*
     const booking = new BookingRequest({
       guest: guest._id,
       host: host._id,
@@ -73,6 +74,10 @@ async function testPaymentApproval() {
     console.log('Created test booking:', booking._id);
     console.log('Initial booking status:', booking.status);
     console.log('Initial payment status:', booking.paymentStatus);
+    */
+
+    console.log('❌ Test booking creation DISABLED - No booking data should be created');
+    return;
 
     // Simulate payment processing
     const payment = new Payment({

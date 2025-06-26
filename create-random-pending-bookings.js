@@ -8,6 +8,10 @@ function getRandomInt(min, max) {
 }
 
 async function createRandomPendingBookings() {
+  console.log('❌ Random pending booking creation DISABLED - No booking data should be created');
+  return;
+  
+  /*
   try {
     await mongoose.connect('mongodb://localhost:27017/nu3pbnb');
     console.log('Connected to MongoDB');
@@ -69,6 +73,7 @@ async function createRandomPendingBookings() {
     await mongoose.connection.close();
     console.log('Disconnected from MongoDB');
   }
+  */
 }
 
 createRandomPendingBookings(); 

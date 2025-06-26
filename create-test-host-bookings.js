@@ -91,7 +91,8 @@ async function createTestData() {
     await listing2.save();
     console.log('Created test listing 2:', listing2._id);
 
-    // Create test bookings
+    // Create test bookings (DISABLED - No booking data should be created)
+    /*
     const now = new Date();
     const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -157,6 +158,7 @@ async function createTestData() {
     });
     await declinedBooking.save();
     console.log('Created declined booking:', declinedBooking._id);
+    */
 
     console.log('\n=== Test Data Created Successfully ===');
     console.log('Host Login: testhost@example.com / password123');
@@ -165,11 +167,7 @@ async function createTestData() {
     console.log('Guest ID:', guest._id);
     console.log('Listing 1 ID:', listing1._id);
     console.log('Listing 2 ID:', listing2._id);
-    console.log('Pending Booking ID:', pendingBooking._id);
-    console.log('Approved Booking ID:', approvedBooking._id);
-    console.log('Payment ID:', payment._id);
-    console.log('Payment Amount:', paymentAmount);
-    console.log('Declined Booking ID:', declinedBooking._id);
+    console.log('❌ No bookings or payments created (DISABLED)');
 
     await mongoose.connection.close();
     console.log('Database connection closed');

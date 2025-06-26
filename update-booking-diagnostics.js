@@ -90,7 +90,9 @@ async function updateBookingDiagnostics() {
       logs.push(`[BookingTest] Error fetching existing bookings: ${err.message}`);
     }
 
-    logs.push('🧪 [BookingTest] Creating booking...');
+    logs.push('🧪 [BookingTest] Creating booking... (DISABLED)');
+    // DISABLED - No booking data should be created
+    /*
     const bookingData = {
       listingId: testListing._id,
       startDate: startDate.toISOString(),
@@ -161,7 +163,10 @@ async function updateBookingDiagnostics() {
     const paymentResult = await paymentRes.json();
     paymentId = paymentResult.payment._id;
     logs.push(`✅ [BookingTest] Payment processed: ${paymentId}`);
+    */
     
+    logs.push('❌ [BookingTest] Booking creation DISABLED - No booking data should be created');
+
   } catch (err) {
     errors.push(err.message);
     logs.push(`❌ [BookingTest] Error: ${err.message}`);

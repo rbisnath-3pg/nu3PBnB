@@ -37,7 +37,8 @@ async function seedPayments() {
       console.log(`Created payment for booking ${booking._id}`);
     }
 
-    // If not enough payments, create mock bookings and payments
+    // If not enough payments, create mock bookings and payments (DISABLED)
+    /*
     if (paymentsCreated < 5) {
       // Find a guest and a listing
       const guest = await User.findOne({ role: 'guest' });
@@ -75,6 +76,7 @@ async function seedPayments() {
         console.log('Not enough users or listings to create mock bookings/payments.');
       }
     }
+    */
 
     console.log('Seeding payments complete.');
   } catch (error) {

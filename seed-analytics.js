@@ -38,7 +38,8 @@ async function seedAnalytics() {
 
     for (let i = 6; i >= 0; i--) {
       const day = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
-      // --- Bookings ---
+      // --- Bookings --- (DISABLED - No booking data should be created)
+      /*
       const bookingsToday = Math.floor(Math.random() * 6) + 5; // 5-10 bookings per day
       for (let j = 0; j < bookingsToday; j++) {
         const guest = users.find(u => u.role === 'guest');
@@ -75,6 +76,7 @@ async function seedAnalytics() {
           }));
         }
       }
+      */
       // --- Property Visits ---
       const visitsToday = Math.floor(Math.random() * 21) + 10; // 10-30 visits per day
       for (let j = 0; j < visitsToday; j++) {
@@ -154,12 +156,12 @@ async function seedAnalytics() {
     }
 
     // Insert all generated data
-    await BookingRequest.insertMany(newBookings);
-    await Payment.insertMany(payments);
+    // await BookingRequest.insertMany(newBookings); // DISABLED - No booking data
+    // await Payment.insertMany(payments); // DISABLED - No payment data
     await UserActivity.insertMany(activities);
     await UserActivity.insertMany(propertyVisitActivities);
     await UserActivity.insertMany(bounceEvents);
-    console.log(`Seeded last 7 days: ${newBookings.length} bookings, ${payments.length} payments, ${activities.length} activities, ${propertyVisitActivities.length} property visits, ${bounceEvents.length} bounces.`);
+    console.log(`Seeded last 7 days: 0 bookings, 0 payments, ${activities.length} activities, ${propertyVisitActivities.length} property visits, ${bounceEvents.length} bounces.`);
 
     // Generate wishlist data
     for (const user of users) {
