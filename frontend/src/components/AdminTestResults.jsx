@@ -505,6 +505,35 @@ const AdminTestResults = () => {
     };
   }, [autoRefresh, refreshInterval, loading]);
 
+  // Poll for test completion when there are running tests
+  useEffect(() => {
+    const runningTests = testRuns.filter(run => run.status === 'running');
+    
+    if (runningTests.length > 0) {
+      logger.current.info('Found running tests, starting polling', { 
+        count: runningTests.length,
+        testIds: runningTests.map(t => t.id) 
+      });
+      
+      const pollInterval = setInterval(async () => {
+        logger.current.debug('Polling for test completion');
+        await fetchTestRuns();
+        
+        // Check if any tests are still running
+        const updatedRunningTests = testRuns.filter(run => run.status === 'running');
+        if (updatedRunningTests.length === 0) {
+          logger.current.info('All tests completed, stopping polling');
+          clearInterval(pollInterval);
+        }
+      }, 5000); // Poll every 5 seconds
+      
+      return () => {
+        clearInterval(pollInterval);
+        logger.current.debug('Test polling stopped');
+      };
+    }
+  }, [testRuns]);
+
   // Debug mode effect
   useEffect(() => {
     logger.current.setDebugMode(debugMode);
@@ -1043,6 +1072,53 @@ const AdminTestResults = () => {
     return results;
   };
 
+  // Check test execution status
+  const checkTestStatus = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/api/admin/test-status`, {
+        headers: { 'Authorization': `Bearer ${getToken()}` }
+      });
+      
+      if (response.ok) {
+        const status = await response.json();
+        logger.current.info('Test status checked', status);
+        return status;
+      }
+    } catch (error) {
+      logger.current.error('Failed to check test status', error);
+    }
+    return null;
+  };
+
+  // Check backend deployment status
+  const checkBackendStatus = async () => {
+    try {
+      // Check health endpoint
+      const healthResponse = await fetch(`${API_BASE}/api/health`);
+      const healthStatus = healthResponse.ok ? 'healthy' : 'unhealthy';
+      
+      // Check if admin endpoints are available
+      const adminResponse = await fetch(`${API_BASE}/api/admin/test-results`, {
+        headers: { 'Authorization': `Bearer ${getToken()}` }
+      });
+      const adminStatus = adminResponse.status === 401 ? 'requires-auth' : 
+                         adminResponse.ok ? 'available' : 'error';
+      
+      const status = {
+        health: healthStatus,
+        admin: adminStatus,
+        timestamp: new Date().toISOString(),
+        apiBase: API_BASE
+      };
+      
+      logger.current.info('Backend status checked', status);
+      return status;
+    } catch (error) {
+      logger.current.error('Failed to check backend status', error);
+      return { error: error.message, timestamp: new Date().toISOString() };
+    }
+  };
+
   useEffect(() => {
     // Only fetch when auth is ready and user is authenticated
     if (!authLoading && user) {
@@ -1150,6 +1226,35 @@ const AdminTestResults = () => {
               <FaBroom className="w-4 h-4" />
               Clear History
             </button>
+            
+            {/* Manual Refresh Button */}
+            <button
+              onClick={fetchTestRuns}
+              disabled={loading}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold shadow hover:bg-green-700 disabled:opacity-50 flex items-center gap-2 transition-all duration-200"
+            >
+              <FaPlayCircle className="w-4 h-4" />
+              Refresh
+            </button>
+            
+            {/* Debug: Manual Test Completion (only shown when tests are stuck) */}
+            {testRuns.some(run => run.status === 'running') && debugMode && (
+              <button
+                onClick={async () => {
+                  logger.current.warn('Manual test completion triggered for debugging');
+                  // Simulate test completion by updating the local state
+                  setTestRuns(prev => prev.map(run => 
+                    run.status === 'running' 
+                      ? { ...run, status: 'passed', summary: 'Manually completed (debug mode)' }
+                      : run
+                  ));
+                }}
+                className="px-4 py-2 bg-orange-600 text-white rounded-lg font-semibold shadow hover:bg-orange-700 flex items-center gap-2 transition-all duration-200"
+              >
+                <FaCheckCircle className="w-4 h-4" />
+                Debug: Complete Tests
+              </button>
+            )}
             
             <button
               onClick={handleRunTests}
@@ -1377,6 +1482,22 @@ const AdminTestResults = () => {
                 </button>
                 
                 <button
+                  onClick={checkTestStatus}
+                  className="px-3 py-1 bg-indigo-600 text-white rounded text-xs hover:bg-indigo-700 transition-colors flex items-center gap-1"
+                >
+                  <FaInfoCircle className="w-3 h-3" />
+                  Check Status
+                </button>
+                
+                <button
+                  onClick={checkBackendStatus}
+                  className="px-3 py-1 bg-teal-600 text-white rounded text-xs hover:bg-teal-700 transition-colors flex items-center gap-1"
+                >
+                  <FaNetworkWired className="w-3 h-3" />
+                  Backend Status
+                </button>
+                
+                <button
                   onClick={clearCache}
                   className="px-3 py-1 bg-yellow-600 text-white rounded text-xs hover:bg-yellow-700 transition-colors flex items-center gap-1"
                 >
@@ -1461,6 +1582,49 @@ const AdminTestResults = () => {
         
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
           <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:text-white">Test Run History</h2>
+          
+          {/* Status Indicator */}
+          {testRuns.some(run => run.status === 'running') && (
+            <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
+              <div className="flex items-center gap-2 text-blue-800 dark:text-blue-200">
+                <FaClock className="w-4 h-4 animate-spin" />
+                <span className="text-sm font-medium">
+                  Monitoring {testRuns.filter(run => run.status === 'running').length} running test(s)...
+                </span>
+              </div>
+              <p className="text-xs text-blue-600 dark:text-blue-300 mt-1">
+                Tests are being automatically monitored for completion. This may take up to 60 seconds.
+              </p>
+            </div>
+          )}
+
+          {/* Debug Mode Notification */}
+          {debugMode && (
+            <div className="mb-4 p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-lg">
+              <div className="flex items-center gap-2 text-purple-800 dark:text-purple-200">
+                <FaBug className="w-4 h-4" />
+                <span className="text-sm font-medium">Debug Mode Active</span>
+              </div>
+              <p className="text-xs text-purple-600 dark:text-purple-300 mt-1">
+                Enhanced debugging features are enabled. Use the debug panel for advanced diagnostics.
+              </p>
+            </div>
+          )}
+
+          {/* Backend Deployment Notice */}
+          {testRuns.some(run => run.status === 'running' && new Date(run.date) < new Date(Date.now() - 60000)) && (
+            <div className="mb-4 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700 rounded-lg">
+              <div className="flex items-center gap-2 text-orange-800 dark:text-orange-200">
+                <FaExclamationTriangle className="w-4 h-4" />
+                <span className="text-sm font-medium">Test Execution Issue Detected</span>
+              </div>
+              <p className="text-xs text-orange-600 dark:text-orange-300 mt-1">
+                Tests have been running for over 1 minute. This may indicate a backend deployment issue. 
+                Enable debug mode and use the "Backend Status" button to diagnose.
+              </p>
+            </div>
+          )}
+          
           {loading ? (
             <div className="text-gray-600 dark:text-gray-300 flex items-center gap-2">
               <FaClock className="w-4 h-4 animate-spin" />
@@ -1502,6 +1666,16 @@ const AdminTestResults = () => {
                           {run.status === 'running' && (
                             <div className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
                               Test execution in progress...
+                            </div>
+                          )}
+                          {run.status === 'failed' && (
+                            <div className="text-xs text-red-600 dark:text-red-400 mt-1">
+                              Test execution failed
+                            </div>
+                          )}
+                          {run.status === 'passed' && (
+                            <div className="text-xs text-green-600 dark:text-green-400 mt-1">
+                              All tests passed successfully
                             </div>
                           )}
                         </td>
