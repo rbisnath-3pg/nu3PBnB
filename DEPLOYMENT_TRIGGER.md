@@ -1,18 +1,13 @@
-# Deployment Trigger - Fix Login Issues
+# Deployment Trigger - Force Redeployment
 
 ## Latest Deployment
 - **Date**: June 25, 2025
-- **Status**: Force redeployment to fix login issues
+- **Status**: Force redeployment after backend and script updates for login reliability
 
-## Issue
-- Login endpoint returning "Invalid credentials" for test users
-- Local database shows correct password hashes
-- API may be using different database or cached data
-
-## Changes Needed
-- Force redeployment to ensure latest code
-- Clear any potential caching issues
-- Ensure API uses correct database connection
+## Reason
+- Backend now normalizes emails for login, registration, and password reset
+- Scripts updated to allow specifying production MongoDB URI
+- Ensures all changes are live and login works for all user types
 
 ## Test Users (Should Work After Redeployment)
 - **Admin**: admin@nu3pbnb.com / admin123
@@ -20,4 +15,4 @@
 - **Guests**: Evelyn_Feeney68@gmail.com / guest123, Kristopher32@hotmail.com / guest123
 
 ## Deployment Status
-🟡 **Force redeployment needed** - Login issues require fresh deployment 
+🟢 **Force redeployment triggered** - All changes will be live after deployment 
