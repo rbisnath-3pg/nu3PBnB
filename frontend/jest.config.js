@@ -1,10 +1,7 @@
 module.exports = {
   testEnvironment: 'jsdom',
   testTimeout: 15000,
-  verbose: true,
-  silent: false,
   detectOpenHandles: true,
-  forceExit: true,
   logHeapUsage: true,
   transform: {
     '^.+\\.[jt]sx?$': 'babel-jest',

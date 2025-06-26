@@ -76,10 +76,7 @@
   "jest": {
     "testEnvironment": "node",
     "testTimeout": 10000,
-    "verbose": true,
-    "silent": false,
     "detectOpenHandles": true,
-    "forceExit": true,
     "logHeapUsage": true,
     "transform": {
       "^.+\\.[jt]sx?$": "babel-jest"
@@ -110,9 +107,7 @@
         "displayName": "backend",
         "testEnvironment": "node",
         "testTimeout": 15000,
-        "verbose": true,
         "detectOpenHandles": true,
-        "forceExit": true,
         "testMatch": [
           "<rootDir>/routes/__tests__/**/*.test.js",
           "<rootDir>/models/__tests__/**/*.test.js"
@@ -125,9 +120,7 @@
         "displayName": "frontend",
         "testEnvironment": "jsdom",
         "testTimeout": 15000,
-        "verbose": true,
         "detectOpenHandles": true,
-        "forceExit": true,
         "testMatch": [
           "<rootDir>/frontend/src/**/*.test.jsx",
           "<rootDir>/frontend/src/**/*.test.js"
