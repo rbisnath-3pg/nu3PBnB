@@ -119,4 +119,13 @@ const { initializeDatabase } = require('./scripts/init-database');
 
 // In MongoDB connection callback
 await initializeDatabase();
-``` 
+```
+
+# Scripts Directory
+
+## Locked User Seeding
+
+- The script `seed-locked-users.js` enforces the locked set of default users for all environments.
+- The user list is defined in `../locked-test-users.json` and must never be changed without explicit approval.
+- All other users are deleted during seeding.
+- See `../documentation/locked-users.md` for the list of locked users and credentials. 

@@ -1,0 +1,10 @@
+{
+  "_comment": "DO NOT MODIFY THIS FILE. These are the locked default users for all environments. Any change must be approved and coordinated across all deployments.",
+  "users": [
+    { "email": "admin@nu3pbnb.com", "password": "admin123", "role": "admin", "name": "Admin User" },
+    { "email": "Raul50@gmail.com", "password": "host123", "role": "host", "name": "Raul Host" },
+    { "email": "Ashtyn.Barrows99@gmail.com", "password": "host123", "role": "host", "name": "Ashtyn Barrows" },
+    { "email": "Evelyn_Feeney68@gmail.com", "password": "guest123", "role": "guest", "name": "Evelyn Feeney" },
+    { "email": "Kristopher32@hotmail.com", "password": "guest123", "role": "guest", "name": "Kristopher Guest" }
+  ]
+} 

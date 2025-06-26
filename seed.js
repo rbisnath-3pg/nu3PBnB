@@ -8,6 +8,7 @@ const Review = require('./models/Review');
 const Message = require('./models/Message');
 const Feedback = require('./models/Feedback');
 const { faker } = require('@faker-js/faker');
+const { execSync } = require('child_process');
 
 // List of global cities for randomization
 const cities = [
@@ -124,43 +125,8 @@ async function seed() {
     await Feedback.deleteMany({});
     console.log('Cleared existing data');
 
-    // Create 10 hosts
-    console.log('Creating hosts...');
-    const hosts = [];
-    for (let i = 0; i < 10; i++) {
-      const name = faker.person.fullName();
-      const email = faker.internet.email().toLowerCase();
-      const hashedPassword = await bcrypt.hash('host123', 10);
-      const host = new User({
-        name,
-        email,
-        password: hashedPassword,
-        role: 'host',
-        wishlist: [],
-        onboarded: true
-      });
-      await host.save();
-      hosts.push(host);
-      console.log(`Created host ${i + 1}/10: ${name} | EMAIL: ${email} | PASSWORD: host123`);
-    }
-
-    // Create 30 guests
-    console.log('Creating guests...');
-    for (let i = 0; i < 30; i++) {
-      const name = faker.person.fullName();
-      const email = faker.internet.email().toLowerCase();
-      const hashedPassword = await bcrypt.hash('guest123', 10);
-      const guest = new User({
-        name,
-        email,
-        password: hashedPassword,
-        role: 'guest',
-        wishlist: [],
-        onboarded: true
-      });
-      await guest.save();
-      console.log(`Created guest ${i + 1}/30: ${name} | EMAIL: ${email} | PASSWORD: guest123`);
-    }
+    // Always seed locked users
+    execSync('node scripts/seed-locked-users.js', { stdio: 'inherit' });
 
     // Create 40 listings, randomly assigned to hosts and cities
     console.log('Creating listings...');
@@ -207,7 +173,7 @@ async function seed() {
     }
 
     console.log('Seeding completed successfully!');
-    console.log(`Created: 10 hosts, 30 guests, 40 listings`);
+    console.log(`Created: 40 listings`);
     
     // Close the connection
     await mongoose.connection.close();

@@ -10,6 +10,7 @@ const Feedback = require('../models/Feedback');
 const { faker } = require('@faker-js/faker');
 const path = require('path');
 const fs = require('fs');
+const { execSync } = require('child_process');
 
 // List of global cities for randomization
 const cities = [
@@ -191,10 +192,11 @@ async function createComprehensiveSeedData() {
   console.log('🌱 Creating comprehensive seed data...');
   
   // Create admin user
-  await createAdminUser();
-  
+  // await createAdminUser();
   // Create comprehensive user data
-  await createComprehensiveUsers();
+  // await createComprehensiveUsers();
+  // Instead, always seed locked users
+  execSync('node scripts/seed-locked-users.js', { stdio: 'inherit' });
   
   // Create comprehensive listings
   await createComprehensiveListings();
@@ -203,85 +205,6 @@ async function createComprehensiveSeedData() {
   await createContentTranslations();
   
   console.log('✅ Comprehensive seed data created');
-}
-
-// Create admin user
-async function createAdminUser() {
-  const adminExists = await User.findOne({ email: 'admin@nu3pbnb.com' });
-  if (!adminExists) {
-    const hashedPassword = await bcrypt.hash('password123', 10);
-    const adminUser = new User({
-      name: 'System Administrator',
-      email: 'admin@nu3pbnb.com',
-      password: hashedPassword,
-      role: 'admin',
-      emailVerified: true,
-      profile: {
-        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-        bio: 'System administrator for nu3PBnB platform',
-        phone: '+1-555-0123'
-      }
-    });
-    await adminUser.save();
-    console.log('👤 Admin user created');
-  }
-}
-
-// Create comprehensive user data
-async function createComprehensiveUsers() {
-  console.log('👥 Creating comprehensive user data...');
-  
-  // Create 10 hosts
-  console.log('Creating hosts...');
-  const hosts = [];
-  for (let i = 0; i < 10; i++) {
-    const name = faker.person.fullName();
-    const email = faker.internet.email();
-    const hashedPassword = await bcrypt.hash('host123', 10);
-    const host = new User({
-      name,
-      email,
-      password: hashedPassword,
-      role: 'host',
-      wishlist: [],
-      onboarded: true,
-      emailVerified: true,
-      profile: {
-        avatar: faker.image.avatar(),
-        bio: faker.lorem.sentence(),
-        phone: faker.phone.number()
-      }
-    });
-    await host.save();
-    hosts.push(host);
-    console.log(`Created host ${i + 1}/10: ${name} | EMAIL: ${email} | PASSWORD: host123`);
-  }
-
-  // Create 30 guests
-  console.log('Creating guests...');
-  for (let i = 0; i < 30; i++) {
-    const name = faker.person.fullName();
-    const email = faker.internet.email();
-    const hashedPassword = await bcrypt.hash('guest123', 10);
-    const guest = new User({
-      name,
-      email,
-      password: hashedPassword,
-      role: 'guest',
-      wishlist: [],
-      onboarded: true,
-      emailVerified: true,
-      profile: {
-        avatar: faker.image.avatar(),
-        bio: faker.lorem.sentence(),
-        phone: faker.phone.number()
-      }
-    });
-    await guest.save();
-    console.log(`Created guest ${i + 1}/30: ${name} | EMAIL: ${email} | PASSWORD: guest123`);
-  }
-  
-  console.log('✅ Comprehensive user data created');
 }
 
 // Create comprehensive listings
