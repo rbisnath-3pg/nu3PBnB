@@ -264,15 +264,29 @@ router.post('/run-tests', auth, requireRole('admin'), (req, res) => {
   const id = Date.now().toString();
   const date = new Date().toLocaleString();
   const results = readTestResults();
+  
+  console.log(`🔄 Starting test run ${id} at ${date}`);
+  
   // Mark as running
   results.unshift({ id, date, status: 'running', summary: 'Running...', coverage: '', details: '' });
   writeTestResults(results);
   
+  // Check if Jest is available
+  const jestCommand = 'npx jest --verbose --colors=false --coverage';
+  const cwd = path.join(__dirname, '..');
+  
+  console.log(`📋 Executing: ${jestCommand} in ${cwd}`);
+  
   // Run tests async with full output capture
-  const testProcess = exec('npx jest --verbose --colors=false --coverage', { 
-    cwd: path.join(__dirname, '..'),
-    maxBuffer: 1024 * 1024 * 10 // 10MB buffer for large test outputs
+  const testProcess = exec(jestCommand, { 
+    cwd: cwd,
+    maxBuffer: 1024 * 1024 * 10, // 10MB buffer for large test outputs
+    env: { ...process.env, NODE_ENV: 'test' },
+    timeout: 300000 // 5 minute timeout
   }, (err, stdout, stderr) => {
+    console.log(`✅ Test run ${id} completed with ${err ? 'error' : 'success'}`);
+    console.log(`📊 stdout length: ${stdout?.length || 0}, stderr length: ${stderr?.length || 0}`);
+    
     const status = err ? 'failed' : 'passed';
     
     // Parse summary from stdout
@@ -317,12 +331,29 @@ router.post('/run-tests', auth, requireRole('admin'), (req, res) => {
         details: fullOutput
       };
       writeTestResults(updatedResults);
+      console.log(`💾 Test results saved for run ${id}`);
+    } else {
+      console.error(`❌ Could not find test run ${id} to update`);
     }
   });
   
   // Handle process events for better error handling
   testProcess.on('error', (error) => {
-    console.error('Test execution error:', error);
+    console.error(`❌ Test execution error for run ${id}:`, error);
+    
+    // Create a fallback result if Jest fails
+    const fallbackOutput = `Jest execution failed in production environment.
+
+Error: ${error.message}
+Stack trace: ${error.stack}
+
+This might be due to:
+- Jest not being available in production
+- Environment constraints on Render.com
+- Memory or timeout limitations
+
+Consider running tests in a CI/CD pipeline instead of production.`;
+
     const updatedResults = readTestResults();
     const idx = updatedResults.findIndex(r => r.id === id);
     if (idx !== -1) {
@@ -330,13 +361,50 @@ router.post('/run-tests', auth, requireRole('admin'), (req, res) => {
         id,
         date,
         status: 'failed',
-        summary: 'Test execution failed',
+        summary: 'Jest execution failed - see details',
         coverage: '',
-        details: `Error: ${error.message}\n\nStack trace:\n${error.stack}`
+        details: fallbackOutput
       };
       writeTestResults(updatedResults);
     }
   });
+  
+  // Handle process exit
+  testProcess.on('exit', (code, signal) => {
+    console.log(`🚪 Test process exited with code ${code}, signal ${signal} for run ${id}`);
+    
+    // If process exits with error and we haven't handled it yet
+    if (code !== 0 && code !== null) {
+      console.log(`⚠️ Test process exited with non-zero code ${code} for run ${id}`);
+    }
+  });
+  
+  // Handle process close
+  testProcess.on('close', (code) => {
+    console.log(`🔒 Test process closed with code ${code} for run ${id}`);
+  });
+  
+  // Handle timeout
+  setTimeout(() => {
+    if (testProcess.exitCode === null) {
+      console.log(`⏰ Test process timed out for run ${id}, killing process`);
+      testProcess.kill('SIGTERM');
+      
+      const updatedResults = readTestResults();
+      const idx = updatedResults.findIndex(r => r.id === id);
+      if (idx !== -1) {
+        updatedResults[idx] = {
+          id,
+          date,
+          status: 'failed',
+          summary: 'Test execution timed out',
+          coverage: '',
+          details: 'Test execution exceeded the 5-minute timeout limit. This might be due to environment constraints or test complexity.'
+        };
+        writeTestResults(updatedResults);
+      }
+    }
+  }, 300000); // 5 minute timeout
   
   res.json({ id, date, status: 'running', summary: 'Running...', coverage: '', details: '' });
 });
