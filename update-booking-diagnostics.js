@@ -60,17 +60,18 @@ async function updateBookingDiagnostics() {
       throw new Error('[BookingTest] No listings found');
     }
     
-    const testListing = listings[19];
+    // Pick a random listing
+    const testListing = listings[Math.floor(Math.random() * listings.length)];
     logs.push(`✅ [BookingTest] Found ${listings.length} listings, using: ${testListing.title} (${testListing._id})`);
     logs.push(`[BookingTest] Full listing object: ${JSON.stringify(testListing)}`);
 
-    // Log the booking dates
+    // Pick a random far-future date range
+    const baseDays = 10000 + Math.floor(Math.random() * 10000); // 10,000–20,000 days in the future
+    const duration = 2 + Math.floor(Math.random() * 4); // 2–5 days
     const startDate = new Date();
-    startDate.setDate(startDate.getDate() + 20000); // 20000 days from now
-    
-    const endDate = new Date(startDate); // Create new date object from startDate
-    endDate.setDate(endDate.getDate() + 3); // 3 days after start date
-    
+    startDate.setDate(startDate.getDate() + baseDays);
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + duration);
     logs.push(`[BookingTest] Using startDate: ${startDate.toISOString()}, endDate: ${endDate.toISOString()}`);
 
     // Try to fetch existing bookings for this listing and date range (if endpoint exists)
