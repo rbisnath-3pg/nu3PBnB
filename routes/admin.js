@@ -260,23 +260,23 @@ router.get('/test-results/:id', auth, requireRole('admin'), (req, res) => {
 });
 
 // Trigger a new test run
-// NOTE: Production-safe Jest execution with memory and time limits
+// NOTE: Using enhanced test runner for production-safe execution
 router.post('/run-tests', auth, requireRole('admin'), (req, res) => {
   const id = Date.now().toString();
   const date = new Date().toLocaleString();
   const results = readTestResults();
   
-  console.log(`🔄 Starting production-safe test run ${id} at ${date}`);
+  console.log(`🔄 Starting enhanced test run ${id} at ${date}`);
   
   // Mark as running
   results.unshift({ id, date, status: 'running', summary: 'Running...', coverage: '', details: '' });
   writeTestResults(results);
   
   // Production-safe Jest command with memory and time limits
-  const jestCommand = 'npx jest --verbose --colors=false --coverage --maxWorkers=1 --runInBand --detectOpenHandles --forceExit --testTimeout=10000 --maxConcurrency=1';
+  const jestCommand = 'node test-runner.js';
   const cwd = path.join(__dirname, '..');
   
-  console.log(`📋 Executing production-safe Jest: ${jestCommand} in ${cwd}`);
+  console.log(`📋 Executing enhanced test runner: ${jestCommand} in ${cwd}`);
   
   // Run tests with strict memory and time limits
   const testProcess = exec(jestCommand, { 
@@ -286,25 +286,28 @@ router.post('/run-tests', auth, requireRole('admin'), (req, res) => {
       ...process.env, 
       NODE_ENV: 'test',
       NODE_OPTIONS: '--max-old-space-size=512', // Limit memory to 512MB
-      JEST_WORKER_TIMEOUT: '8000' // 8 second timeout per worker
+      LOG_LEVEL: 'info',
+      FORCE_COLOR: '0' // Disable colors for production
     },
     timeout: 120000 // 2 minute total timeout
   }, (err, stdout, stderr) => {
-    console.log(`✅ Test run ${id} completed with ${err ? 'error' : 'success'}`);
+    console.log(`✅ Enhanced test run ${id} completed with ${err ? 'error' : 'success'}`);
     console.log(`📊 stdout length: ${stdout?.length || 0}, stderr length: ${stderr?.length || 0}`);
     
     const status = err ? 'failed' : 'passed';
     
-    // Parse summary from stdout
+    // Parse summary from enhanced test runner output
     let summary = 'Test execution completed';
     let coverage = '';
     
-    // Extract test summary
-    const testSummaryMatch = stdout.match(/Tests:\s+([\d]+) passed, ([\d]+) total/);
+    // Extract test summary from enhanced runner output
+    const testSummaryMatch = stdout.match(/Test Results Summary.*?total.*?(\d+).*?passed.*?(\d+)/s);
     if (testSummaryMatch) {
-      summary = `${testSummaryMatch[1]} of ${testSummaryMatch[2]} tests passed`;
+      const total = testSummaryMatch[1];
+      const passed = testSummaryMatch[2];
+      summary = `${passed} of ${total} tests passed`;
     } else {
-      // Fallback parsing for different Jest output formats
+      // Fallback parsing for different output formats
       const passedMatch = stdout.match(/(\d+) passing/);
       const failedMatch = stdout.match(/(\d+) failing/);
       if (passedMatch || failedMatch) {
@@ -337,7 +340,7 @@ router.post('/run-tests', auth, requireRole('admin'), (req, res) => {
         details: fullOutput
       };
       writeTestResults(updatedResults);
-      console.log(`💾 Test results saved for run ${id}`);
+      console.log(`💾 Enhanced test results saved for run ${id}`);
     } else {
       console.error(`❌ Could not find test run ${id} to update`);
     }
@@ -345,22 +348,22 @@ router.post('/run-tests', auth, requireRole('admin'), (req, res) => {
   
   // Handle process events for better error handling
   testProcess.on('error', (error) => {
-    console.error(`❌ Test execution error for run ${id}:`, error);
+    console.error(`❌ Enhanced test execution error for run ${id}:`, error);
     
     // Try running tests in smaller batches as fallback
     console.log(`🔄 Attempting fallback: running tests in smaller batches for run ${id}`);
     
     const fallbackTests = [
-      '--testPathPattern="routes/__tests__" --testNamePattern="should return"',
-      '--testPathPattern="models/__tests__" --testNamePattern="should"',
-      '--testPathPattern="frontend/src/components/__tests__" --testNamePattern="renders"'
+      'suite backend',
+      'suite frontend',
+      'pattern auth'
     ];
     
     let batchResults = [];
     let completedBatches = 0;
     
     fallbackTests.forEach((testPattern, index) => {
-      const batchCommand = `npx jest --verbose --colors=false --maxWorkers=1 --runInBand --detectOpenHandles --forceExit --testTimeout=5000 ${testPattern}`;
+      const batchCommand = `node test-runner.js ${testPattern}`;
       
       exec(batchCommand, {
         cwd: cwd,
@@ -368,7 +371,9 @@ router.post('/run-tests', auth, requireRole('admin'), (req, res) => {
         env: { 
           ...process.env, 
           NODE_ENV: 'test',
-          NODE_OPTIONS: '--max-old-space-size=256' // Even smaller memory limit
+          NODE_OPTIONS: '--max-old-space-size=256', // Even smaller memory limit
+          LOG_LEVEL: 'info',
+          FORCE_COLOR: '0'
         },
         timeout: 30000 // 30 second timeout per batch
       }, (batchErr, batchStdout, batchStderr) => {
@@ -428,50 +433,51 @@ For full test execution, consider using a CI/CD pipeline or development environm
   
   // Handle process exit
   testProcess.on('exit', (code, signal) => {
-    console.log(`🚪 Test process exited with code ${code}, signal ${signal} for run ${id}`);
+    console.log(`🚪 Enhanced test process exited with code ${code}, signal ${signal} for run ${id}`);
     
     // If process exits with error and we haven't handled it yet
     if (code !== 0 && code !== null) {
-      console.log(`⚠️ Test process exited with non-zero code ${code} for run ${id}`);
+      console.log(`⚠️ Enhanced test process exited with non-zero code ${code} for run ${id}`);
     }
   });
   
   // Handle process close
   testProcess.on('close', (code) => {
-    console.log(`🔒 Test process closed with code ${code} for run ${id}`);
+    console.log(`🔒 Enhanced test process closed with code ${code} for run ${id}`);
   });
   
   // Handle timeout with graceful shutdown
   setTimeout(() => {
     if (testProcess.exitCode === null) {
-      console.log(`⏰ Test process timed out for run ${id}, killing process gracefully`);
+      console.log(`⏰ Enhanced test process timed out for run ${id}, killing process gracefully`);
       testProcess.kill('SIGTERM');
       
-      // Give it a moment to shut down gracefully
+      // Update result with timeout status
       setTimeout(() => {
-        if (testProcess.exitCode === null) {
-          console.log(`🔨 Force killing test process for run ${id}`);
-          testProcess.kill('SIGKILL');
+        const updatedResults = readTestResults();
+        const idx = updatedResults.findIndex(r => r.id === id);
+        if (idx !== -1) {
+          updatedResults[idx] = {
+            id,
+            date,
+            status: 'failed',
+            summary: 'Test execution timed out',
+            coverage: '',
+            details: `Enhanced test execution timed out after 2 minutes.\n\nThis may be due to:\n- Large test suite\n- Memory constraints\n- Network issues\n\nConsider running tests in smaller batches or using a development environment for full test execution.`
+          };
+          writeTestResults(updatedResults);
+          console.log(`💾 Timeout test results saved for run ${id}`);
         }
-      }, 5000);
-      
-      const updatedResults = readTestResults();
-      const idx = updatedResults.findIndex(r => r.id === id);
-      if (idx !== -1) {
-        updatedResults[idx] = {
-          id,
-          date,
-          status: 'failed',
-          summary: 'Test execution timed out',
-          coverage: '',
-          details: 'Test execution exceeded the 2-minute timeout limit. This might be due to environment constraints or test complexity. Consider running tests in smaller batches.'
-        };
-        writeTestResults(updatedResults);
-      }
+      }, 1000);
     }
   }, 120000); // 2 minute timeout
   
-  res.json({ id, date, status: 'running', summary: 'Running...', coverage: '', details: '' });
+  res.json({ 
+    message: 'Test run started', 
+    id, 
+    status: 'running',
+    summary: 'Running enhanced test suite...'
+  });
 });
 
 // Clear all test results
