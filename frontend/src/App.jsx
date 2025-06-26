@@ -212,6 +212,9 @@ function App() {
 
   const [loginTestError, setLoginTestError] = useState(null)
 
+  const [diagnostics, setDiagnostics] = useState(null);
+  const [showDiagnostics, setShowDiagnostics] = useState(true);
+
   const navigate = useNavigate();
 
   /**
@@ -1357,6 +1360,26 @@ function App() {
     runLoginTests();
   }, []);
 
+  useEffect(() => {
+    async function fetchDiagnostics() {
+      try {
+        const res = await fetch('/api/diagnostics/booking-tests');
+        if (res.ok) {
+          const data = await res.json();
+          setDiagnostics(data);
+        }
+      } catch (err) {
+        setDiagnostics({
+          lastRun: null,
+          success: false,
+          errors: [err.message],
+          logs: []
+        });
+      }
+    }
+    fetchDiagnostics();
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <AppHeader user={user} onLogin={() => setShowSignIn(true)} onRegister={() => setShowSignUp(true)} onLanguageChange={handleDarkModeToggle} />
@@ -1522,6 +1545,32 @@ function App() {
         title={confirmation.title}
         message={confirmation.message}
       />
+
+      {diagnostics && showDiagnostics && (
+        <div className={`fixed top-0 left-0 w-full z-50 p-4 ${diagnostics.success ? 'bg-green-100 text-green-900' : 'bg-red-100 text-red-900'} border-b border-gray-300 shadow-lg`}>
+          <div className="flex justify-between items-center">
+            <div>
+              <strong>Booking Diagnostics:</strong> Last Run: {diagnostics.lastRun ? new Date(diagnostics.lastRun).toLocaleString() : 'Never'}<br/>
+              {diagnostics.success ? '✅ All booking tests passed.' : '❌ Booking test failed!'}
+              {diagnostics.errors && diagnostics.errors.length > 0 && (
+                <div className="mt-2">
+                  <strong>Errors:</strong>
+                  <ul className="list-disc ml-6">
+                    {diagnostics.errors.map((err, i) => <li key={i}>{err}</li>)}
+                  </ul>
+                </div>
+              )}
+              {diagnostics.logs && diagnostics.logs.length > 0 && (
+                <details className="mt-2">
+                  <summary className="cursor-pointer font-semibold">Debug Log</summary>
+                  <pre className="bg-gray-200 rounded p-2 text-xs max-h-64 overflow-auto">{diagnostics.logs.join('\n')}</pre>
+                </details>
+              )}
+            </div>
+            <button className="ml-4 px-3 py-1 rounded bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold" onClick={() => setShowDiagnostics(false)}>Dismiss</button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

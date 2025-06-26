@@ -761,4 +761,10 @@ router.get('/setup/database-status', async (req, res) => {
   }
 });
 
+// Diagnostics endpoint for booking tests
+router.get('/diagnostics/booking-tests', (req, res) => {
+  const diagnostics = global.nu3pbnbDiagnostics || { bookingTest: { lastRun: null, success: null, errors: [], logs: [] } };
+  res.json(diagnostics.bookingTest);
+});
+
 module.exports = router; 
