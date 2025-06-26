@@ -84,6 +84,7 @@ const PaymentForm = ({ booking, selectedListing, onSuccess, onCancel, paymentTyp
           amount: totalAmount,
           transactionId: result.payment?.transactionId || 'mock-' + Date.now(),
           bookingApproved: result.bookingApproved,
+          bookingId: result.bookingId,
           paymentType: paymentType
         });
       } else {
