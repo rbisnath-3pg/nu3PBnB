@@ -26,6 +26,7 @@ import Spinner from './components/Spinner'
 import { FaEnvelope } from 'react-icons/fa'
 import getApiBase from './services/getApiBase'
 import frontendAuthLogger from './services/authLogger'
+import testLogins from './services/testLogins'
 
 /**
  * Main App component that handles the entire application state and routing
@@ -161,6 +162,8 @@ function App() {
   const [notification, setNotification] = useState({ show: false, title: '', message: '', type: 'info' })
   const [confirmation, setConfirmation] = useState({ show: false, title: '', message: '', onConfirm: null })
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
+
+  const [loginTestError, setLoginTestError] = useState(null)
 
   const navigate = useNavigate();
 
@@ -1250,12 +1253,30 @@ function App() {
     }
   }, [user]);
 
+  // Automatic login testing on app startup
+  useEffect(() => {
+    async function runLoginTests() {
+      const result = await testLogins();
+      if (!result.success) {
+        setLoginTestError(result);
+      }
+    }
+    runLoginTests();
+  }, []);
+
   return (
     <div className={darkMode ? 'dark bg-gray-950 min-h-screen' : 'bg-white min-h-screen'}>
       {/* Global Loading Spinner */}
       {loading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-80">
           <Spinner text="Loading..." size={64} />
+        </div>
+      )}
+      {/* Login Test Error Banner */}
+      {loginTestError && (
+        <div className="bg-red-600 text-white text-center py-3 px-4 font-bold">
+          <span>Automatic Login Test Failed! See console for details.</span>
+          <pre className="text-xs mt-2 whitespace-pre-wrap text-left overflow-x-auto max-w-4xl mx-auto bg-red-700 p-2 rounded">{JSON.stringify(loginTestError, null, 2)}</pre>
         </div>
       )}
 
@@ -1450,6 +1471,7 @@ function App() {
         fetchWishlist={fetchWishlist}
         handleRemoveFromWishlist={handleRemoveFromWishlist}
         fetchListings={fetchListings}
+        loginTestError={loginTestError}
       />
 
       {/* Listing Detail Modal */}

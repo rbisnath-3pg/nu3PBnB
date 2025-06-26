@@ -56,7 +56,8 @@ const HomePage = ({
   userWishlist,
   wishlistLoading,
   fetchWishlist,
-  handleRemoveFromWishlist
+  handleRemoveFromWishlist,
+  loginTestError,
 }) => {
   console.log('[HomePage] listings:', listings, 'user:', user, 'loading:', loading, 'error:', error, 'showSearchResults:', showSearchResults);
   console.log('[HomePage] featuredProperty:', featuredProperty, 'featuredListings:', featuredListings, 'featuredIndex:', featuredIndex);
@@ -218,6 +219,17 @@ const HomePage = ({
   useEffect(() => {
     setCurrentPage(1);
   }, [listings]);
+
+  // Show login test error banner if present
+  if (loginTestError) {
+    return (
+      <div className="p-8 text-center bg-red-100 text-red-800 rounded-lg max-w-2xl mx-auto mt-12">
+        <h2 className="text-2xl font-bold mb-4">Automatic Login Test Failed</h2>
+        <p className="mb-2">One or more test logins failed when the app started. Please check the browser console for full details.</p>
+        <pre className="text-xs bg-red-200 p-2 rounded overflow-x-auto text-left max-h-96">{JSON.stringify(loginTestError, null, 2)}</pre>
+      </div>
+    );
+  }
 
   return (
     <>
