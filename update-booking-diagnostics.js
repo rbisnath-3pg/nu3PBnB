@@ -197,10 +197,197 @@ async function updateBookingDiagnostics() {
   return diagnosticsData;
 }
 
-// Export the function for use in index.js
-module.exports = { updateBookingDiagnostics };
+async function updatePropertyViewDiagnostics() {
+  console.log('🔄 Updating property view diagnostics...');
+  
+  const logs = [];
+  const errors = [];
+  let success = true;
+  let token = null;
+  
+  try {
+    // Test 1: Public listings access (no auth required)
+    logs.push('🧪 [PropertyTest] Testing public listings access...');
+    const publicListingsRes = await fetch(`${API_BASE}/api/listings`);
+    
+    if (!publicListingsRes.ok) {
+      throw new Error(`[PropertyTest] Public listings fetch failed: ${publicListingsRes.status}`);
+    }
+    
+    const publicListingsData = await publicListingsRes.json();
+    const publicListings = publicListingsData.listings || [];
+    
+    if (!publicListings.length) {
+      throw new Error('[PropertyTest] No public listings found');
+    }
+    
+    logs.push(`✅ [PropertyTest] Found ${publicListings.length} public listings`);
+    
+    // Test 2: Authenticated listings access
+    logs.push('🧪 [PropertyTest] Testing authenticated listings access...');
+    const loginRes = await fetch(`${API_BASE}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        email: 'Evelyn_Feeney68@gmail.com', 
+        password: 'guest123' 
+      })
+    });
+    
+    if (!loginRes.ok) {
+      throw new Error(`[PropertyTest] Login failed: ${loginRes.status}`);
+    }
+    
+    const loginData = await loginRes.json();
+    token = loginData.token;
+    logs.push('✅ [PropertyTest] Login successful');
+    
+    const authListingsRes = await fetch(`${API_BASE}/api/listings`, { 
+      headers: { Authorization: `Bearer ${token}` } 
+    });
+    
+    if (!authListingsRes.ok) {
+      throw new Error(`[PropertyTest] Authenticated listings fetch failed: ${authListingsRes.status}`);
+    }
+    
+    const authListingsData = await authListingsRes.json();
+    const authListings = authListingsData.listings || [];
+    
+    if (!authListings.length) {
+      throw new Error('[PropertyTest] No authenticated listings found');
+    }
+    
+    logs.push(`✅ [PropertyTest] Found ${authListings.length} authenticated listings`);
+    
+    // Test 3: Individual listing details
+    logs.push('🧪 [PropertyTest] Testing individual listing details...');
+    const testListing = authListings[0];
+    const listingDetailRes = await fetch(`${API_BASE}/api/listings/${testListing._id}`, { 
+      headers: { Authorization: `Bearer ${token}` } 
+    });
+    
+    if (!listingDetailRes.ok) {
+      throw new Error(`[PropertyTest] Listing detail fetch failed: ${listingDetailRes.status}`);
+    }
+    
+    const listingDetail = await listingDetailRes.json();
+    
+    if (!listingDetail.listing) {
+      throw new Error('[PropertyTest] No listing detail returned');
+    }
+    
+    logs.push(`✅ [PropertyTest] Listing detail retrieved: ${listingDetail.listing.title}`);
+    
+    // Test 4: Featured listings
+    logs.push('🧪 [PropertyTest] Testing featured listings...');
+    const featuredRes = await fetch(`${API_BASE}/api/listings/featured`, { 
+      headers: { Authorization: `Bearer ${token}` } 
+    });
+    
+    if (!featuredRes.ok) {
+      throw new Error(`[PropertyTest] Featured listings fetch failed: ${featuredRes.status}`);
+    }
+    
+    const featuredData = await featuredRes.json();
+    const featuredListings = featuredData.listings || [];
+    
+    logs.push(`✅ [PropertyTest] Found ${featuredListings.length} featured listings`);
+    
+    // Test 5: Search functionality
+    logs.push('🧪 [PropertyTest] Testing search functionality...');
+    const searchRes = await fetch(`${API_BASE}/api/listings/search?q=apartment`, { 
+      headers: { Authorization: `Bearer ${token}` } 
+    });
+    
+    if (!searchRes.ok) {
+      throw new Error(`[PropertyTest] Search failed: ${searchRes.status}`);
+    }
+    
+    const searchData = await searchRes.json();
+    const searchResults = searchData.listings || [];
+    
+    logs.push(`✅ [PropertyTest] Search returned ${searchResults.length} results`);
+    
+    // Test 6: Pagination
+    logs.push('🧪 [PropertyTest] Testing pagination...');
+    const page2Res = await fetch(`${API_BASE}/api/listings?page=2&limit=5`, { 
+      headers: { Authorization: `Bearer ${token}` } 
+    });
+    
+    if (!page2Res.ok) {
+      throw new Error(`[PropertyTest] Pagination failed: ${page2Res.status}`);
+    }
+    
+    const page2Data = await page2Res.json();
+    const page2Listings = page2Data.listings || [];
+    
+    logs.push(`✅ [PropertyTest] Page 2 returned ${page2Listings.length} listings`);
+    
+  } catch (err) {
+    errors.push(err.message);
+    logs.push(`❌ [PropertyTest] Error: ${err.message}`);
+    success = false;
+  }
+  
+  // Update the diagnostics
+  const diagnosticsData = {
+    lastRun: new Date().toISOString(),
+    success,
+    errors,
+    logs
+  };
+  
+  console.log('\n📊 Property View Test Results:');
+  console.log(`Last Run: ${diagnosticsData.lastRun}`);
+  console.log(`Success: ${success ? '✅ YES' : '❌ NO'}`);
+  console.log(`Errors: ${errors.length}`);
+  console.log(`Logs: ${logs.length} entries`);
+  
+  if (errors.length > 0) {
+    console.log('\n❌ Errors:');
+    errors.forEach(error => console.log(`  - ${error}`));
+  }
+  
+  console.log('\n📝 Logs:');
+  logs.forEach(log => console.log(`  ${log}`));
+  
+  // Save diagnostics to MongoDB
+  try {
+    await Diagnostics.findOneAndUpdate(
+      { key: 'propertyViewTest' },
+      { ...diagnosticsData, key: 'propertyViewTest' },
+      { upsert: true, new: true }
+    );
+    console.log('✅ Property view diagnostics saved to MongoDB');
+  } catch (err) {
+    console.error('❌ Failed to save property view diagnostics to MongoDB:', err.message);
+  }
+  
+  return diagnosticsData;
+}
 
-// Only run if this file is executed directly
+// Export both functions
+module.exports = {
+  updateBookingDiagnostics,
+  updatePropertyViewDiagnostics
+};
+
+// Run both diagnostics if this file is executed directly
 if (require.main === module) {
-  updateBookingDiagnostics().catch(console.error);
+  (async () => {
+    console.log('🚀 Running comprehensive diagnostics...\n');
+    
+    // Run booking diagnostics
+    await updateBookingDiagnostics();
+    console.log('\n' + '='.repeat(50) + '\n');
+    
+    // Run property view diagnostics
+    await updatePropertyViewDiagnostics();
+    
+    console.log('\n✅ All diagnostics completed!');
+    process.exit(0);
+  })().catch(err => {
+    console.error('❌ Diagnostics failed:', err);
+    process.exit(1);
+  });
 } 

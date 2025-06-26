@@ -237,6 +237,7 @@ function App() {
 
   const [diagnostics, setDiagnostics] = useState(null);
   const [showDiagnostics, setShowDiagnostics] = useState(true);
+  const [propertyDiagnostics, setPropertyDiagnostics] = useState(null);
 
   const navigate = useNavigate();
 
@@ -1405,6 +1406,28 @@ function App() {
     fetchDiagnostics();
   }, []);
 
+  useEffect(() => {
+    async function fetchPropertyDiagnostics() {
+      try {
+        // Use the correct API base URL instead of relative URL
+        const apiBase = import.meta.env.VITE_API_URL || 'https://nu3pbnb-api.onrender.com';
+        const res = await fetch(`${apiBase}/api/diagnostics/property-tests`);
+        if (res.ok) {
+          const data = await res.json();
+          setPropertyDiagnostics(data);
+        }
+      } catch (err) {
+        setPropertyDiagnostics({
+          lastRun: null,
+          success: false,
+          errors: [err.message],
+          logs: []
+        });
+      }
+    }
+    fetchPropertyDiagnostics();
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <AppHeader
@@ -1608,26 +1631,28 @@ function App() {
               {/* Detailed Error Information */}
               {diagnostics.errors && diagnostics.errors.length > 0 && (
                 <div className="mb-3">
-                  <strong className="text-red-800">🔍 Detailed Errors:</strong>
-                  <div className="mt-1 space-y-2">
-                    {diagnostics.errors.map((err, i) => (
-                      <div key={i} className="bg-red-50 border border-red-200 rounded p-2 text-sm">
-                        <div className="font-semibold text-red-800">Error #{i + 1}:</div>
-                        <div className="text-red-700 font-mono text-xs break-words">{err}</div>
-                        {/* Try to parse error for more details */}
-                        {err.includes('pattern') && (
-                          <div className="mt-1 text-xs text-red-600">
-                            💡 Pattern matching error detected. This usually indicates:
-                            <ul className="list-disc ml-4 mt-1">
-                              <li>Date format validation failure</li>
-                              <li>Booking availability check failure</li>
-                              <li>API response format mismatch</li>
-                            </ul>
-                          </div>
-                        )}
+                  <details className="bg-red-50 border border-red-200 rounded">
+                    <summary className="cursor-pointer font-semibold p-2 hover:bg-red-100 text-red-800">
+                      🔍 Detailed Errors ({diagnostics.errors.length})
+                    </summary>
+                    <div className="p-3 text-sm">
+                      {diagnostics.errors.map((error, index) => (
+                        <div key={index} className="mb-2 p-2 bg-red-100 rounded">
+                          <strong>Error #{index + 1}:</strong> {error}
+                        </div>
+                      ))}
+                      
+                      {/* Common Error Solutions */}
+                      <div className="mt-3 p-2 bg-yellow-100 rounded text-yellow-800">
+                        <strong>💡 Common Solutions:</strong>
+                        <ul className="mt-1 ml-4 list-disc text-xs">
+                          <li>Database connection issues</li>
+                          <li>Booking availability check failure</li>
+                          <li>API response format mismatch</li>
+                        </ul>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  </details>
                 </div>
               )}
 
@@ -1811,6 +1836,44 @@ URL: ${window.location.href}
                 }}
               >
                 🚀 Run Diagnostics Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Property View Diagnostics */}
+      {propertyDiagnostics && showDiagnostics && (
+        <div className={`fixed top-0 left-0 w-full z-50 p-4 ${propertyDiagnostics.success ? 'bg-green-100 text-green-900' : 'bg-red-100 text-red-900'} border-b border-gray-300 shadow-lg`} style={{ top: diagnostics ? '200px' : '0' }}>
+          <div className="flex justify-between items-start">
+            <div className="flex-1">
+              <div className="flex items-center gap-4 mb-2">
+                <strong>Property View Diagnostics:</strong> 
+                <span>Last Run: {propertyDiagnostics.lastRun ? new Date(propertyDiagnostics.lastRun).toLocaleString() : 'Never'}</span>
+                <span className={`px-2 py-1 rounded text-xs font-bold ${propertyDiagnostics.success ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}`}>
+                  {propertyDiagnostics.success ? '✅ PASSED' : '❌ FAILED'}
+                </span>
+              </div>
+              
+              {/* Debug Logs */}
+              {propertyDiagnostics.logs && propertyDiagnostics.logs.length > 0 && (
+                <details className="bg-blue-50 border border-blue-200 rounded">
+                  <summary className="cursor-pointer font-semibold p-2 hover:bg-blue-100">
+                    📝 Property Test Logs ({propertyDiagnostics.logs.length} entries)
+                  </summary>
+                  <pre className="bg-blue-100 rounded p-2 text-xs max-h-64 overflow-auto m-2 font-mono">
+                    {propertyDiagnostics.logs.map((log, i) => `${i + 1}: ${log}`).join('\n')}
+                  </pre>
+                </details>
+              )}
+            </div>
+            
+            <div className="flex flex-col gap-2 ml-4">
+              <button 
+                className="px-3 py-1 rounded bg-blue-500 hover:bg-blue-600 text-white font-bold text-sm"
+                onClick={() => window.location.reload()}
+              >
+                Refresh
               </button>
             </div>
           </div>
