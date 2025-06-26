@@ -362,12 +362,12 @@ router.get('/admin/stats', auth, requireRole('admin'), async (req, res) => {
 // Process payment (simplified)
 router.post('/process', auth, async (req, res) => {
   try {
-    const { bookingId, paymentMethod, amount } = req.body;
+    const { bookingId, paymentMethod, amount, paymentType, bookingData } = req.body;
 
-    if (!bookingId || !paymentMethod || !amount) {
+    if (!paymentMethod || !amount) {
       return res.status(400).json({ 
         error: 'Missing required fields',
-        message: 'bookingId, paymentMethod, and amount are required' 
+        message: 'paymentMethod and amount are required' 
       });
     }
 
@@ -387,26 +387,71 @@ router.post('/process', auth, async (req, res) => {
       });
     }
 
-    // Find the booking and validate it exists
     let booking = null;
-    try {
-      booking = await BookingRequest.findById(bookingId)
-        .populate('listing')
-        .populate('guest');
-    } catch (error) {
-      console.log('Booking not found, creating mock payment for testing');
+    let actualBookingId = bookingId;
+
+    // Handle new booking creation
+    if (paymentType === 'new' && bookingData && !bookingId) {
+      try {
+        // Validate booking data
+        const { listingId, startDate, endDate, guests, totalPrice, message } = bookingData;
+        
+        if (!listingId || !startDate || !endDate || !guests) {
+          return res.status(400).json({ 
+            error: 'Missing booking data',
+            message: 'listingId, startDate, endDate, and guests are required for new bookings' 
+          });
+        }
+
+        // Check if listing exists
+        const listing = await Listing.findById(listingId);
+        if (!listing) {
+          return res.status(404).json({ message: 'Listing not found' });
+        }
+
+        // Create the booking
+        booking = new BookingRequest({
+          guest: req.user.id,
+          host: listing.host,
+          listing: listingId,
+          startDate: new Date(startDate),
+          endDate: new Date(endDate),
+          guests: parseInt(guests),
+          totalPrice: totalPrice || amount,
+          message: message || '',
+          status: 'pending',
+          paymentStatus: 'pending'
+        });
+
+        await booking.save();
+        actualBookingId = booking._id;
+        
+        console.log(`Created new booking ${actualBookingId} during payment processing`);
+      } catch (error) {
+        console.error('Error creating booking during payment:', error);
+        return res.status(500).json({ message: 'Failed to create booking during payment' });
+      }
+    } else if (bookingId) {
+      // Find existing booking
+      try {
+        booking = await BookingRequest.findById(bookingId)
+          .populate('listing')
+          .populate('guest');
+      } catch (error) {
+        console.log('Booking not found, creating mock payment for testing');
+      }
     }
 
     // Create payment record (simplified without Stripe)
     const payment = new Payment({
-      booking: bookingId,
+      booking: actualBookingId,
       user: req.user.id,
       amount: amount,
       paymentMethod: paymentMethod,
       paymentIntentId: `mock_${Date.now()}`,
       paymentStatus: 'completed',
       metadata: {
-        description: booking ? `Booking for ${booking.listing.title}` : `Payment for booking ${bookingId}`
+        description: booking ? `Booking for ${booking.listing?.title || 'Unknown Property'}` : `Payment for booking ${actualBookingId}`
       }
     });
 
@@ -418,13 +463,14 @@ router.post('/process', auth, async (req, res) => {
       booking.status = 'approved'; // Automatically accept booking after payment
       await booking.save();
       
-      console.log(`Booking ${bookingId} automatically approved after payment completion`);
+      console.log(`Booking ${actualBookingId} automatically approved after payment completion`);
     }
 
     res.json({
       message: 'Payment processed successfully and booking approved',
       payment: payment,
-      bookingApproved: booking ? true : false
+      bookingApproved: booking ? true : false,
+      bookingId: actualBookingId
     });
   } catch (error) {
     console.error('Process payment error:', error);

@@ -83,6 +83,24 @@ function AppRoutes(props) {
   );
 }
 
+function AppHeader({ user, onLogin, onRegister, onLanguageChange }) {
+  return (
+    <header className="fixed top-0 left-0 w-full z-30 bg-black bg-opacity-50 backdrop-blur-md flex items-center justify-between px-8 py-4 h-20">
+      {/* Logo */}
+      <div className="flex items-center space-x-2">
+        <span className="text-2xl font-extrabold text-white tracking-tight">🏠 3PnB</span>
+      </div>
+      {/* Nav */}
+      <nav className="flex items-center space-x-6">
+        <button className="text-white text-base font-semibold hover:text-green-400 transition-colors">Login</button>
+        <button className="text-white text-base font-semibold hover:text-green-400 transition-colors">Register</button>
+        <LanguageSwitcher />
+        <button className="text-white text-2xl ml-2"><span className="sr-only">Menu</span>☰</button>
+      </nav>
+    </header>
+  );
+}
+
 function App() {
   // Authentication and internationalization
   const { user, login, logout } = useAuth()
@@ -813,6 +831,52 @@ function App() {
     if (!currentBooking) return
 
     try {
+      console.log('Payment successful for booking:', currentBooking)
+      
+      // If the booking was created during payment processing, we don't need to create it again
+      if (payment.bookingId) {
+        console.log('Booking was created during payment processing:', payment.bookingId)
+        
+        setShowPaymentModal(false)
+        setCurrentBooking(null)
+        setSelectedStartDate(null)
+        setSelectedEndDate(null)
+        setSelectedListing(null)
+        setShowListingDetail(false)
+        
+        // Refresh bookings for guest users
+        if (user && user.role === 'guest') {
+          try {
+            await fetchBookings()
+          } catch (fetchError) {
+            console.error('Error refreshing bookings:', fetchError)
+            // Don't show error for refresh failure
+          }
+        }
+        
+        // Show success message with booking approval info
+        const successMessage = payment.bookingApproved 
+          ? 'Payment completed and booking automatically approved! 🎉'
+          : 'Booking created successfully!'
+        showNotification('Success', successMessage, 'success')
+        
+        // Track booking event (don't let this fail the whole process)
+        try {
+          analyticsService.track('booking_created', { 
+            listingId: currentBooking.listingId,
+            amount: currentBooking.totalPrice,
+            nights: Math.ceil((currentBooking.endDate - currentBooking.startDate) / (1000 * 60 * 60 * 24)),
+            autoApproved: payment.bookingApproved
+          })
+        } catch (analyticsError) {
+          console.error('Error tracking booking event:', analyticsError)
+          // Don't show error for analytics failure
+        }
+        
+        return
+      }
+      
+      // Legacy flow: Create booking after payment (for backward compatibility)
       console.log('Creating booking with data:', currentBooking)
       
       const response = await fetch(`${API_BASE}/api/bookings`, {
@@ -1265,646 +1329,130 @@ function App() {
   }, []);
 
   return (
-    <div className={darkMode ? 'dark bg-gray-950 min-h-screen' : 'bg-white min-h-screen'}>
-      {/* Global Loading Spinner */}
-      {loading && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-80">
-          <Spinner text="Loading..." size={64} />
+    <BrowserRouter>
+      <div className="min-h-screen bg-gray-50">
+        <AppHeader user={user} />
+        <div className="pt-20">
+          <AppRoutes
+            user={user}
+            login={login}
+            logout={logout}
+            t={t}
+            i18n={i18n}
+            listings={listings}
+            featuredListings={featuredListings}
+            loading={loading}
+            error={error}
+            viewMode={viewMode}
+            setViewMode={setViewMode}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            searchResults={searchResults}
+            setSearchResults={setSearchResults}
+            showSearchResults={showSearchResults}
+            setShowSearchResults={setShowSearchResults}
+            showSignIn={showSignIn}
+            setShowSignIn={setShowSignIn}
+            showSignUp={showSignUp}
+            setShowSignUp={setShowSignUp}
+            showOnboarding={showOnboarding}
+            setShowOnboarding={setShowOnboarding}
+            showProfile={showProfile}
+            setShowProfile={setShowProfile}
+            selectedListing={selectedListing}
+            setSelectedListing={setSelectedListing}
+            showListingDetail={showListingDetail}
+            setShowListingDetail={setShowListingDetail}
+            featuredProperty={featuredProperty}
+            featuredIndex={featuredIndex}
+            setFeaturedIndex={setFeaturedIndex}
+            imageLoading={imageLoading}
+            setImageLoading={setImageLoading}
+            currentImageIndex={currentImageIndex}
+            setCurrentImageIndex={setCurrentImageIndex}
+            userBookings={userBookings}
+            setUserBookings={setUserBookings}
+            bookingsLoading={bookingsLoading}
+            setBookingsLoading={setBookingsLoading}
+            userPayments={userPayments}
+            setUserPayments={setUserPayments}
+            paymentsLoading={paymentsLoading}
+            setPaymentsLoading={setPaymentsLoading}
+            showPaymentModal={showPaymentModal}
+            setShowPaymentModal={setShowPaymentModal}
+            currentBooking={currentBooking}
+            setCurrentBooking={setCurrentBooking}
+            paymentType={paymentType}
+            setPaymentType={setPaymentType}
+            selectedStartDate={selectedStartDate}
+            setSelectedStartDate={setSelectedStartDate}
+            selectedEndDate={selectedEndDate}
+            setSelectedEndDate={setSelectedEndDate}
+            existingBookings={existingBookings}
+            setExistingBookings={setExistingBookings}
+            userWishlist={userWishlist}
+            setUserWishlist={setUserWishlist}
+            wishlistLoading={wishlistLoading}
+            setWishlistLoading={setWishlistLoading}
+            showMessages={showMessages}
+            setShowMessages={setShowMessages}
+            messages={messages}
+            setMessages={setMessages}
+            newMessage={newMessage}
+            setNewMessage={setNewMessage}
+            showMessaging={showMessaging}
+            setShowMessaging={setShowMessaging}
+            unreadCount={unreadCount}
+            setUnreadCount={setUnreadCount}
+            showReviews={showReviews}
+            setShowReviews={setShowReviews}
+            reviews={reviews}
+            setReviews={setReviews}
+            newReview={newReview}
+            setNewReview={setNewReview}
+            showAnalytics={showAnalytics}
+            setShowAnalytics={setShowAnalytics}
+            showAdminDashboard={showAdminDashboard}
+            setShowAdminDashboard={setShowAdminDashboard}
+            showHostDashboard={showHostDashboard}
+            setShowHostDashboard={setShowHostDashboard}
+            showWishlist={showWishlist}
+            setShowWishlist={setShowWishlist}
+            notification={notification}
+            setNotification={setNotification}
+            confirmation={confirmation}
+            setConfirmation={setConfirmation}
+            showSuccessMessage={showSuccessMessage}
+            setShowSuccessMessage={setShowSuccessMessage}
+            loginTestError={loginTestError}
+            setLoginTestError={setLoginTestError}
+            fetchListings={fetchListings}
+            fetchFeaturedListings={fetchFeaturedListings}
+            fetchBookings={fetchBookings}
+            fetchPayments={fetchPayments}
+            fetchWishlist={fetchWishlist}
+            cancelBooking={cancelBooking}
+            handleShareListing={handleShareListing}
+            handleAddToWishlist={handleAddToWishlist}
+            handleRemoveFromWishlist={handleRemoveFromWishlist}
+            handleUnifiedPaymentSuccess={handleUnifiedPaymentSuccess}
+            handlePaymentCancel={handlePaymentCancel}
+          />
         </div>
-      )}
-      {/* Login Test Error Banner */}
-      {loginTestError && (
-        <div className="bg-red-600 text-white text-center py-3 px-4 font-bold">
-          <span>Automatic Login Test Failed! See console for details.</span>
-          <pre className="text-xs mt-2 whitespace-pre-wrap text-left overflow-x-auto max-w-4xl mx-auto bg-red-700 p-2 rounded">{JSON.stringify(loginTestError, null, 2)}</pre>
-        </div>
-      )}
-
-      {/* Navigation */}
-      <nav className="bg-white dark:bg-gray-900 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1
-                className="text-2xl font-bold text-blue-600 dark:text-blue-400 cursor-pointer"
-                onClick={() => navigate('/')}
-              >
-                nu3PBnB
-              </h1>
-              <LanguageSwitcher />
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={handleDarkModeToggle}
-                className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
-              >
-                {darkMode ? '☀️' : '🌙'}
-              </button>
-              {/* Back to All Properties button - show when listings are filtered */}
-              {listings.length !== originalListings.length && originalListings.length > 0 && (
-                <button
-                  onClick={restoreOriginalListings}
-                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-                >
-                  ← {t('common.back')} {t('navigation.properties')}
-                </button>
-              )}
-              {/* Login and Get Started buttons (only if not logged in) */}
-              {!user && (
-                <>
-                  <button
-                    onClick={() => setShowSignIn(true)}
-                    className="px-4 py-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-semibold rounded-lg"
-                  >
-                    {t('auth.login.signIn')}
-                  </button>
-                  <button
-                    onClick={() => setShowOnboarding(true)}
-                    className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl font-semibold"
-                  >
-                    {t('home.cta.getStarted')}
-                  </button>
-                </>
-              )}
-              {/* Sign Out button (only if logged in) */}
-              {user && (
-                <>
-                  {/* Messages button with badge */}
-                  <button
-                    onClick={() => setShowMessaging(true)}
-                    className="relative p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                    title="Messages"
-                  >
-                    <FaEnvelope className="w-5 h-5" />
-                    {unreadCount > 0 && (
-                      <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center min-w-[20px]">
-                        {unreadCount > 99 ? '99+' : unreadCount}
-                      </div>
-                    )}
-                  </button>
-                  {/* Wishlist button with badge */}
-                  {user.role === 'guest' && (
-                    <button
-                      onClick={() => {
-                        setShowWishlist(!showWishlist);
-                        setShowSearchResults(false);
-                        setSelectedListing(null);
-                        setShowListingDetail(false);
-                        setShowAdminDashboard(false);
-                        setShowAnalytics(false);
-                        setShowHostDashboard(false);
-                        setViewMode('list');
-                      }}
-                      className={`relative p-2 rounded-lg transition-colors ${
-                        showWishlist 
-                          ? 'bg-pink-100 dark:bg-pink-800 text-pink-600 dark:text-pink-300' 
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                      }`}
-                      title="Wishlist"
-                    >
-                      <span className="text-lg">❤️</span>
-                      {userWishlist && userWishlist.length > 0 && (
-                        <div className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center min-w-[20px]">
-                          {userWishlist.length > 99 ? '99+' : userWishlist.length}
-                        </div>
-                      )}
-                    </button>
-                  )}
-                  <button
-                    onClick={() => setShowProfile(true)}
-                    className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors mr-3"
-                    title="Profile"
-                  >
-                    {user.profilePictureData ? (
-                      <img
-                        src={`${API_BASE}/api/users/me/profile-picture?t=${Date.now()}`}
-                        alt="Profile"
-                        className="w-8 h-8 rounded-full object-cover"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'block';
-                        }}
-                      />
-                    ) : user.profilePicture ? (
-                      <img
-                        src={user.profilePicture}
-                        alt="Profile"
-                        className="w-8 h-8 rounded-full object-cover"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'block';
-                        }}
-                      />
-                    ) : null}
-                    <span className="text-lg font-semibold" style={{ display: (user.profilePicture || user.profilePictureData) ? 'none' : 'block' }}>
-                      {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                    </span>
-                  </button>
-                  <button
-                    onClick={handleSignOut}
-                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 font-semibold"
-                  >
-                    {t('common.logout')}
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* Search Bar */}
-      {!showAdminDashboard && (
-        <div className="bg-gray-50 dark:bg-gray-800 py-8">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <SearchBar
-              onSearch={(data) => {
-                setSearchResults(data.data || []);
-                setShowSearchResults(true);
-              }}
-              onFiltersChange={() => {}}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Main Content */}
-      <AppRoutes
-        user={user}
-        loading={loading}
-        error={error}
-        showSearchResults={showSearchResults}
-        setShowSearchResults={setShowSearchResults}
-        showAdminDashboard={showAdminDashboard}
-        setShowAdminDashboard={setShowAdminDashboard}
-        showHostDashboard={showHostDashboard}
-        setShowHostDashboard={setShowHostDashboard}
-        showAnalytics={showAnalytics}
-        setShowAnalytics={setShowAnalytics}
-        showWishlist={showWishlist}
-        setShowWishlist={setShowWishlist}
-        viewMode={viewMode}
-        featuredProperty={featuredProperty}
-        featuredIndex={featuredIndex}
-        listings={listings}
-        searchResults={searchResults}
-        featuredListings={featuredListings}
-        t={t}
-        setFeaturedIndex={setFeaturedIndex}
-        handleShareListing={handleShareListing}
-        handleAddToWishlist={handleAddToWishlist}
-        setSelectedListing={setSelectedListing}
-        setShowListingDetail={setShowListingDetail}
-        setShowOnboarding={setShowOnboarding}
-        setShowSignIn={setShowSignIn}
-        setViewMode={setViewMode}
-        userBookings={userBookings}
-        bookingsLoading={bookingsLoading}
-        fetchBookings={fetchBookings}
-        cancelBooking={cancelBooking}
-        userPayments={userPayments}
-        paymentsLoading={paymentsLoading}
-        fetchPayments={fetchPayments}
-        userWishlist={userWishlist}
-        wishlistLoading={wishlistLoading}
-        fetchWishlist={fetchWishlist}
-        handleRemoveFromWishlist={handleRemoveFromWishlist}
-        fetchListings={fetchListings}
-        loginTestError={loginTestError}
-      />
-
-      {/* Listing Detail Modal */}
-      {showListingDetail && selectedListing && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-4">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {selectedListing.title}
-                </h2>
-                <div className="flex items-center space-x-2">
-                  <button
-                    className="text-blue-600 hover:underline"
-                    onClick={() => handleShareListing(selectedListing)}
-                  >
-                    🔗 Share
-                  </button>
-                  <button
-                    onClick={() => setShowListingDetail(false)}
-                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div>
-                  {selectedListing.photos && selectedListing.photos.length > 0 && (
-                    <img
-                      src={selectedListing.photos[0]}
-                      alt={selectedListing.title}
-                      className="w-full h-64 object-cover rounded-lg"
-                      onError={(e) => {
-                        e.target.src = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=600&fit=crop';
-                      }}
-                    />
-                  )}
-                </div>
-                
-                <div>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    {selectedListing.description}
-                  </p>
-                  <p className="text-gray-600 dark:text-gray-400 mb-2">
-                    <strong>Location:</strong> {selectedListing.location}
-                  </p>
-                  <p className="text-gray-600 dark:text-gray-400 mb-2">
-                    <strong>Price:</strong> ${selectedListing.price}/night
-                  </p>
-                  <p className="text-gray-600 dark:text-gray-400 mb-2">
-                    <strong>Guests:</strong> 4
-                  </p>
-                  {selectedListing.averageRating > 0 && (
-                    <p className="text-gray-600 dark:text-gray-400 mb-4">
-                      <strong>Rating:</strong> {getRatingStars(selectedListing.averageRating)} ({selectedListing.averageRating})
-                    </p>
-                  )}
-                  
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => {
-                        if (!user) {
-                          // If user is not logged in, prompt them to sign in
-                          setShowSignIn(true);
-                          return;
-                        }
-                        setShowReviews(true);
-                      }}
-                      className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-                    >
-                      View Reviews
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (!user) {
-                          // If user is not logged in, prompt them to sign in
-                          setShowSignIn(true);
-                          return;
-                        }
-                        setShowMessaging(true);
-                      }}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                    >
-                      Message Host
-                    </button>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Property Calendar for Date Selection */}
-              <div className="mt-6">
-                <PropertyCalendar
-                  listingId={selectedListing._id}
-                  onDateSelect={handleDateSelect}
-                  selectedStartDate={selectedStartDate}
-                  selectedEndDate={selectedEndDate}
-                  existingBookings={existingBookings}
-                />
-                
-                {/* Book Now Button */}
-                <div className="mt-6 flex justify-center">
-                  <button
-                    onClick={handleBookNow}
-                    disabled={!selectedStartDate || !selectedEndDate}
-                    className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold"
-                  >
-                    {selectedStartDate && selectedEndDate 
-                      ? `Book Now - ${Math.ceil((selectedEndDate - selectedStartDate) / (1000 * 60 * 60 * 24))} nights`
-                      : 'Select dates to book'
-                    }
-                  </button>
-                </div>
-              </div>
-
-              {/* Similar Properties Section */}
-              {(() => {
-                const similarProperties = getSimilarProperties(selectedListing, listings)
-                if (similarProperties.length > 0) {
-                  return (
-                    <div className="mt-8 border-t pt-6">
-                      <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                          Similar properties you might like
-                        </h3>
-                        <button
-                          onClick={() => {
-                            // Filter listings to show similar ones in the main view
-                            const similarIds = similarProperties.map(p => p._id)
-                            const filteredListings = originalListings.filter(l => similarIds.includes(l._id))
-                            setListings(filteredListings)
-                            setShowListingDetail(false)
-                            setShowSearchResults(false)
-                          }}
-                          className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
-                        >
-                          View all similar properties →
-                        </button>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {similarProperties.map((listing) => (
-                          <div
-                            key={listing._id}
-                            className="bg-gray-50 dark:bg-gray-700 rounded-lg overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-                            onClick={() => {
-                              if (!user) {
-                                // If user is not logged in, prompt them to sign in
-                                setShowSignIn(true);
-                                return;
-                              }
-                              setSelectedListing(listing)
-                              // Keep the modal open but update the selected listing
-                            }}
-                          >
-                            <div className="relative h-32">
-                              {listing.photos && listing.photos.length > 0 && (
-                                <img
-                                  src={listing.photos[0]}
-                                  alt={listing.title}
-                                  className="w-full h-full object-cover"
-                                  onError={(e) => {
-                                    e.target.src = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop';
-                                  }}
-                                />
-                              )}
-                              <div className="absolute top-2 right-2 bg-white dark:bg-gray-800 px-2 py-1 rounded text-xs font-medium">
-                                ${listing.price}/night
-                              </div>
-                            </div>
-                            <div className="p-3">
-                              <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-1 truncate">
-                                {listing.title}
-                              </h4>
-                              <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
-                                {listing.location}
-                              </p>
-                              {listing.averageRating > 0 && (
-                                <div className="text-yellow-500 text-xs">
-                                  {getRatingStars(listing.averageRating)} ({listing.averageRating})
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )
-                }
-                return null
-              })()}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Sign In Modal */}
-      {showSignIn && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Sign In</h2>
-              <button
-                onClick={() => setShowSignIn(false)}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              >
-                ✕
-              </button>
-            </div>
-            <form onSubmit={handleSignIn}>
-              <input
-                type="text"
-                name="email"
-                placeholder="Email"
-                title="Please enter a valid email address"
-                required
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              />
-              <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                required
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              />
-              <button
-                type="submit"
-                className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                Sign In
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Sign Up Modal */}
-      {showSignUp && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Sign Up</h2>
-              <button
-                onClick={() => setShowSignUp(false)}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              >
-                ✕
-              </button>
-            </div>
-            <form onSubmit={handleSignUp}>
-              <input
-                type="text"
-                name="name"
-                placeholder="Full Name"
-                required
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              />
-              <input
-                type="text"
-                name="email"
-                placeholder="Email"
-                title="Please enter a valid email address"
-                required
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              />
-              <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                required
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              />
-              <select
-                name="role"
-                required
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              >
-                <option value="guest">Guest</option>
-                <option value="host">Host</option>
-              </select>
-              <button
-                type="submit"
-                className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                Sign Up
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Messaging Component */}
-      {showMessaging && (
-        <Messaging
-          isOpen={showMessaging}
-          onClose={() => setShowMessaging(false)}
-        />
-      )}
-
-      {/* Reviews Modal */}
-      {showReviews && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Reviews</h2>
-              <button
-                onClick={() => setShowReviews(false)}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="mb-4">
-              <form onSubmit={handleSubmitReview}>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Rating
-                  </label>
-                  <select
-                    value={newReview.rating}
-                    onChange={(e) => setNewReview({ ...newReview, rating: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  >
-                    {[5, 4, 3, 2, 1].map(rating => (
-                      <option key={rating} value={rating}>{rating} stars</option>
-                    ))}
-                  </select>
-                </div>
-                <textarea
-                  value={newReview.comment}
-                  onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
-                  placeholder="Write your review..."
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  rows="4"
-                />
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
-                  Submit Review
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Onboarding Wizard */}
-      {showOnboarding && (
-        <OnboardingWizard
-          onClose={() => setShowOnboarding(false)}
-          onComplete={handleOnboardingComplete}
-        />
-      )}
-
-      {/* Success Message */}
-      {showSuccessMessage && (
-        <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-50 animate-fade-in">
-          <div className="flex items-center space-x-3">
-            <span className="text-2xl">🎉</span>
-            <div>
-              <h3 className="font-semibold">Welcome to nu3PBnB!</h3>
-              <p className="text-sm">Your account has been created successfully.</p>
-            </div>
-            <button
-              onClick={() => setShowSuccessMessage(false)}
-              className="text-white hover:text-green-100"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Payment Modal */}
-      {showPaymentModal && currentBooking && (
-        <PaymentModal
-          booking={currentBooking}
-          selectedListing={selectedListing}
-          onSuccess={handleUnifiedPaymentSuccess}
-          onCancel={handlePaymentCancel}
-          paymentType={paymentType}
-        />
-      )}
-
-      {/* Profile Modal */}
-      {showProfile && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Profile</h2>
-                <button
-                  onClick={() => setShowProfile(false)}
-                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-xl"
-                >
-                  ✕
-                </button>
-              </div>
-              <UserProfile />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Notification Modal */}
-      {notification.show && (
-        <NotificationModal
-          isOpen={notification.show}
-          onClose={closeNotification}
-          title={notification.title}
-          message={notification.message}
-          type={notification.type}
-        />
-      )}
-
-      {/* Confirmation Modal */}
-      {confirmation.show && (
-        <ConfirmationModal
-          isOpen={confirmation.show}
-          onClose={closeConfirmation}
-          onConfirm={confirmation.onConfirm}
-          title={confirmation.title}
-          message={confirmation.message}
-          type="warning"
-          confirmText="Cancel Booking"
-          cancelText="Keep Booking"
-        />
-      )}
-
-      {/* Footer */}
-      <Footer />
-    </div>
+        <Footer />
+        
+        {/* Payment Modal */}
+        {showPaymentModal && currentBooking && (
+          <PaymentModal
+            booking={currentBooking}
+            selectedListing={selectedListing}
+            onSuccess={handleUnifiedPaymentSuccess}
+            onCancel={handlePaymentCancel}
+            paymentType={paymentType}
+          />
+        )}
+      </div>
+    </BrowserRouter>
   )
 }
 

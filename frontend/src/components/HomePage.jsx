@@ -58,6 +58,10 @@ const HomePage = ({
   fetchWishlist,
   handleRemoveFromWishlist,
   loginTestError,
+  
+  // Payment handlers
+  handleUnifiedPaymentSuccess,
+  handlePaymentCancel,
 }) => {
   console.log('[HomePage] listings:', listings, 'user:', user, 'loading:', loading, 'error:', error, 'showSearchResults:', showSearchResults);
   console.log('[HomePage] featuredProperty:', featuredProperty, 'featuredListings:', featuredListings, 'featuredIndex:', featuredIndex);
@@ -393,96 +397,40 @@ const HomePage = ({
 
       {/* Featured Property Hero Section */}
       {!loading && !error && !showSearchResults && !showAdminDashboard && !showAnalytics && !showHostDashboard && featuredProperty && sectionVisibility.featured && (
-        <div className="relative bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 py-20 mb-16 rounded-3xl overflow-hidden">
-          {/* Background Pattern */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-0 left-0 w-72 h-72 bg-white rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-            <div className="absolute top-0 right-0 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
-            <div className="absolute bottom-0 left-0 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-4000"></div>
-          </div>
-          
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            {/* Hide button for logged-in users */}
-            {user && user.role === 'guest' && (
-              <div className="flex justify-end mb-4">
-                <button
-                  onClick={() => toggleSection('featured')}
-                  className="px-3 py-2 bg-purple-200 dark:bg-purple-800 text-purple-800 dark:text-purple-200 rounded-xl hover:bg-purple-300 dark:hover:bg-purple-700 transition-colors text-sm font-medium"
-                  title="Hide featured section"
-                >
-                  Hide Featured
-                </button>
-              </div>
-            )}
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              {/* Content */}
-              <div className="text-white">
-                <h1 className="text-5xl font-bold mb-6 leading-tight">
-                  {featuredProperty.title}
-                </h1>
-                <p className="text-xl text-purple-100 mb-8 leading-relaxed">
-                  {featuredProperty.description}
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <button
-                    onClick={() => {
-                      if (!user) {
-                        if (setShowSignIn) {
-                          console.log('[UI] Opening sign-in modal from featured property button');
-                          setShowSignIn(true);
-                        }
-                      } else {
-                        setSelectedListing(featuredProperty);
-                        setShowListingDetail(true);
-                      }
-                    }}
-                    className="bg-white text-purple-700 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-purple-50 transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-purple-300"
-                  >
-                    View Details
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (!user) {
-                        if (setShowSignIn) {
-                          console.log('[UI] Opening sign-in modal from featured property button');
-                          setShowSignIn(true);
-                        }
-                      } else {
-                        setSelectedListing(featuredProperty);
-                        setShowListingDetail(true);
-                      }
-                    }}
-                    className="bg-transparent text-white border-2 border-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-white hover:text-purple-700 transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-white"
-                  >
-                    {!user ? 'Book Now' : 'View Property'}
-                  </button>
-                </div>
-              </div>
-              
-              {/* Featured Property Image */}
-              <div className="relative">
-                {featuredProperty.photos && featuredProperty.photos.length > 0 && (
-                  <div className="relative h-96 rounded-3xl overflow-hidden shadow-2xl">
-                    <img
-                      src={featuredProperty.photos[0]}
-                      alt={featuredProperty.title}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.target.src = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=600&fit=crop';
-                      }}
-                    />
-                    {/* Price Badge */}
-                    <div className="absolute top-4 right-4 bg-white text-purple-700 px-4 py-2 rounded-2xl font-bold text-lg shadow-lg">
-                      ${featuredProperty.price}/night
-                    </div>
-                    {/* Location Badge */}
-                    <div className="absolute bottom-4 left-4 bg-black bg-opacity-50 text-white px-4 py-2 rounded-2xl text-sm backdrop-blur-sm">
-                      📍 {featuredProperty.location}
-                    </div>
-                  </div>
-                )}
-              </div>
+        <div className="relative w-full h-[480px] flex flex-col justify-center items-center mb-12 overflow-hidden">
+          {/* Background Image */}
+          <img
+            src={featuredProperty.photos && featuredProperty.photos.length > 0 ? featuredProperty.photos[0] : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200&h=600&fit=crop'}
+            alt={featuredProperty.title}
+            className="absolute inset-0 w-full h-full object-cover object-center z-0"
+            style={{ filter: 'brightness(0.6)' }}
+          />
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-black bg-opacity-40 z-10" />
+          {/* Content */}
+          <div className="relative z-20 flex flex-col items-center justify-center w-full h-full">
+            <h1 className="text-5xl md:text-6xl font-extrabold text-white mb-4 text-center drop-shadow-lg">Find your perfect stay</h1>
+            <p className="text-lg md:text-2xl text-white mb-8 text-center font-medium drop-shadow">Discover unique places to stay and connect with hosts around the world</p>
+            {/* Search Bar */}
+            <div className="flex flex-col md:flex-row items-center justify-center bg-white bg-opacity-95 rounded-2xl shadow-lg px-4 py-3 md:py-2 w-full max-w-2xl space-y-2 md:space-y-0 md:space-x-2">
+              <input
+                type="text"
+                placeholder="Enter destination"
+                className="flex-1 px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-400 text-gray-800 text-base"
+              />
+              <input
+                type="date"
+                className="px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-400 text-gray-800 text-base"
+              />
+              <input
+                type="date"
+                className="px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-400 text-gray-800 text-base"
+              />
+              <button
+                className="px-6 py-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow transition-colors text-base flex items-center"
+              >
+                <FaSearch className="mr-2" /> Search
+              </button>
             </div>
           </div>
         </div>
@@ -817,6 +765,67 @@ const HomePage = ({
             </>
           )}
         </div>
+      )}
+
+      {/* Featured Listings Section */}
+      {!loading && !error && !showSearchResults && sectionVisibility.featured && featuredListings && featuredListings.length > 0 && (
+        <section className="w-full bg-white py-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl font-bold text-center text-gray-900 mb-2">Featured Places to Stay</h2>
+            <p className="text-lg text-center text-gray-500 mb-10">Discover handpicked accommodations for your next adventure</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {featuredListings.map((listing) => (
+                <div
+                  key={listing._id}
+                  className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-shadow border border-gray-100 flex flex-col"
+                >
+                  {/* Image */}
+                  <div className="relative h-48 w-full">
+                    {listing.photos && listing.photos.length > 0 && (
+                      <img
+                        src={listing.photos[0]}
+                        alt={listing.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.src = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop';
+                        }}
+                      />
+                    )}
+                    {/* Price Badge */}
+                    <div className="absolute top-3 right-3 bg-white bg-opacity-90 px-3 py-1 rounded-xl text-base font-bold shadow text-gray-900">
+                      ${listing.price} <span className="text-xs font-normal text-gray-500">/ night</span>
+                    </div>
+                  </div>
+                  {/* Details */}
+                  <div className="flex-1 flex flex-col p-5">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1 line-clamp-2">{listing.title}</h3>
+                    <div className="flex items-center text-sm text-gray-500 mb-2">
+                      <FaMapMarkerAlt className="mr-1 text-gray-400" /> {listing.location}
+                      {listing.averageRating && (
+                        <span className="ml-auto flex items-center">
+                          <FaStar className="text-yellow-400 mr-1" />
+                          {listing.averageRating.toFixed(1)}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">{listing.description}</p>
+                    <div className="mt-auto flex justify-end">
+                      <button
+                        onClick={() => {
+                          setSelectedListing(listing);
+                          setShowListingDetail(true);
+                        }}
+                        className="px-5 py-2 bg-white border border-green-500 text-green-600 font-semibold rounded-lg hover:bg-green-50 hover:border-green-600 transition-colors"
+                      >
+                        View Details
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
       )}
 
       {/* Guest Dashboard - Bookings Section */}

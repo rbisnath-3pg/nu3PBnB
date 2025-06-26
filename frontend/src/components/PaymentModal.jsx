@@ -23,11 +23,17 @@ const PaymentForm = ({ booking, selectedListing, onSuccess, onCancel, paymentTyp
     // Defensive: Validate required fields
     const bookingId = booking._id || booking.id;
     const amount = totalAmount;
-    if (!bookingId) {
+    
+    // For new bookings, we might not have an ID yet - this is handled in the payment flow
+    if (!bookingId && paymentType === 'new') {
+      // For new bookings, we'll create the booking during payment processing
+      console.log('New booking - will create booking during payment processing');
+    } else if (!bookingId) {
       alert('Error: Booking ID is missing. Please try again or contact support.');
       setIsProcessing(false);
       return;
     }
+    
     if (!paymentMethod) {
       alert('Error: Payment method is missing. Please select a payment method.');
       setIsProcessing(false);
@@ -40,7 +46,7 @@ const PaymentForm = ({ booking, selectedListing, onSuccess, onCancel, paymentTyp
     }
 
     // Log payload for debugging
-    console.log('Sending payment:', { bookingId, paymentMethod, amount });
+    console.log('Sending payment:', { bookingId, paymentMethod, amount, paymentType });
 
     try {
       // Make API call to process payment
@@ -53,7 +59,19 @@ const PaymentForm = ({ booking, selectedListing, onSuccess, onCancel, paymentTyp
         body: JSON.stringify({
           bookingId,
           paymentMethod,
-          amount
+          amount,
+          paymentType,
+          // For new bookings, include booking data
+          ...(paymentType === 'new' && !bookingId && {
+            bookingData: {
+              listingId: booking.listingId,
+              startDate: booking.startDate,
+              endDate: booking.endDate,
+              guests: booking.guests,
+              totalPrice: booking.totalPrice,
+              message: booking.message
+            }
+          })
         })
       });
 
