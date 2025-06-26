@@ -11,6 +11,8 @@ import OnboardingWizard from './components/OnboardingWizard'
 import PaymentModal from './components/PaymentModal'
 import NotificationModal from './components/NotificationModal'
 import ConfirmationModal from './components/ConfirmationModal'
+import LoginModal from './components/LoginModal'
+import RegisterModal from './components/RegisterModal'
 import Messaging from './components/Messaging'
 import UserProfile from './components/UserProfile'
 import PropertyCalendar from './components/PropertyCalendar'
@@ -93,8 +95,34 @@ function AppHeader({ user, onLogin, onRegister, onLanguageChange }) {
       </div>
       {/* Navigation */}
       <nav className="flex items-center space-x-6">
-        <button className="text-white text-base font-semibold hover:text-green-400 transition-colors">Login</button>
-        <button className="text-white text-base font-semibold hover:text-green-400 transition-colors">Register</button>
+        {!user ? (
+          <>
+            <button 
+              onClick={onLogin}
+              className="text-white text-base font-semibold hover:text-green-400 transition-colors"
+            >
+              Login
+            </button>
+            <button 
+              onClick={onRegister}
+              className="text-white text-base font-semibold hover:text-green-400 transition-colors"
+            >
+              Register
+            </button>
+          </>
+        ) : (
+          <div className="flex items-center space-x-4">
+            <span className="text-white text-base font-semibold">
+              Welcome, {user.name || user.email}
+            </span>
+            <button 
+              onClick={onLanguageChange}
+              className="text-white text-base font-semibold hover:text-green-400 transition-colors"
+            >
+              Language
+            </button>
+          </div>
+        )}
         <LanguageSwitcher />
         <button className="text-white text-2xl ml-2"><span className="sr-only">Menu</span>☰</button>
       </nav>
@@ -514,6 +542,7 @@ function App() {
       } else {
         console.warn('%c[LOGIN] Login failed', 'color: #F59E0B; font-weight: bold;', { status: response.status, message: data.message });
         showNotification('Login Failed', data.message || 'Invalid credentials', 'error');
+        throw new Error(data.message || 'Invalid credentials');
       }
       // Diagnostic: User state after login attempt
       setTimeout(() => {
@@ -522,6 +551,7 @@ function App() {
     } catch (error) {
       console.error('%c[LOGIN] Network or unexpected error', 'color: #EF4444; font-weight: bold;', error);
       showNotification('Login Error', 'Network error. Please try again.', 'error');
+      throw error;
     }
     // Diagnostic: End of login attempt
     setTimeout(() => {
@@ -535,41 +565,39 @@ function App() {
    * @param {Event} e - Form submission event
    */
   const handleSignUp = async (e) => {
-    e.preventDefault()
-    const formData = new FormData(e.target)
-    const name = formData.get('name')
-    const email = formData.get('email')
-    const password = formData.get('password')
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const name = formData.get('name');
+    const email = formData.get('email');
+    const password = formData.get('password');
+    const role = formData.get('role') || 'guest';
 
     try {
       const response = await fetch(`${API_BASE}/api/auth/register`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name, email, password }),
-      })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password, role })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (response.ok) {
-        closeNotification() // Clear any existing notifications first
-        localStorage.setItem('token', data.token)
-        login(data.user, data.token)
-        setShowSignUp(false)
-        setShowSuccessMessage(true)
-        setTimeout(() => setShowSuccessMessage(false), 3000)
-        
-        // Track registration event - only if user is authenticated
-        if (data.user && data.token) {
-          analyticsService.track('user_registration', { method: 'email' })
-        }
+        closeNotification();
+        localStorage.setItem('token', data.token);
+        login(data.user, data.token);
+        setShowSignUp(false);
+        setShowSuccessMessage(true);
+        setTimeout(() => setShowSuccessMessage(false), 3000);
+        analyticsService.track('user_registration', { method: 'email', role });
       } else {
-        showNotification('Registration Failed', data.message || 'Registration failed', 'error')
+        console.warn('Registration failed:', data.message);
+        showNotification('Registration Failed', data.message || 'Registration failed', 'error');
+        throw new Error(data.message || 'Registration failed');
       }
     } catch (error) {
-      console.error('Registration error:', error)
-      showNotification('Registration Error', 'Network error. Please try again.', 'error')
+      console.error('Registration error:', error);
+      showNotification('Registration Error', 'Network error. Please try again.', 'error');
+      throw error;
     }
   }
 
@@ -1331,7 +1359,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AppHeader user={user} />
+      <AppHeader user={user} onLogin={() => setShowSignIn(true)} onRegister={() => setShowSignUp(true)} onLanguageChange={handleDarkModeToggle} />
       <div className="pt-20">
         <AppRoutes
           user={user}
@@ -1451,6 +1479,48 @@ function App() {
           paymentType={paymentType}
         />
       )}
+
+      {/* Login Modal */}
+      <LoginModal
+        isOpen={showSignIn}
+        onClose={() => setShowSignIn(false)}
+        onLogin={handleSignIn}
+        onSwitchToRegister={() => {
+          setShowSignIn(false);
+          setShowSignUp(true);
+        }}
+        t={t}
+      />
+
+      {/* Register Modal */}
+      <RegisterModal
+        isOpen={showSignUp}
+        onClose={() => setShowSignUp(false)}
+        onRegister={handleSignUp}
+        onSwitchToLogin={() => {
+          setShowSignUp(false);
+          setShowSignIn(true);
+        }}
+        t={t}
+      />
+
+      {/* Notification Modal */}
+      <NotificationModal
+        isOpen={notification.show}
+        onClose={closeNotification}
+        title={notification.title}
+        message={notification.message}
+        type={notification.type}
+      />
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={confirmation.show}
+        onClose={closeConfirmation}
+        onConfirm={confirmation.onConfirm}
+        title={confirmation.title}
+        message={confirmation.message}
+      />
     </div>
   )
 }
