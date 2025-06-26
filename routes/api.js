@@ -792,4 +792,58 @@ router.post('/diagnostics/booking-tests/trigger', async (req, res) => {
   }
 });
 
+// Diagnostics endpoint for property view tests
+router.get('/diagnostics/property-tests', async (req, res) => {
+  try {
+    const Diagnostics = require('../models/Diagnostics');
+    const diag = await Diagnostics.findOne({ key: 'propertyViewTest' });
+    if (diag) {
+      res.json({
+        lastRun: diag.lastRun,
+        success: diag.success,
+        errors: diag.errors || [],
+        logs: diag.logs || []
+      });
+    } else {
+      res.json({
+        lastRun: null,
+        success: null,
+        errors: [],
+        logs: []
+      });
+    }
+  } catch (error) {
+    console.error('❌ Property view diagnostics retrieval failed:', error);
+    res.status(500).json({ 
+      message: 'Failed to retrieve property view diagnostics',
+      error: error.message 
+    });
+  }
+});
+
+// Manual trigger endpoint for property view diagnostics
+router.post('/diagnostics/property-tests/trigger', async (req, res) => {
+  try {
+    console.log('🔄 Manual trigger: Running property view diagnostics...');
+    
+    // Import and run the property view diagnostics
+    const { updatePropertyViewDiagnostics } = require('../update-booking-diagnostics');
+    const result = await updatePropertyViewDiagnostics();
+    
+    console.log('✅ Manual trigger: Property view diagnostics completed');
+    res.json({
+      success: true,
+      message: 'Property view diagnostics completed successfully',
+      result: result
+    });
+  } catch (error) {
+    console.error('❌ Manual trigger: Property view diagnostics failed:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Property view diagnostics failed',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router; 
