@@ -25,6 +25,7 @@ import HomePage from './components/HomePage'
 import Spinner from './components/Spinner'
 import { FaEnvelope } from 'react-icons/fa'
 import getApiBase from './services/getApiBase'
+import frontendAuthLogger from './services/authLogger'
 
 /**
  * Main App component that handles the entire application state and routing
@@ -439,68 +440,63 @@ function App() {
    * @param {Event} e - Form submission event
    */
   const handleSignIn = async (e) => {
-    e.preventDefault()
-    const formData = new FormData(e.target)
-    const email = formData.get('email')
-    const password = formData.get('password')
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const email = formData.get('email');
+    const password = formData.get('password');
 
     // Log the login attempt (mask password)
-    console.log('[handleSignIn] Attempting login with:', { email, password: password ? '***' : '' });
-    console.log('[handleSignIn] Email length:', email?.length);
-    console.log('[handleSignIn] Password length:', password?.length);
-    console.log('[handleSignIn] Email exact value:', `"${email}"`);
-    console.log('[handleSignIn] Password exact value:', `"${password}"`);
-    
-    // Show correct admin credentials for debugging
-    console.log('[DEBUG] Correct admin credentials:');
-    console.log('[DEBUG] Email: "admin@nu3pbnb.com"');
-    console.log('[DEBUG] Password: "password123"');
+    frontendAuthLogger.logLoginAttempt(email);
+    frontendAuthLogger.debug('Form data lengths', { emailLength: email?.length, passwordLength: password?.length });
+    frontendAuthLogger.logFormValidation('email', email, !!email);
+    frontendAuthLogger.logFormValidation('password', password, !!password);
 
     try {
       const payload = { email, password };
-      console.log('[handleSignIn] Sending payload:', { ...payload, password: payload.password ? '***' : '' });
-      
-      // Log the stringified payload
+      frontendAuthLogger.debug('Prepared login payload', { ...payload, password: password ? '***' : '' });
       const payloadString = JSON.stringify(payload);
-      console.log('[handleSignIn] Payload string:', payloadString);
-      console.log('[handleSignIn] Payload length:', payloadString.length);
-      
-      const response = await fetch(`${API_BASE}/api/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: payloadString,
-      })
+      frontendAuthLogger.debug('Payload stringified', { length: payloadString.length });
 
-      // Log the raw response status
-      console.log('[handleSignIn] Response status:', response.status);
+      const url = `${API_BASE}/api/auth/login`;
+      const networkStart = Date.now();
+      frontendAuthLogger.logNetworkRequest(url, 'POST');
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payloadString,
+      });
+      const networkTime = Date.now() - networkStart;
+      frontendAuthLogger.logNetworkResponse(url, response.status, networkTime);
+
       let data;
       try {
         data = await response.json();
-        console.log('[handleSignIn] Response JSON:', data);
+        frontendAuthLogger.debug('Parsed response JSON', data);
       } catch (parseErr) {
-        console.error('[handleSignIn] Error parsing response JSON:', parseErr);
+        frontendAuthLogger.error('Error parsing response JSON', parseErr);
         data = {};
       }
 
       if (response.ok) {
-        closeNotification() // Clear any existing notifications first
-        localStorage.setItem('token', data.token)
-        login(data.user, data.token)
-        setShowSignIn(false)
-        setShowSuccessMessage(true)
-        setTimeout(() => setShowSuccessMessage(false), 3000)
-        // Track login event - only if user is authenticated
+        closeNotification();
+        frontendAuthLogger.logLocalStorageOperation('set', 'token', '***');
+        localStorage.setItem('token', data.token);
+        login(data.user, data.token);
+        setShowSignIn(false);
+        setShowSuccessMessage(true);
+        setTimeout(() => setShowSuccessMessage(false), 3000);
         if (data.user && data.token) {
-          analyticsService.track('user_login', { method: 'email' })
+          frontendAuthLogger.logLoginSuccess(data.user);
+          analyticsService.track('user_login', { method: 'email' });
         }
       } else {
-        showNotification('Login Failed', data.message || 'Invalid credentials', 'error')
+        frontendAuthLogger.logLoginFailure(email, data.message || 'Invalid credentials');
+        showNotification('Login Failed', data.message || 'Invalid credentials', 'error');
       }
     } catch (error) {
-      console.error('[handleSignIn] Login error:', error)
-      showNotification('Login Error', 'Network error. Please try again.', 'error')
+      frontendAuthLogger.logNetworkError(`${API_BASE}/api/auth/login`, error);
+      frontendAuthLogger.error('Login error', error);
+      showNotification('Login Error', 'Network error. Please try again.', 'error');
     }
   }
 
