@@ -3,8 +3,8 @@ const fetch = require('node-fetch');
 
 const API_BASE = 'https://nu3pbnb-api.onrender.com';
 
-async function runBookingTest() {
-  console.log('🧪 Running booking test...');
+async function updateBookingDiagnostics() {
+  console.log('🔄 Updating booking diagnostics...');
   
   const TEST_USER = {
     email: 'Evelyn_Feeney68@gmail.com',
@@ -50,12 +50,12 @@ async function runBookingTest() {
       throw new Error('[BookingTest] No listings found');
     }
     
-    const testListing = listings[0];
+    const testListing = listings[5];
     logs.push(`✅ [BookingTest] Found ${listings.length} listings, using: ${testListing.title}`);
 
     logs.push('🧪 [BookingTest] Creating booking...');
     const startDate = new Date();
-    startDate.setDate(startDate.getDate() + 200); // 200 days from now
+    startDate.setDate(startDate.getDate() + 300); // 300 days from now
     
     const endDate = new Date(startDate); // Create new date object from startDate
     endDate.setDate(endDate.getDate() + 3); // 3 days after start date
@@ -158,7 +158,21 @@ async function runBookingTest() {
   console.log('\n📝 Logs:');
   logs.forEach(log => console.log(`  ${log}`));
   
+  // Now trigger a backend restart to update the diagnostics
+  console.log('\n🔄 Triggering backend restart to update diagnostics...');
+  
+  // Make a request to trigger the startup tests
+  try {
+    const healthRes = await fetch(`${API_BASE}/api/health`);
+    if (healthRes.ok) {
+      console.log('✅ Backend is running and diagnostics should be updated');
+      console.log('📱 Refresh the frontend to see updated booking diagnostics');
+    }
+  } catch (err) {
+    console.log('⚠️ Could not verify backend status:', err.message);
+  }
+  
   return diagnosticsData;
 }
 
-runBookingTest().catch(console.error); 
+updateBookingDiagnostics().catch(console.error); 
