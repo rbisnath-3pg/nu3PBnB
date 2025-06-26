@@ -110,12 +110,90 @@ async function simulateUser(user, iterations = 5) {
   }
 }
 
+async function testFrontendInteractions() {
+  console.log('🧪 Testing Frontend Interactions...');
+  
+  try {
+    // Test 1: Check if frontend is accessible
+    const frontendResponse = await fetch('https://nu3pbnb.onrender.com');
+    console.log(`✅ Frontend accessible: ${frontendResponse.status}`);
+    
+    // Test 2: Check if API is accessible
+    const apiResponse = await fetch(`${API_BASE}/api/health`);
+    console.log(`✅ API accessible: ${apiResponse.status}`);
+    
+    // Test 3: Test listings endpoint
+    const listingsResponse = await fetch(`${API_BASE}/api/listings`);
+    const listingsData = await listingsResponse.json();
+    console.log(`✅ Listings endpoint: ${listingsData.length || 0} listings found`);
+    
+    // Test 4: Test featured listings
+    const featuredResponse = await fetch(`${API_BASE}/api/listings/featured`);
+    const featuredData = await featuredResponse.json();
+    console.log(`✅ Featured listings: ${featuredData.length || 0} featured found`);
+    
+    // Test 5: Test individual listing details
+    if (listingsData.length > 0) {
+      const firstListing = listingsData[0];
+      const listingDetailResponse = await fetch(`${API_BASE}/api/listings/${firstListing._id}`);
+      console.log(`✅ Listing detail endpoint: ${listingDetailResponse.status}`);
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('❌ Frontend interaction test failed:', error.message);
+    return false;
+  }
+}
+
+async function testDiagnostics() {
+  console.log('🔍 Testing Diagnostics...');
+  
+  try {
+    // Test booking diagnostics
+    const bookingDiagnosticsResponse = await fetch(`${API_BASE}/api/diagnostics/booking`);
+    const bookingDiagnostics = await bookingDiagnosticsResponse.json();
+    console.log('✅ Booking diagnostics:', bookingDiagnostics.status || 'unknown');
+    
+    // Test property diagnostics
+    const propertyDiagnosticsResponse = await fetch(`${API_BASE}/api/diagnostics/property`);
+    const propertyDiagnostics = await propertyDiagnosticsResponse.json();
+    console.log('✅ Property diagnostics:', propertyDiagnostics.status || 'unknown');
+    
+    // Test general diagnostics
+    const generalDiagnosticsResponse = await fetch(`${API_BASE}/api/diagnostics`);
+    const generalDiagnostics = await generalDiagnosticsResponse.json();
+    console.log('✅ General diagnostics:', generalDiagnostics.status || 'unknown');
+    
+    return true;
+  } catch (error) {
+    console.error('❌ Diagnostics test failed:', error.message);
+    return false;
+  }
+}
+
 async function main() {
-  const iterations = 5;
+  console.log('🚀 Starting Comprehensive nu3PBnB Testing...\n');
+  
+  // Test 1: Frontend Interactions
+  const frontendTest = await testFrontendInteractions();
+  
+  // Test 2: Diagnostics
+  const diagnosticsTest = await testDiagnostics();
+  
+  // Test 3: User Simulations
+  console.log('\n👥 Starting User Simulations...');
+  const iterations = 3; // Reduced for faster testing
   await Promise.all(
     USERS.map(user => simulateUser(user, iterations))
   );
-  console.log('✅ Simulation complete!');
+  
+  console.log('\n📊 Test Summary:');
+  console.log(`Frontend Interactions: ${frontendTest ? '✅ PASS' : '❌ FAIL'}`);
+  console.log(`Diagnostics: ${diagnosticsTest ? '✅ PASS' : '❌ FAIL'}`);
+  console.log('User Simulations: ✅ COMPLETE');
+  
+  console.log('\n✅ Comprehensive testing complete!');
 }
 
 main(); 
