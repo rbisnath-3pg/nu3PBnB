@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { auth, requireRole } = require('../middleware/auth');
+const mongoose = require('mongoose');
 
 const router = express.Router();
 
@@ -887,6 +888,30 @@ router.post('/test-login-simple', (req, res) => {
   
   console.log('[TEST-LOGIN] Sending response:', JSON.stringify(testResponse));
   res.json(testResponse);
+});
+
+// Debug database connection route
+router.get('/debug-db', async (req, res) => {
+  try {
+    const dbInfo = {
+      connected: mongoose.connection.readyState === 1,
+      database: mongoose.connection.name,
+      host: mongoose.connection.host,
+      port: mongoose.connection.port,
+      userCount: await User.countDocuments(),
+      adminCount: await User.countDocuments({ role: 'admin' }),
+      hostCount: await User.countDocuments({ role: 'host' }),
+      guestCount: await User.countDocuments({ role: 'guest' }),
+      adminExists: await User.exists({ email: 'admin@nu3pbnb.com' }),
+      timestamp: new Date().toISOString()
+    };
+    
+    console.log('[DEBUG-DB] Database info:', dbInfo);
+    res.json(dbInfo);
+  } catch (error) {
+    console.error('[DEBUG-DB] Error:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 module.exports = router; 
