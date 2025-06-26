@@ -85,7 +85,7 @@ function AppRoutes(props) {
   );
 }
 
-function AppHeader({ user, onLogin, onRegister, onLanguageChange }) {
+function AppHeader({ user, onLogin, onRegister, onLanguageChange, onLogout }) {
   return (
     <header className="fixed top-0 left-0 w-full z-40 bg-black bg-opacity-60 backdrop-blur-md border-b border-black/10 flex items-center justify-between px-8 py-3 h-20">
       {/* Logo and Brand */}
@@ -120,6 +120,12 @@ function AppHeader({ user, onLogin, onRegister, onLanguageChange }) {
               className="text-white text-base font-semibold hover:text-green-400 transition-colors"
             >
               Language
+            </button>
+            <button
+              onClick={onLogout}
+              className="text-white text-base font-semibold hover:text-red-400 transition-colors border border-white/20 rounded px-3 py-1 ml-2"
+            >
+              Logout
             </button>
           </div>
         )}
@@ -1382,7 +1388,13 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AppHeader user={user} onLogin={() => setShowSignIn(true)} onRegister={() => setShowSignUp(true)} onLanguageChange={handleDarkModeToggle} />
+      <AppHeader
+        user={user}
+        onLogin={() => setShowSignIn(true)}
+        onRegister={() => setShowSignUp(true)}
+        onLanguageChange={handleDarkModeToggle}
+        onLogout={handleSignOut}
+      />
       <div className="pt-20">
         <AppRoutes
           user={user}
