@@ -6,7 +6,7 @@ const API_BASE = import.meta && import.meta.env && import.meta.env.VITE_API_BASE
   : (typeof window !== 'undefined' ? window.API_BASE : 'https://nu3pbnb-api.onrender.com');
 
 const TEST_USERS = [
-  // Replace with actual seeded emails and passwords
+  { email: 'admin@nu3pbnb.com', password: 'admin123', role: 'admin' },
   { email: 'davonte_runolfsdottir-russel@hotmail.com', password: 'host123', role: 'host' },
   { email: 'georgette_klocko@hotmail.com', password: 'host123', role: 'host' },
   { email: 'josh15@hotmail.com', password: 'host123', role: 'host' },
