@@ -86,6 +86,7 @@ function AppRoutes(props) {
 }
 
 function AppHeader({ user, onLogin, onRegister, onLanguageChange, onLogout }) {
+  const [menuOpen, setMenuOpen] = React.useState(false);
   return (
     <header className="fixed top-0 left-0 w-full z-40 bg-black bg-opacity-60 backdrop-blur-md border-b border-black/10 flex items-center justify-between px-8 py-3 h-20">
       {/* Logo and Brand */}
@@ -95,42 +96,58 @@ function AppHeader({ user, onLogin, onRegister, onLanguageChange, onLogout }) {
       </div>
       {/* Navigation */}
       <nav className="flex items-center space-x-6">
-        {!user ? (
-          <>
-            <button 
-              onClick={onLogin}
-              className="text-white text-base font-semibold hover:text-green-400 transition-colors"
-            >
-              Login
-            </button>
-            <button 
-              onClick={onRegister}
-              className="text-white text-base font-semibold hover:text-green-400 transition-colors"
-            >
-              Register
-            </button>
-          </>
-        ) : (
-          <div className="flex items-center space-x-4">
-            <span className="text-white text-base font-semibold">
-              Welcome, {user.name || user.email}
-            </span>
-            <button 
-              onClick={onLanguageChange}
-              className="text-white text-base font-semibold hover:text-green-400 transition-colors"
-            >
-              Language
-            </button>
-            <button
-              onClick={onLogout}
-              className="text-white text-base font-semibold hover:text-red-400 transition-colors border border-white/20 rounded px-3 py-1 ml-2"
-            >
-              Logout
-            </button>
-          </div>
+        {user && (
+          <span className="text-white text-base font-semibold">
+            Welcome, {user.name || user.email}
+          </span>
         )}
-        <LanguageSwitcher />
-        <button className="text-white text-2xl ml-2"><span className="sr-only">Menu</span>☰</button>
+        <div className="relative">
+          <button
+            className="text-white text-2xl ml-2 focus:outline-none"
+            onClick={() => setMenuOpen((open) => !open)}
+            aria-label="Open menu"
+          >
+            <span className="sr-only">Menu</span>☰
+          </button>
+          {menuOpen && (
+            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50 animate-fade-in">
+              {!user ? (
+                <>
+                  <button
+                    onClick={() => { setMenuOpen(false); onLogin(); }}
+                    className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+                  >
+                    Login
+                  </button>
+                  <button
+                    onClick={() => { setMenuOpen(false); onRegister(); }}
+                    className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+                  >
+                    Register
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => { setMenuOpen(false); onLanguageChange(); }}
+                    className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+                  >
+                    Language
+                  </button>
+                  <button
+                    onClick={() => { setMenuOpen(false); onLogout(); }}
+                    className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+                  >
+                    Logout
+                  </button>
+                </>
+              )}
+              <div className="px-4 py-2 border-t border-gray-200">
+                <LanguageSwitcher />
+              </div>
+            </div>
+          )}
+        </div>
       </nav>
     </header>
   );
