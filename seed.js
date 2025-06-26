@@ -129,7 +129,7 @@ async function seed() {
     const hosts = [];
     for (let i = 0; i < 10; i++) {
       const name = faker.person.fullName();
-      const email = faker.internet.email();
+      const email = faker.internet.email().toLowerCase();
       const hashedPassword = await bcrypt.hash('host123', 10);
       const host = new User({
         name,
@@ -148,7 +148,7 @@ async function seed() {
     console.log('Creating guests...');
     for (let i = 0; i < 30; i++) {
       const name = faker.person.fullName();
-      const email = faker.internet.email();
+      const email = faker.internet.email().toLowerCase();
       const hashedPassword = await bcrypt.hash('guest123', 10);
       const guest = new User({
         name,
