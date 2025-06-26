@@ -224,8 +224,30 @@ const HomePage = ({
   if (loginTestError) {
     return (
       <div className="p-8 text-center bg-red-100 text-red-800 rounded-lg max-w-2xl mx-auto mt-12">
-        <h2 className="text-2xl font-bold mb-4">Automatic Login Test Failed</h2>
-        <p className="mb-2">One or more test logins failed when the app started. Please check the browser console for full details.</p>
+        <h2 className="text-2xl font-bold mb-4">Automatic Login Test Results</h2>
+        <p className="mb-2">Below are the results of the automatic login test for all test users. <b>Failures are highlighted.</b> Check the browser console for full details.</p>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs border border-red-300 bg-white text-gray-900 mb-4">
+            <thead>
+              <tr>
+                <th className="px-2 py-1 border-b">Email</th>
+                <th className="px-2 py-1 border-b">Role</th>
+                <th className="px-2 py-1 border-b">Status</th>
+                <th className="px-2 py-1 border-b">Result</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loginTestError.results.map((r, i) => (
+                <tr key={i} className={r.passed ? 'bg-green-100' : 'bg-red-200 font-bold'}>
+                  <td className="px-2 py-1 border-b">{r.email}</td>
+                  <td className="px-2 py-1 border-b">{r.role}</td>
+                  <td className="px-2 py-1 border-b">{r.status}</td>
+                  <td className="px-2 py-1 border-b">{r.passed ? '✅ Success' : '❌ Failed'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         <pre className="text-xs bg-red-200 p-2 rounded overflow-x-auto text-left max-h-96">{JSON.stringify(loginTestError, null, 2)}</pre>
       </div>
     );
