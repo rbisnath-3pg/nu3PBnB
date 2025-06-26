@@ -72,7 +72,7 @@
     "tslib": "^2.8.1"
   },
   "jest": {
-    "testEnvironment": "jsdom",
+    "testEnvironment": "node",
     "testTimeout": 10000,
     "transform": {
       "^.+\\.[jt]sx?$": "babel-jest"
@@ -97,6 +97,37 @@
       "\\.(css|less|scss|sass)$": "identity-obj-proxy",
       "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/__mocks__/fileMock.js",
       "^../services/getApiBase$": "<rootDir>/frontend/src/services/getApiBase.node.js"
-    }
+    },
+    "projects": [
+      {
+        "displayName": "backend",
+        "testEnvironment": "node",
+        "testMatch": [
+          "<rootDir>/routes/__tests__/**/*.test.js",
+          "<rootDir>/models/__tests__/**/*.test.js"
+        ],
+        "setupFilesAfterEnv": [
+          "<rootDir>/jest.setup.js"
+        ]
+      },
+      {
+        "displayName": "frontend",
+        "testEnvironment": "jsdom",
+        "testMatch": [
+          "<rootDir>/frontend/src/**/*.test.jsx",
+          "<rootDir>/frontend/src/**/*.test.js"
+        ],
+        "setupFilesAfterEnv": [
+          "@testing-library/jest-dom",
+          "<rootDir>/frontend/jest.setup.js"
+        ],
+        "moduleNameMapper": {
+          "\\.(css|less|scss|sass)$": "identity-obj-proxy",
+          "\\.(jpg|jpeg|png|gif|svg)$": "<rootDir>/__mocks__/fileMock.js",
+          "^./getApiBase\\.vite\\.js$": "<rootDir>/frontend/src/services/getApiBase.node.js",
+          "^./getApiBase\\.node\\.js$": "<rootDir>/frontend/src/services/getApiBase.node.js"
+        }
+      }
+    ]
   }
 }
