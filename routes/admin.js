@@ -273,7 +273,7 @@ router.post('/run-tests', auth, requireRole('admin'), (req, res) => {
   writeTestResults(results);
   
   // Production-safe Jest command with memory and time limits
-  const jestCommand = 'npx jest --config jest.config.production.js --verbose --colors=false --coverage --maxWorkers=1 --runInBand --detectOpenHandles --forceExit --testTimeout=10000 --maxConcurrency=1';
+  const jestCommand = 'npx jest --verbose --colors=false --coverage --maxWorkers=1 --runInBand --detectOpenHandles --forceExit --testTimeout=10000 --maxConcurrency=1';
   const cwd = path.join(__dirname, '..');
   
   console.log(`📋 Executing production-safe Jest: ${jestCommand} in ${cwd}`);
@@ -360,7 +360,7 @@ router.post('/run-tests', auth, requireRole('admin'), (req, res) => {
     let completedBatches = 0;
     
     fallbackTests.forEach((testPattern, index) => {
-      const batchCommand = `npx jest --config jest.config.production.js --verbose --colors=false --maxWorkers=1 --runInBand --detectOpenHandles --forceExit --testTimeout=5000 ${testPattern}`;
+      const batchCommand = `npx jest --verbose --colors=false --maxWorkers=1 --runInBand --detectOpenHandles --forceExit --testTimeout=5000 ${testPattern}`;
       
       exec(batchCommand, {
         cwd: cwd,

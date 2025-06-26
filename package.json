@@ -75,9 +75,13 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "testTimeout": 10000,
+    "testTimeout": 8000,
     "detectOpenHandles": true,
     "logHeapUsage": true,
+    "maxWorkers": 1,
+    "maxConcurrency": 1,
+    "runInBand": true,
+    "forceExit": true,
     "transform": {
       "^.+\\.[jt]sx?$": "babel-jest"
     },
@@ -106,7 +110,7 @@
       {
         "displayName": "backend",
         "testEnvironment": "node",
-        "testTimeout": 15000,
+        "testTimeout": 8000,
         "detectOpenHandles": true,
         "testMatch": [
           "<rootDir>/routes/__tests__/**/*.test.js",
@@ -114,12 +118,14 @@
         ],
         "setupFilesAfterEnv": [
           "<rootDir>/jest.setup.js"
-        ]
+        ],
+        "maxWorkers": 1,
+        "runInBand": true
       },
       {
         "displayName": "frontend",
         "testEnvironment": "jsdom",
-        "testTimeout": 15000,
+        "testTimeout": 8000,
         "detectOpenHandles": true,
         "testMatch": [
           "<rootDir>/frontend/src/**/*.test.jsx",
@@ -134,8 +140,23 @@
           "\\.(jpg|jpeg|png|gif|svg)$": "<rootDir>/__mocks__/fileMock.js",
           "^./getApiBase\\.vite\\.js$": "<rootDir>/frontend/src/services/getApiBase.node.js",
           "^./getApiBase\\.node\\.js$": "<rootDir>/frontend/src/services/getApiBase.node.js"
-        }
+        },
+        "maxWorkers": 1,
+        "runInBand": true
       }
-    ]
+    ],
+    "collectCoverage": true,
+    "coverageDirectory": "coverage",
+    "coverageReporters": ["text", "lcov"],
+    "coverageThreshold": {
+      "global": {
+        "branches": 20,
+        "functions": 20,
+        "lines": 20,
+        "statements": 20
+      }
+    },
+    "verbose": true,
+    "colors": false
   }
 }
