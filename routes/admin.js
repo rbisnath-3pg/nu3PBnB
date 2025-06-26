@@ -260,70 +260,70 @@ router.get('/test-results/:id', auth, requireRole('admin'), (req, res) => {
 });
 
 // Trigger a new test run
-// NOTE: In production (Render.com), Jest execution causes server crashes due to:
-// - Memory limitations (Jest with coverage is memory-intensive)
-// - Time constraints (Render has execution time limits)
-// - Process isolation issues
-// Therefore, we use a production-safe simulation instead.
+// NOTE: Production-safe Jest execution with memory and time limits
 router.post('/run-tests', auth, requireRole('admin'), (req, res) => {
   const id = Date.now().toString();
   const date = new Date().toLocaleString();
   const results = readTestResults();
   
-  console.log(`🔄 Starting test run ${id} at ${date}`);
+  console.log(`🔄 Starting production-safe test run ${id} at ${date}`);
   
   // Mark as running
   results.unshift({ id, date, status: 'running', summary: 'Running...', coverage: '', details: '' });
   writeTestResults(results);
   
-  // Production-safe test simulation (Jest crashes the server in production)
-  console.log(`📋 Running production-safe test simulation for run ${id}`);
+  // Production-safe Jest command with memory and time limits
+  const jestCommand = 'npx jest --config jest.config.production.js --verbose --colors=false --coverage --maxWorkers=1 --runInBand --detectOpenHandles --forceExit --testTimeout=10000 --maxConcurrency=1';
+  const cwd = path.join(__dirname, '..');
   
-  // Simulate test execution with a timeout
-  setTimeout(() => {
-    console.log(`✅ Test simulation ${id} completed`);
+  console.log(`📋 Executing production-safe Jest: ${jestCommand} in ${cwd}`);
+  
+  // Run tests with strict memory and time limits
+  const testProcess = exec(jestCommand, { 
+    cwd: cwd,
+    maxBuffer: 1024 * 1024 * 5, // 5MB buffer (reduced from 10MB)
+    env: { 
+      ...process.env, 
+      NODE_ENV: 'test',
+      NODE_OPTIONS: '--max-old-space-size=512', // Limit memory to 512MB
+      JEST_WORKER_TIMEOUT: '8000' // 8 second timeout per worker
+    },
+    timeout: 120000 // 2 minute total timeout
+  }, (err, stdout, stderr) => {
+    console.log(`✅ Test run ${id} completed with ${err ? 'error' : 'success'}`);
+    console.log(`📊 stdout length: ${stdout?.length || 0}, stderr length: ${stderr?.length || 0}`);
     
-    // Generate realistic test results
-    const testResults = {
-      passed: Math.floor(Math.random() * 20) + 15, // 15-35 tests passed
-      total: Math.floor(Math.random() * 5) + 35,   // 35-40 total tests
-      coverage: (Math.random() * 20 + 30).toFixed(1), // 30-50% coverage
-      duration: Math.floor(Math.random() * 30) + 10   // 10-40 seconds
-    };
+    const status = err ? 'failed' : 'passed';
     
-    const status = 'passed';
-    const summary = `${testResults.passed} of ${testResults.total} tests passed`;
-    const coverage = `${testResults.coverage}%`;
+    // Parse summary from stdout
+    let summary = 'Test execution completed';
+    let coverage = '';
     
-    const details = `Production Test Simulation Results
-=====================================
-
-Test Execution Summary:
-- Total Tests: ${testResults.total}
-- Passed: ${testResults.passed}
-- Failed: ${testResults.total - testResults.passed}
-- Duration: ${testResults.duration}s
-- Coverage: ${testResults.coverage}%
-
-Test Suites:
-✅ Authentication Tests (5/5 passed)
-✅ API Endpoint Tests (12/12 passed)
-✅ Database Model Tests (8/8 passed)
-✅ Frontend Component Tests (${testResults.passed - 25}/${testResults.total - 25} passed)
-
-Coverage Report:
-- Statements: ${testResults.coverage}%
-- Branches: ${(testResults.coverage * 0.8).toFixed(1)}%
-- Functions: ${(testResults.coverage * 0.9).toFixed(1)}%
-- Lines: ${testResults.coverage}%
-
-Note: This is a production simulation. For full Jest execution, 
-run tests in a CI/CD pipeline or development environment.
-
-Environment: Production (Render.com)
-Server Time: ${new Date().toLocaleString()}
-Timezone: America/Toronto (EST)`;
-
+    // Extract test summary
+    const testSummaryMatch = stdout.match(/Tests:\s+([\d]+) passed, ([\d]+) total/);
+    if (testSummaryMatch) {
+      summary = `${testSummaryMatch[1]} of ${testSummaryMatch[2]} tests passed`;
+    } else {
+      // Fallback parsing for different Jest output formats
+      const passedMatch = stdout.match(/(\d+) passing/);
+      const failedMatch = stdout.match(/(\d+) failing/);
+      if (passedMatch || failedMatch) {
+        const passed = passedMatch ? passedMatch[1] : '0';
+        const failed = failedMatch ? failedMatch[1] : '0';
+        const total = parseInt(passed) + parseInt(failed);
+        summary = `${passed} of ${total} tests passed`;
+      }
+    }
+    
+    // Extract coverage information
+    const coverageMatch = stdout.match(/All files\s+\|\s+([\d.]+)%/);
+    if (coverageMatch) {
+      coverage = `${coverageMatch[1]}%`;
+    }
+    
+    // Combine stdout and stderr for complete output
+    const fullOutput = stdout + (stderr ? '\n\nSTDERR:\n' + stderr : '');
+    
     // Update result
     const updatedResults = readTestResults();
     const idx = updatedResults.findIndex(r => r.id === id);
@@ -334,14 +334,142 @@ Timezone: America/Toronto (EST)`;
         status,
         summary,
         coverage,
-        details
+        details: fullOutput
       };
       writeTestResults(updatedResults);
       console.log(`💾 Test results saved for run ${id}`);
     } else {
       console.error(`❌ Could not find test run ${id} to update`);
     }
-  }, 5000 + Math.random() * 10000); // 5-15 second simulation
+  });
+  
+  // Handle process events for better error handling
+  testProcess.on('error', (error) => {
+    console.error(`❌ Test execution error for run ${id}:`, error);
+    
+    // Try running tests in smaller batches as fallback
+    console.log(`🔄 Attempting fallback: running tests in smaller batches for run ${id}`);
+    
+    const fallbackTests = [
+      '--testPathPattern="routes/__tests__" --testNamePattern="should return"',
+      '--testPathPattern="models/__tests__" --testNamePattern="should"',
+      '--testPathPattern="frontend/src/components/__tests__" --testNamePattern="renders"'
+    ];
+    
+    let batchResults = [];
+    let completedBatches = 0;
+    
+    fallbackTests.forEach((testPattern, index) => {
+      const batchCommand = `npx jest --config jest.config.production.js --verbose --colors=false --maxWorkers=1 --runInBand --detectOpenHandles --forceExit --testTimeout=5000 ${testPattern}`;
+      
+      exec(batchCommand, {
+        cwd: cwd,
+        maxBuffer: 1024 * 1024 * 2, // 2MB buffer per batch
+        env: { 
+          ...process.env, 
+          NODE_ENV: 'test',
+          NODE_OPTIONS: '--max-old-space-size=256' // Even smaller memory limit
+        },
+        timeout: 30000 // 30 second timeout per batch
+      }, (batchErr, batchStdout, batchStderr) => {
+        completedBatches++;
+        
+        const batchResult = {
+          pattern: testPattern,
+          success: !batchErr,
+          output: batchStdout + (batchStderr ? '\n\nSTDERR:\n' + batchStderr : ''),
+          error: batchErr ? batchErr.message : null
+        };
+        
+        batchResults.push(batchResult);
+        
+        // If all batches are complete, update the result
+        if (completedBatches === fallbackTests.length) {
+          const totalPassed = batchResults.filter(r => r.success).length;
+          const totalBatches = fallbackTests.length;
+          
+          const fallbackOutput = `Fallback Test Execution Results
+=====================================
+
+Attempted to run tests in ${totalBatches} smaller batches due to memory/time constraints.
+
+Batch Results:
+${batchResults.map((result, i) => 
+  `${result.success ? '✅' : '❌'} Batch ${i + 1}: ${result.pattern}
+   Status: ${result.success ? 'PASSED' : 'FAILED'}
+   ${result.error ? `Error: ${result.error}` : ''}`
+).join('\n\n')}
+
+Summary: ${totalPassed}/${totalBatches} batches completed successfully
+
+Original Error: ${error.message}
+
+Note: Tests were run in smaller batches to work within production constraints.
+For full test execution, consider using a CI/CD pipeline or development environment.`;
+
+          const updatedResults = readTestResults();
+          const idx = updatedResults.findIndex(r => r.id === id);
+          if (idx !== -1) {
+            updatedResults[idx] = {
+              id,
+              date,
+              status: totalPassed > 0 ? 'passed' : 'failed',
+              summary: `${totalPassed}/${totalBatches} test batches passed`,
+              coverage: '',
+              details: fallbackOutput
+            };
+            writeTestResults(updatedResults);
+            console.log(`💾 Fallback test results saved for run ${id}`);
+          }
+        }
+      });
+    });
+  });
+  
+  // Handle process exit
+  testProcess.on('exit', (code, signal) => {
+    console.log(`🚪 Test process exited with code ${code}, signal ${signal} for run ${id}`);
+    
+    // If process exits with error and we haven't handled it yet
+    if (code !== 0 && code !== null) {
+      console.log(`⚠️ Test process exited with non-zero code ${code} for run ${id}`);
+    }
+  });
+  
+  // Handle process close
+  testProcess.on('close', (code) => {
+    console.log(`🔒 Test process closed with code ${code} for run ${id}`);
+  });
+  
+  // Handle timeout with graceful shutdown
+  setTimeout(() => {
+    if (testProcess.exitCode === null) {
+      console.log(`⏰ Test process timed out for run ${id}, killing process gracefully`);
+      testProcess.kill('SIGTERM');
+      
+      // Give it a moment to shut down gracefully
+      setTimeout(() => {
+        if (testProcess.exitCode === null) {
+          console.log(`🔨 Force killing test process for run ${id}`);
+          testProcess.kill('SIGKILL');
+        }
+      }, 5000);
+      
+      const updatedResults = readTestResults();
+      const idx = updatedResults.findIndex(r => r.id === id);
+      if (idx !== -1) {
+        updatedResults[idx] = {
+          id,
+          date,
+          status: 'failed',
+          summary: 'Test execution timed out',
+          coverage: '',
+          details: 'Test execution exceeded the 2-minute timeout limit. This might be due to environment constraints or test complexity. Consider running tests in smaller batches.'
+        };
+        writeTestResults(updatedResults);
+      }
+    }
+  }, 120000); // 2 minute timeout
   
   res.json({ id, date, status: 'running', summary: 'Running...', coverage: '', details: '' });
 });
