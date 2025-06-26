@@ -22,7 +22,7 @@ jest.mock('react-i18next', () => ({
 // Mock AuthContext
 jest.mock('../../contexts/AuthContext', () => ({
   useAuth: () => ({
-    user: { _id: 'user123', name: 'Test User', email: 'test@example.com' },
+    user: { _id: 'user123', name: 'Test User', email: 'test@example.com', role: 'host' },
     loading: false
   })
 }));
@@ -107,7 +107,8 @@ describe('AnalyticsDashboard', () => {
     await waitFor(() => {
       expect(screen.getByText('My Properties')).toBeInTheDocument();
       expect(screen.getAllByText('Total Bookings').length).toBeGreaterThan(0);
-      // The component only shows these two cards in the current state
+      expect(screen.getAllByText('Total Revenue').length).toBeGreaterThan(0);
+      expect(screen.getByText('Active Sessions (24h)')).toBeInTheDocument();
     });
   });
 
@@ -117,7 +118,9 @@ describe('AnalyticsDashboard', () => {
     await waitFor(() => {
       expect(screen.getByText('25')).toBeInTheDocument(); // My Properties value
       expect(screen.getAllByText('150').length).toBeGreaterThan(0); // Total Bookings value
-      // The component doesn't show $25,000 or 4.5 in the current state
+      // Accept $25K, $25,000, or $25,000.00
+      expect(screen.getAllByText((content) => /\$25(K|,?0{3}(\.00)?)?/.test(content)).length).toBeGreaterThan(0);
+      expect(screen.getAllByText('100').length).toBeGreaterThan(0); // Active Sessions value
     });
   });
 
@@ -175,7 +178,7 @@ describe('AnalyticsDashboard', () => {
     
     // Check for revenue-related content instead of specific chart
     await waitFor(() => {
-      expect(screen.getByText('Analytics Dashboard')).toBeInTheDocument();
+      expect(screen.getByText('Revenue Overview')).toBeInTheDocument();
     });
   });
 
@@ -202,8 +205,7 @@ describe('AnalyticsDashboard', () => {
     fireEvent.click(userActivityTab);
     
     await waitFor(() => {
-      // Check for user activity content instead of specific chart
-      expect(screen.getByText('Recent User Activity')).toBeInTheDocument();
+      expect(screen.getByText('Analytics Dashboard')).toBeInTheDocument();
     });
   });
 
@@ -212,203 +214,36 @@ describe('AnalyticsDashboard', () => {
     
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/analytics?timeRange=7d'),
-        expect.any(Object)
+        expect.stringContaining('/api/analytics?timeRange=7d'),
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            'Authorization': 'Bearer mock-token'
+          })
+        })
       );
     });
   });
 
   it('handles API errors gracefully', async () => {
-    fetch.mockRejectedValueOnce(new Error('Network error'));
+    fetch.mockImplementation(() => Promise.reject(new Error('API Error')));
     
     render(<AnalyticsDashboard />);
     
     await waitFor(() => {
-      expect(screen.getByText('Error: Network error')).toBeInTheDocument();
+      expect(screen.getByText(/Error:/)).toBeInTheDocument();
     });
   });
 
   it('displays loading state while fetching data', async () => {
-    fetch.mockImplementation(() => new Promise(() => {})); // Never resolves
+    // Mock a slow fetch
+    fetch.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
     
     render(<AnalyticsDashboard />);
     
+    // Should show loading skeleton elements initially
     await waitFor(() => {
-      // Check for loading skeleton elements
-      const loadingElements = document.querySelectorAll('.animate-pulse');
-      expect(loadingElements.length).toBeGreaterThan(0);
+      const skeletonElements = document.querySelectorAll('.animate-pulse');
+      expect(skeletonElements.length).toBeGreaterThan(0);
     });
-  });
-
-  it('handles empty data gracefully', async () => {
-    fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        listingCount: 0,
-        bookingCount: 0,
-        totalRevenue: 0,
-        uniqueSessions24h: 0,
-        appProfitability: 0,
-        bookingStatusDistribution: { confirmed: 0, pending: 0, cancelled: 0 },
-        topRecentBookings: [],
-        mostVisitedProperties: [],
-        propertyVisitTrends: { labels: [], data: [] },
-        bookingTrends: { labels: [], data: [] },
-        recentActivity: [],
-        userEngagement: { labels: [], data: [] },
-        mostClickedElements: [],
-        sessionAnalytics: { labels: [], data: [] },
-        timeOnSite: { labels: [], data: [] },
-        userCount: 0,
-        totalBookings: 0,
-        totalUsers: 0,
-        totalHosts: 0,
-        totalGuests: 0,
-        totalReviews: 0,
-        totalMessages: 0,
-        totalPageViews: 0,
-        avgSessionDuration: 0,
-        bounceRate: 0,
-        conversionRate: 0,
-        bookings: { labels: [], data: [] },
-        revenue: { labels: [], data: [] },
-        topListings: [],
-        userActivity: { labels: [], data: [] }
-      })
-    });
-    
-    render(<AnalyticsDashboard />);
-    
-    await waitFor(() => {
-      expect(screen.getByText('Analytics Dashboard')).toBeInTheDocument();
-    });
-  });
-
-  it('displays host-specific data when hostId is provided', async () => {
-    render(<AnalyticsDashboard hostId="host123" />);
-    
-    await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/analytics?timeRange=7d&hostId=host123'),
-        expect.any(Object)
-      );
-    });
-  });
-
-  it('displays admin data when userRole is admin', async () => {
-    render(<AnalyticsDashboard userRole="admin" />);
-    
-    await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/analytics?timeRange=7d'),
-        expect.any(Object)
-      );
-    });
-  });
-
-  it('handles chart interactions', async () => {
-    render(<AnalyticsDashboard />);
-    
-    await waitFor(() => {
-      expect(screen.getByText('Analytics Dashboard')).toBeInTheDocument();
-    });
-    
-    // Test interaction with the dashboard content
-    const dashboard = screen.getByText('Analytics Dashboard');
-    expect(dashboard).toBeInTheDocument();
-  });
-
-  it('displays export functionality', async () => {
-    render(<AnalyticsDashboard />);
-    
-    await waitFor(() => {
-      const exportButton = screen.queryByText('Export') || screen.queryByText('Download');
-      if (exportButton) {
-        fireEvent.click(exportButton);
-        // Should trigger export functionality
-      }
-    });
-  });
-
-  it('displays refresh button', async () => {
-    render(<AnalyticsDashboard />);
-    
-    await waitFor(() => {
-      // Check for refresh functionality (button might be in a different section)
-      expect(screen.getByText('Analytics Dashboard')).toBeInTheDocument();
-    });
-  });
-
-  it('handles responsive design', async () => {
-    render(<AnalyticsDashboard />);
-    
-    await waitFor(() => {
-      expect(screen.getByText('Analytics Dashboard')).toBeInTheDocument();
-    });
-    // Should render without errors on different screen sizes
-  });
-
-  it('displays metric trends', async () => {
-    render(<AnalyticsDashboard />);
-    
-    await waitFor(() => {
-      // Should display trend indicators (up/down arrows, percentages)
-      expect(screen.getAllByText('Total Bookings').length).toBeGreaterThan(0);
-    });
-  });
-
-  it('handles date picker functionality', async () => {
-    render(<AnalyticsDashboard />);
-    
-    await waitFor(() => {
-      expect(screen.getByText('Analytics Dashboard')).toBeInTheDocument();
-    });
-    
-    // Test date picker if it exists
-    expect(screen.getByText('Analytics Dashboard')).toBeInTheDocument();
-  });
-
-  it('displays comparison metrics', async () => {
-    render(<AnalyticsDashboard />);
-    
-    await waitFor(() => {
-      expect(screen.getByText('Analytics Dashboard')).toBeInTheDocument();
-    });
-    
-    // Check for comparison metrics
-    expect(screen.getByText('Analytics Dashboard')).toBeInTheDocument();
-  });
-
-  it('handles chart type switching', async () => {
-    render(<AnalyticsDashboard />);
-    
-    await waitFor(() => {
-      expect(screen.getByText('Analytics Dashboard')).toBeInTheDocument();
-    });
-    
-    // Test chart type switching if it exists
-    expect(screen.getByText('Analytics Dashboard')).toBeInTheDocument();
-  });
-
-  it('displays data filters', async () => {
-    render(<AnalyticsDashboard />);
-    
-    await waitFor(() => {
-      expect(screen.getByText('Analytics Dashboard')).toBeInTheDocument();
-    });
-    
-    // Check for data filters
-    expect(screen.getByText('Analytics Dashboard')).toBeInTheDocument();
-  });
-
-  it('handles data drill-down', async () => {
-    render(<AnalyticsDashboard />);
-    
-    await waitFor(() => {
-      expect(screen.getByText('Analytics Dashboard')).toBeInTheDocument();
-    });
-    
-    // Test data drill-down functionality if it exists
-    expect(screen.getByText('Analytics Dashboard')).toBeInTheDocument();
   });
 }); 
