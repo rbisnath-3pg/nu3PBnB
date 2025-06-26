@@ -411,6 +411,21 @@ const HomePage = ({
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    // Add debugging logs
+    console.log('🔍 [Frontend Booking Debug] Form data:', {
+      startDate: bookingForm.startDate,
+      endDate: bookingForm.endDate,
+      guests: bookingForm.guests,
+      listingId: selectedListing._id
+    });
+    console.log('🔍 [Frontend Booking Debug] Parsed dates:', {
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+      today: today.toISOString(),
+      startIsPast: startDate < today,
+      endBeforeStart: endDate <= startDate
+    });
+
     if (startDate < today) {
       setBookingFormError('Check-in date cannot be in the past');
       return;
@@ -434,6 +449,8 @@ const HomePage = ({
       totalPrice,
       message: 'Booking request'
     };
+
+    console.log('🔍 [Frontend Booking Debug] Created booking object:', booking);
 
     // Set the booking data for the payment modal
     setCurrentBooking(booking);
@@ -1685,6 +1702,7 @@ const HomePage = ({
                       name="startDate"
                       value={bookingForm.startDate}
                       onChange={(e) => handleBookingFormChange('startDate', e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
                       className="flex-1 px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-green-400 text-gray-800 text-sm" 
                       placeholder="Check-in" 
                     />
@@ -1693,6 +1711,7 @@ const HomePage = ({
                       name="endDate"
                       value={bookingForm.endDate}
                       onChange={(e) => handleBookingFormChange('endDate', e.target.value)}
+                      min={bookingForm.startDate || new Date().toISOString().split('T')[0]}
                       className="flex-1 px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-green-400 text-gray-800 text-sm" 
                       placeholder="Check-out" 
                     />
