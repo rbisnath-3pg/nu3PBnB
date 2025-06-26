@@ -2,11 +2,13 @@ services:
   - type: web
     name: nu3pbnb-frontend
     env: static
-    buildCommand: npm install --legacy-peer-deps && npm run build
+    buildCommand: npm install && npm run build
     staticPublishPath: ./dist
     envVars:
-      - key: VITE_API_URL
-        value: https://nu3pbnb-api.onrender.com
+      - key: NODE_VERSION
+        value: 18.17.0
+    # Updated deployment trigger
+    deploymentTrigger: 2025-06-26-20-58
     routes:
       - type: rewrite
         source: /*
