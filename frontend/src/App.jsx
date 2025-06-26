@@ -1386,7 +1386,9 @@ function App() {
   useEffect(() => {
     async function fetchDiagnostics() {
       try {
-        const res = await fetch('/api/diagnostics/booking-tests');
+        // Use the correct API base URL instead of relative URL
+        const apiBase = import.meta.env.VITE_API_URL || 'https://nu3pbnb-api.onrender.com';
+        const res = await fetch(`${apiBase}/api/diagnostics/booking-tests`);
         if (res.ok) {
           const data = await res.json();
           setDiagnostics(data);
@@ -1778,7 +1780,9 @@ URL: ${window.location.href}
                     button.className = 'px-3 py-1 rounded bg-purple-600 text-white font-bold text-sm';
                     button.disabled = true;
                     
-                    const response = await fetch('/api/diagnostics/booking-tests/trigger', {
+                    // Use the correct API base URL instead of relative URL
+                    const apiBase = import.meta.env.VITE_API_URL || 'https://nu3pbnb-api.onrender.com';
+                    const response = await fetch(`${apiBase}/api/diagnostics/booking-tests/trigger`, {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' }
                     });
