@@ -21,13 +21,14 @@ export default async function testLogins() {
   for (const user of TEST_USERS) {
     try {
       const payload = { email: user.email, password: user.password };
+      console.log('[LOGIN TEST] Attempting login:', payload);
       const response = await fetch(`${API_BASE}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
       const data = await response.json().catch(() => ({}));
-      const passed = response.ok && data.user && data.user.email === user.email;
+      const passed = response.ok && data.user && data.user.email === user.email && data.user.role === user.role && !!data.token;
       results.push({
         email: user.email,
         role: user.role,
@@ -37,9 +38,9 @@ export default async function testLogins() {
       });
       if (!passed) {
         allPassed = false;
-        console.error('[AUTO LOGIN TEST] Failed:', { user, response: data });
+        console.error('[LOGIN TEST] Failed:', { user, response: data });
       } else {
-        console.log('[AUTO LOGIN TEST] Success:', { user, response: data });
+        console.log('[LOGIN TEST] Success:', { user, response: data });
       }
     } catch (err) {
       allPassed = false;
@@ -50,10 +51,11 @@ export default async function testLogins() {
         passed: false,
         error: err.message,
       });
-      console.error('[AUTO LOGIN TEST] Network error:', { user, error: err });
+      console.error('[LOGIN TEST] Network error:', { user, error: err });
     }
   }
 
+  console.log('[LOGIN TEST] Summary:', results);
   return {
     success: allPassed,
     tested: TEST_USERS.length,

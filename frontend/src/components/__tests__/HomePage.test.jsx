@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import HomePage from '../HomePage';
+import testLogins from '../../services/testLogins';
 
 // Mock translation function
 const t = (key, fallback) => fallback || key;
@@ -44,6 +45,8 @@ jest.mock('../ReceiptModal', () => {
     return <div data-testid="receipt-modal">Receipt Modal</div>;
   };
 });
+
+jest.mock('../../services/testLogins');
 
 describe('HomePage', () => {
   const mockListings = [
@@ -315,5 +318,39 @@ describe('HomePage', () => {
     render(<HomePage {...defaultProps} showHostDashboard={true} />);
     // Should render without crashing
     expect(screen.getAllByText('Beautiful Apartment').length).toBeGreaterThan(0);
+  });
+
+  it('shows all logins succeed in login test banner', async () => {
+    const allPassResult = {
+      success: true,
+      tested: 2,
+      results: [
+        { email: 'admin@nu3pbnb.com', role: 'admin', status: 200, passed: true, response: { user: { email: 'admin@nu3pbnb.com', role: 'admin' }, token: 'tok' } },
+        { email: 'host@nu3pbnb.com', role: 'host', status: 200, passed: true, response: { user: { email: 'host@nu3pbnb.com', role: 'host' }, token: 'tok' } },
+      ],
+      timestamp: new Date().toISOString(),
+    };
+    testLogins.mockResolvedValueOnce(allPassResult);
+    render(<HomePage loginTestError={allPassResult} {...defaultProps} />);
+    expect(screen.getByText('Automatic Login Test Results')).toBeInTheDocument();
+    expect(screen.getAllByText('✅ Success').length).toBe(2);
+    expect(screen.queryByText('❌ Failed')).not.toBeInTheDocument();
+  });
+
+  it('shows some logins fail in login test banner', async () => {
+    const someFailResult = {
+      success: false,
+      tested: 2,
+      results: [
+        { email: 'admin@nu3pbnb.com', role: 'admin', status: 200, passed: true, response: { user: { email: 'admin@nu3pbnb.com', role: 'admin' }, token: 'tok' } },
+        { email: 'host@nu3pbnb.com', role: 'host', status: 401, passed: false, response: { message: 'Invalid credentials' } },
+      ],
+      timestamp: new Date().toISOString(),
+    };
+    testLogins.mockResolvedValueOnce(someFailResult);
+    render(<HomePage loginTestError={someFailResult} {...defaultProps} />);
+    expect(screen.getByText('Automatic Login Test Results')).toBeInTheDocument();
+    expect(screen.getByText('✅ Success')).toBeInTheDocument();
+    expect(screen.getByText('❌ Failed')).toBeInTheDocument();
   });
 }); 
