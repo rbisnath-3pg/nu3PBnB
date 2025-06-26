@@ -1,5 +1,13 @@
 console.log('Starting index.js');
 require('dotenv').config();
+
+// Set timezone to Toronto EST
+process.env.TZ = 'America/Toronto';
+console.log('🕐 Server timezone set to Toronto EST:', new Date().toLocaleString('en-US', { 
+  timeZone: 'America/Toronto',
+  timeZoneName: 'short'
+}));
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -109,7 +117,18 @@ if (!fs.existsSync(logDir)) {
 const logger = winston.createLogger({
   level: LOG_LEVEL,
   format: winston.format.combine(
-    winston.format.timestamp(),
+    winston.format.timestamp({
+      format: () => new Date().toLocaleString('en-US', { 
+        timeZone: 'America/Toronto',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        timeZoneName: 'short'
+      })
+    }),
     winston.format.json()
   ),
   transports: [
@@ -121,7 +140,21 @@ const logger = winston.createLogger({
 // Add console transport in development
 if (isDevelopment) {
   logger.add(new winston.transports.Console({
-    format: winston.format.simple()
+    format: winston.format.combine(
+      winston.format.timestamp({
+        format: () => new Date().toLocaleString('en-US', { 
+          timeZone: 'America/Toronto',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          timeZoneName: 'short'
+        })
+      }),
+      winston.format.simple()
+    )
   }));
 }
 
@@ -306,6 +339,27 @@ app.get('/db-status', async (req, res) => {
     console.error('❌ Database status check failed:', error);
     res.status(500).json({ 
       message: 'Database status check failed',
+      error: error.message 
+    });
+  }
+});
+
+// Timezone information endpoint
+app.get('/timezone', (req, res) => {
+  try {
+    const { getTorontoTimezoneInfo } = require('./utils/timezone');
+    const timezoneInfo = getTorontoTimezoneInfo();
+    
+    res.json({
+      message: 'Server timezone information',
+      ...timezoneInfo,
+      serverTime: new Date().toISOString(),
+      serverTimezone: process.env.TZ || 'UTC'
+    });
+  } catch (error) {
+    console.error('❌ Timezone info failed:', error);
+    res.status(500).json({ 
+      message: 'Timezone info failed',
       error: error.message 
     });
   }
