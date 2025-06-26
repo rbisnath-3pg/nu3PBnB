@@ -1,6 +1,6 @@
 /**
  * nu3PBnB Backend Server
- * Copyright (c) 2025 Robbie Bisnath (robbie.bisnath@protonmail.com). All rights reserved.
+ * Copyright (c) 2025 Robbie Bisnath (robbie.bisnath@3pillarglobal.com). All rights reserved.
  * 
  * Main server entry point for the nu3PBnB property booking platform.
  * Handles API routes, database connections, middleware, and server configuration.

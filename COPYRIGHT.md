@@ -2,7 +2,7 @@
 
 **nu3PBnB - Property Booking Platform**
 
-**Copyright (c) 2025 Robbie Bisnath (robbie.bisnath@protonmail.com). All rights reserved.**
+**Copyright (c) 2025 Robbie Bisnath (robbie.bisnath@3pillarglobal.com). All rights reserved.**
 
 ## Software Ownership
 
@@ -31,7 +31,7 @@ This software is licensed under the MIT License. See LICENSE file for full terms
 
 For licensing, support, or other inquiries:
 - **Author**: Robbie Bisnath
-- **Email**: robbie.bisnath@protonmail.com
+- **Email**: robbie.bisnath@3pillarglobal.com
 - **Year**: 2025
 
 ## Legal Notice
