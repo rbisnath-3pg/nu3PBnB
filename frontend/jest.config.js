@@ -1,5 +1,11 @@
 module.exports = {
   testEnvironment: 'jsdom',
+  testTimeout: 15000,
+  verbose: true,
+  silent: false,
+  detectOpenHandles: true,
+  forceExit: true,
+  logHeapUsage: true,
   transform: {
     '^.+\\.[jt]sx?$': 'babel-jest',
   },
@@ -12,7 +18,7 @@ module.exports = {
     '^./getApiBase\\.node\\.js$': '<rootDir>/src/services/getApiBase.node.js'
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(react-router|react-router-dom|vite)/)'
+    'node_modules/(?!(react-router|react-router-dom|vite|react-leaflet|leaflet|@react-leaflet)/)'
   ],
   setupFiles: ['<rootDir>/jest.setup.js']
 }; 

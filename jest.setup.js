@@ -57,6 +57,70 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 
 let mongoServer;
 
+// Enhanced Jest setup with robust logging and error handling
+console.log('🔧 Jest setup initialized - Environment:', process.env.NODE_ENV || 'test');
+
+// Global test timeout
+jest.setTimeout(15000);
+
+// Enhanced error handling for unhandled promises
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
+
+// Enhanced error handling for uncaught exceptions
+process.on('uncaughtException', (error) => {
+  console.error('❌ Uncaught Exception:', error);
+  process.exit(1);
+});
+
+// Log test environment details
+console.log('📊 Test Environment Details:');
+console.log('  - Node Version:', process.version);
+console.log('  - Platform:', process.platform);
+console.log('  - Architecture:', process.arch);
+console.log('  - Memory Usage:', process.memoryUsage());
+
+// Enhanced console logging for tests
+const originalConsoleLog = console.log;
+const originalConsoleError = console.error;
+const originalConsoleWarn = console.warn;
+
+console.log = (...args) => {
+  originalConsoleLog('📝 [TEST LOG]', ...args);
+};
+
+console.error = (...args) => {
+  originalConsoleError('❌ [TEST ERROR]', ...args);
+};
+
+console.warn = (...args) => {
+  originalConsoleWarn('⚠️ [TEST WARN]', ...args);
+};
+
+// Global test utilities
+global.testUtils = {
+  logTestStart: (testName) => {
+    console.log(`🚀 Starting test: ${testName}`);
+  },
+  logTestEnd: (testName, duration) => {
+    console.log(`✅ Completed test: ${testName} (${duration}ms)`);
+  },
+  logTestError: (testName, error) => {
+    console.error(`💥 Test failed: ${testName}`, error);
+  }
+};
+
+// Enhanced beforeEach and afterEach logging
+beforeEach(() => {
+  console.log(`🔄 Setting up test: ${expect.getState().currentTestName || 'Unknown'}`);
+});
+
+afterEach(() => {
+  console.log(`🧹 Cleaning up test: ${expect.getState().currentTestName || 'Unknown'}`);
+});
+
 // Global test setup
 beforeAll(async () => {
   // Disconnect from any existing connections first
@@ -87,4 +151,7 @@ afterAll(async () => {
   if (mongoServer) {
     await mongoServer.stop();
   }
-}, 30000); // 30 second timeout for teardown 
+}, 30000); // 30 second timeout for teardown
+
+// Log when setup is complete
+console.log('✅ Jest setup completed successfully'); 

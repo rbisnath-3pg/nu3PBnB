@@ -76,4 +76,71 @@ global.console = {
   info: jest.fn(),
   warn: jest.fn(),
   error: jest.fn(),
-}; 
+};
+
+// Enhanced frontend Jest setup with robust logging and error handling
+console.log('🔧 Frontend Jest setup initialized - Environment:', process.env.NODE_ENV || 'test');
+
+// Global test timeout
+jest.setTimeout(15000);
+
+// Enhanced error handling for unhandled promises
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Frontend Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
+
+// Enhanced error handling for uncaught exceptions
+process.on('uncaughtException', (error) => {
+  console.error('❌ Frontend Uncaught Exception:', error);
+  process.exit(1);
+});
+
+// Log test environment details
+console.log('📊 Frontend Test Environment Details:');
+console.log('  - Node Version:', process.version);
+console.log('  - Platform:', process.platform);
+console.log('  - Architecture:', process.arch);
+console.log('  - Memory Usage:', process.memoryUsage());
+
+// Enhanced console logging for frontend tests
+const originalConsoleLog = console.log;
+const originalConsoleError = console.error;
+const originalConsoleWarn = console.warn;
+
+console.log = (...args) => {
+  originalConsoleLog('📝 [FRONTEND TEST LOG]', ...args);
+};
+
+console.error = (...args) => {
+  originalConsoleError('❌ [FRONTEND TEST ERROR]', ...args);
+};
+
+console.warn = (...args) => {
+  originalConsoleWarn('⚠️ [FRONTEND TEST WARN]', ...args);
+};
+
+// Global test utilities for frontend
+global.testUtils = {
+  logTestStart: (testName) => {
+    console.log(`🚀 Starting frontend test: ${testName}`);
+  },
+  logTestEnd: (testName, duration) => {
+    console.log(`✅ Completed frontend test: ${testName} (${duration}ms)`);
+  },
+  logTestError: (testName, error) => {
+    console.error(`💥 Frontend test failed: ${testName}`, error);
+  }
+};
+
+// Enhanced beforeEach and afterEach logging for frontend
+beforeEach(() => {
+  console.log(`🔄 Setting up frontend test: ${expect.getState().currentTestName || 'Unknown'}`);
+});
+
+afterEach(() => {
+  console.log(`🧹 Cleaning up frontend test: ${expect.getState().currentTestName || 'Unknown'}`);
+});
+
+// Log when frontend setup is complete
+console.log('✅ Frontend Jest setup completed successfully'); 
