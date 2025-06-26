@@ -274,4 +274,4 @@ app.use(cors({
 
 ## Build Commands
 - Frontend: `cd frontend && npm install --legacy-peer-deps && npm run build`
-- Backend: `npm install && npm start` 
+- Backend: `npm install && npm start` # Production Deployment - Wed Jun 25 21:07:52 EDT 2025
