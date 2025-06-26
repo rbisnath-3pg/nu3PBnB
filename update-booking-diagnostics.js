@@ -345,6 +345,105 @@ async function updatePropertyViewDiagnostics() {
     
     logs.push(`✅ [PropertyTest] Page 2 returned ${page2Listings.length} listings`);
     
+    // Test 7: Check if properties display correctly (frontend simulation)
+    logs.push('🧪 [PropertyTest] Testing property display functionality...');
+    const propertyDisplayTest = {
+      hasListings: authListings.length > 0,
+      hasValidData: authListings.every(listing => 
+        listing._id && listing.title && listing.price && listing.location
+      ),
+      hasPhotos: authListings.every(listing => 
+        listing.photos && Array.isArray(listing.photos) && listing.photos.length > 0
+      ),
+      hasRequiredFields: authListings.every(listing => 
+        listing.maxGuests && listing.bedrooms && listing.bathrooms
+      )
+    };
+    
+    if (!propertyDisplayTest.hasListings) {
+      throw new Error('[PropertyTest] No properties available for display');
+    }
+    if (!propertyDisplayTest.hasValidData) {
+      throw new Error('[PropertyTest] Properties missing required display data');
+    }
+    if (!propertyDisplayTest.hasPhotos) {
+      logs.push('⚠️ [PropertyTest] Some properties missing photos (may cause blank images)');
+    }
+    if (!propertyDisplayTest.hasRequiredFields) {
+      logs.push('⚠️ [PropertyTest] Some properties missing required fields (may cause display issues)');
+    }
+    
+    logs.push(`✅ [PropertyTest] Property display test passed: ${authListings.length} properties ready for display`);
+    
+    // Test 8: Check if bookings display correctly
+    logs.push('🧪 [PropertyTest] Testing booking display functionality...');
+    const userBookingsRes = await fetch(`${API_BASE}/api/bookings`, { 
+      headers: { Authorization: `Bearer ${token}` } 
+    });
+    
+    if (!userBookingsRes.ok) {
+      throw new Error(`[PropertyTest] User bookings fetch failed: ${userBookingsRes.status}`);
+    }
+    
+    const userBookingsData = await userBookingsRes.json();
+    const userBookings = userBookingsData.bookings || [];
+    
+    const bookingDisplayTest = {
+      hasBookings: userBookings.length >= 0, // Can be 0 for new users
+      hasValidBookingData: userBookings.every(booking => 
+        booking._id && booking.listing && booking.startDate && booking.endDate
+      ),
+      hasListingDetails: userBookings.every(booking => 
+        booking.listing && (booking.listing._id || booking.listingId)
+      )
+    };
+    
+    logs.push(`✅ [PropertyTest] Found ${userBookings.length} user bookings`);
+    if (userBookings.length > 0 && !bookingDisplayTest.hasValidBookingData) {
+      throw new Error('[PropertyTest] Bookings missing required display data');
+    }
+    if (userBookings.length > 0 && !bookingDisplayTest.hasListingDetails) {
+      logs.push('⚠️ [PropertyTest] Some bookings missing listing details (may cause blank pages)');
+    }
+    
+    logs.push(`✅ [PropertyTest] Booking display test passed: ${userBookings.length} bookings ready for display`);
+    
+    // Test 9: Check for potential blank page issues
+    logs.push('🧪 [PropertyTest] Checking for potential blank page issues...');
+    const blankPageIssues = [];
+    
+    // Check if listings have all required data for detail pages
+    const sampleListing = authListings[0];
+    if (!sampleListing.description || sampleListing.description.trim() === '') {
+      blankPageIssues.push('Sample listing has empty description');
+    }
+    if (!sampleListing.amenities || sampleListing.amenities.length === 0) {
+      blankPageIssues.push('Sample listing has no amenities');
+    }
+    if (!sampleListing.host && !sampleListing.hostId) {
+      blankPageIssues.push('Sample listing has no host information');
+    }
+    
+    // Check if bookings have all required data for detail pages
+    if (userBookings.length > 0) {
+      const sampleBooking = userBookings[0];
+      if (!sampleBooking.totalPrice && !sampleBooking.price) {
+        blankPageIssues.push('Sample booking has no price information');
+      }
+      if (!sampleBooking.status) {
+        blankPageIssues.push('Sample booking has no status');
+      }
+    }
+    
+    if (blankPageIssues.length > 0) {
+      logs.push(`⚠️ [PropertyTest] Potential blank page issues detected:`);
+      blankPageIssues.forEach(issue => logs.push(`  - ${issue}`));
+    } else {
+      logs.push('✅ [PropertyTest] No obvious blank page issues detected');
+    }
+    
+    logs.push('✅ [PropertyTest] Blank page check completed');
+    
   } catch (err) {
     errors.push(err.message);
     logs.push(`❌ [PropertyTest] Error: ${err.message}`);

@@ -1783,6 +1783,86 @@ function App() {
     }
   };
 
+  // Frontend diagnostics function
+  const runFrontendDiagnostics = () => {
+    console.log('🔍 Running frontend diagnostics...');
+    const diagnostics = {
+      timestamp: new Date().toISOString(),
+      issues: [],
+      warnings: [],
+      checks: {}
+    };
+
+    // Check if listings are loaded and displayable
+    diagnostics.checks.listingsLoaded = listings.length > 0;
+    if (!diagnostics.checks.listingsLoaded) {
+      diagnostics.issues.push('No listings loaded - may cause blank property pages');
+    }
+
+    // Check if listings have required data for display
+    if (listings.length > 0) {
+      const sampleListing = listings[0];
+      diagnostics.checks.listingHasTitle = !!sampleListing.title;
+      diagnostics.checks.listingHasPrice = !!sampleListing.price;
+      diagnostics.checks.listingHasPhotos = !!(sampleListing.photos && sampleListing.photos.length > 0);
+      diagnostics.checks.listingHasDescription = !!(sampleListing.description && sampleListing.description.trim());
+      
+      if (!diagnostics.checks.listingHasTitle) diagnostics.issues.push('Listings missing titles');
+      if (!diagnostics.checks.listingHasPrice) diagnostics.issues.push('Listings missing prices');
+      if (!diagnostics.checks.listingHasPhotos) diagnostics.warnings.push('Listings missing photos - may show blank images');
+      if (!diagnostics.checks.listingHasDescription) diagnostics.warnings.push('Listings missing descriptions - may show empty detail pages');
+    }
+
+    // Check if user bookings are loaded
+    diagnostics.checks.bookingsLoaded = userBookings.length >= 0; // Can be 0 for new users
+    if (userBookings.length > 0) {
+      const sampleBooking = userBookings[0];
+      diagnostics.checks.bookingHasListing = !!(sampleBooking.listing || sampleBooking.listingId);
+      diagnostics.checks.bookingHasDates = !!(sampleBooking.startDate && sampleBooking.endDate);
+      diagnostics.checks.bookingHasStatus = !!sampleBooking.status;
+      
+      if (!diagnostics.checks.bookingHasListing) diagnostics.issues.push('Bookings missing listing information');
+      if (!diagnostics.checks.bookingHasDates) diagnostics.issues.push('Bookings missing date information');
+      if (!diagnostics.checks.bookingHasStatus) diagnostics.warnings.push('Bookings missing status');
+    }
+
+    // Check for potential blank page scenarios
+    if (showListingDetail && selectedListing) {
+      diagnostics.checks.listingDetailHasData = !!(selectedListing.title && selectedListing.description);
+      if (!diagnostics.checks.listingDetailHasData) {
+        diagnostics.issues.push('Selected listing missing data for detail page');
+      }
+    }
+
+    // Check if search results are working
+    if (showSearchResults) {
+      diagnostics.checks.searchResultsLoaded = searchResults.length >= 0;
+      if (!diagnostics.checks.searchResultsLoaded) {
+        diagnostics.issues.push('Search results not loaded properly');
+      }
+    }
+
+    // Log results
+    console.log('📊 Frontend Diagnostics Results:', diagnostics);
+    
+    if (diagnostics.issues.length > 0) {
+      console.error('❌ Frontend Issues Found:', diagnostics.issues);
+    }
+    if (diagnostics.warnings.length > 0) {
+      console.warn('⚠️ Frontend Warnings:', diagnostics.warnings);
+    }
+    
+    // Show results in UI
+    setNotification({
+      show: true,
+      title: 'Frontend Diagnostics Complete',
+      message: `Found ${diagnostics.issues.length} issues and ${diagnostics.warnings.length} warnings. Check console for details.`,
+      type: diagnostics.issues.length > 0 ? 'error' : 'info'
+    });
+
+    return diagnostics;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <AppHeader
@@ -2146,50 +2226,13 @@ URL: ${window.location.href}
                   });
                 }}
               >
-                📋 Copy Debug Info
+                Copy to Clipboard
               </button>
               <button 
-                className="px-3 py-1 rounded bg-purple-500 hover:bg-purple-600 text-white font-bold text-sm"
-                onClick={async (event) => {
-                  const button = event.target;
-                  const originalText = button.textContent;
-                  
-                  try {
-                    button.textContent = 'Running...';
-                    button.className = 'px-3 py-1 rounded bg-purple-600 text-white font-bold text-sm';
-                    button.disabled = true;
-                    
-                    // Use the correct API base URL instead of relative URL
-                    const apiBase = import.meta.env.VITE_API_URL || 'https://nu3pbnb-api.onrender.com';
-                    const response = await fetch(`${apiBase}/api/diagnostics/booking-tests/trigger`, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' }
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (result.success) {
-                      button.textContent = 'Success!';
-                      button.className = 'px-3 py-1 rounded bg-green-600 text-white font-bold text-sm';
-                      setTimeout(() => {
-                        window.location.reload();
-                      }, 2000);
-                    } else {
-                      throw new Error(result.error || 'Unknown error');
-                    }
-                  } catch (error) {
-                    console.error('Failed to run diagnostics:', error);
-                    button.textContent = 'Failed';
-                    button.className = 'px-3 py-1 rounded bg-red-600 text-white font-bold text-sm';
-                    setTimeout(() => {
-                      button.textContent = originalText;
-                      button.className = 'px-3 py-1 rounded bg-purple-500 hover:bg-purple-600 text-white font-bold text-sm';
-                      button.disabled = false;
-                    }, 3000);
-                  }
-                }}
+                className="px-3 py-1 rounded bg-blue-500 hover:bg-blue-600 text-white font-bold text-sm"
+                onClick={runFrontendDiagnostics}
               >
-                🚀 Run Diagnostics Now
+                Run Frontend Diagnostics
               </button>
             </div>
           </div>
