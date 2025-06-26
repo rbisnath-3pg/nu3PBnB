@@ -767,19 +767,21 @@ function App() {
    * @param {Event} e - Form submission event
    */
   const handleBookNow = async (e) => {
+    e.preventDefault()
+    
     if (!user) {
       setShowSignIn(true)
       return
     }
 
-    if (!selectedListing || !selectedStartDate || !selectedEndDate) {
+    if (!selectedListing || typeof selectedListing !== 'object' || !selectedListing._id || !selectedStartDate || !selectedEndDate) {
       showNotification('Error', 'Please select dates for your booking', 'error')
       return
     }
 
     // Calculate booking details
     const nights = Math.ceil((selectedEndDate - selectedStartDate) / (1000 * 60 * 60 * 24))
-    const totalPrice = nights * selectedListing.price
+    const totalPrice = nights * (selectedListing.price || 0)
 
     // Create booking object
     const booking = {
@@ -803,7 +805,7 @@ function App() {
    */
   const handleSendMessage = async (e) => {
     e.preventDefault()
-    if (!user || !selectedListing) return
+    if (!user || !selectedListing || typeof selectedListing !== 'object' || !selectedListing._id) return
 
     try {
       const response = await fetch(`${API_BASE}/api/messages`, {
@@ -844,7 +846,7 @@ function App() {
    */
   const handleSubmitReview = async (e) => {
     e.preventDefault()
-    if (!user || !selectedListing) return
+    if (!user || !selectedListing || typeof selectedListing !== 'object' || !selectedListing._id) return
 
     try {
       const response = await fetch(`${API_BASE}/api/reviews`, {
