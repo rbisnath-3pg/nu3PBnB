@@ -1407,44 +1407,37 @@ function App() {
   useEffect(() => {
     async function fetchDiagnostics() {
       try {
-        // Use the correct API base URL instead of relative URL
-        const apiBase = import.meta.env.VITE_API_URL || 'https://nu3pbnb-api.onrender.com';
-        const res = await fetch(`${apiBase}/api/diagnostics/booking-tests`);
-        if (res.ok) {
-          const data = await res.json();
-          setDiagnostics(data);
+        const response = await fetch(`${API_BASE}/api/diagnostics/booking-tests`);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-      } catch (err) {
-        setDiagnostics({
-          lastRun: null,
-          success: false,
-          errors: [err.message],
-          logs: []
-        });
+        const data = await response.json();
+        console.log('📊 Booking Diagnostics:', data);
+        return data;
+      } catch (error) {
+        console.error('❌ Failed to fetch booking diagnostics:', error);
+        setLoginTestError(`Diagnostics fetch failed: ${error.message}`);
+        return null;
       }
     }
-    fetchDiagnostics();
-  }, []);
 
-  useEffect(() => {
     async function fetchPropertyDiagnostics() {
       try {
-        // Use the correct API base URL instead of relative URL
-        const apiBase = import.meta.env.VITE_API_URL || 'https://nu3pbnb-api.onrender.com';
-        const res = await fetch(`${apiBase}/api/diagnostics/property-tests`);
-        if (res.ok) {
-          const data = await res.json();
-          setPropertyDiagnostics(data);
+        const response = await fetch(`${API_BASE}/api/diagnostics/property-tests`);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-      } catch (err) {
-        setPropertyDiagnostics({
-          lastRun: null,
-          success: false,
-          errors: [err.message],
-          logs: []
-        });
+        const data = await response.json();
+        console.log('📊 Property Diagnostics:', data);
+        return data;
+      } catch (error) {
+        console.error('❌ Failed to fetch property diagnostics:', error);
+        setLoginTestError(`Property diagnostics fetch failed: ${error.message}`);
+        return null;
       }
     }
+
+    fetchDiagnostics();
     fetchPropertyDiagnostics();
   }, []);
 
@@ -1787,45 +1780,32 @@ function App() {
 
   // Frontend diagnostics function
   const runFrontendDiagnostics = () => {
-    console.log('🔍 Running frontend diagnostics...');
+    console.log('🔍 Running Frontend Diagnostics...');
+    
     const diagnostics = {
       timestamp: new Date().toISOString(),
+      checks: {},
       issues: [],
       warnings: [],
-      checks: {}
+      selectedListingErrors: []
     };
 
-    // Check if listings are loaded and displayable
-    diagnostics.checks.listingsLoaded = listings.length > 0;
+    // Check if user is authenticated
+    diagnostics.checks.userAuthenticated = !!user;
+    if (!diagnostics.checks.userAuthenticated) {
+      diagnostics.warnings.push('User not authenticated');
+    }
+
+    // Check if listings are loaded
+    diagnostics.checks.listingsLoaded = listings && listings.length > 0;
     if (!diagnostics.checks.listingsLoaded) {
-      diagnostics.issues.push('No listings loaded - may cause blank property pages');
+      diagnostics.issues.push('No listings loaded');
     }
 
-    // Check if listings have required data for display
-    if (listings.length > 0) {
-      const sampleListing = listings[0];
-      diagnostics.checks.listingHasTitle = !!sampleListing.title;
-      diagnostics.checks.listingHasPrice = !!sampleListing.price;
-      diagnostics.checks.listingHasPhotos = !!(sampleListing.photos && sampleListing.photos.length > 0);
-      diagnostics.checks.listingHasDescription = !!(sampleListing.description && sampleListing.description.trim());
-      
-      if (!diagnostics.checks.listingHasTitle) diagnostics.issues.push('Listings missing titles');
-      if (!diagnostics.checks.listingHasPrice) diagnostics.issues.push('Listings missing prices');
-      if (!diagnostics.checks.listingHasPhotos) diagnostics.warnings.push('Listings missing photos - may show blank images');
-      if (!diagnostics.checks.listingHasDescription) diagnostics.warnings.push('Listings missing descriptions - may show empty detail pages');
-    }
-
-    // Check if user bookings are loaded
-    diagnostics.checks.bookingsLoaded = userBookings.length >= 0; // Can be 0 for new users
-    if (userBookings.length > 0) {
-      const sampleBooking = userBookings[0];
-      diagnostics.checks.bookingHasListing = !!(sampleBooking.listing || sampleBooking.listingId);
-      diagnostics.checks.bookingHasDates = !!(sampleBooking.startDate && sampleBooking.endDate);
-      diagnostics.checks.bookingHasStatus = !!sampleBooking.status;
-      
-      if (!diagnostics.checks.bookingHasListing) diagnostics.issues.push('Bookings missing listing information');
-      if (!diagnostics.checks.bookingHasDates) diagnostics.issues.push('Bookings missing date information');
-      if (!diagnostics.checks.bookingHasStatus) diagnostics.warnings.push('Bookings missing status');
+    // Check if featured listings are loaded
+    diagnostics.checks.featuredListingsLoaded = featuredListings && featuredListings.length > 0;
+    if (!diagnostics.checks.featuredListingsLoaded) {
+      diagnostics.warnings.push('No featured listings loaded');
     }
 
     // Check for potential blank page scenarios
@@ -1844,6 +1824,43 @@ function App() {
       }
     }
 
+    // Check for selectedListing errors
+    try {
+      // Test if selectedListing is accessible without errors
+      if (selectedListing) {
+        const testAccess = selectedListing._id && selectedListing.title;
+        diagnostics.checks.selectedListingAccessible = !!testAccess;
+      } else {
+        diagnostics.checks.selectedListingAccessible = true; // null is acceptable
+      }
+    } catch (error) {
+      diagnostics.selectedListingErrors.push(`selectedListing access error: ${error.message}`);
+      diagnostics.issues.push('selectedListing is causing JavaScript errors');
+    }
+
+    // Check for potential undefined variable errors
+    try {
+      // Test all variables that might cause ReferenceError
+      const testVariables = {
+        user: typeof user !== 'undefined',
+        listings: typeof listings !== 'undefined',
+        featuredListings: typeof featuredListings !== 'undefined',
+        selectedListing: typeof selectedListing !== 'undefined',
+        showListingDetail: typeof showListingDetail !== 'undefined',
+        searchResults: typeof searchResults !== 'undefined'
+      };
+      
+      diagnostics.checks.variablesDefined = Object.values(testVariables).every(v => v);
+      
+      Object.entries(testVariables).forEach(([varName, isDefined]) => {
+        if (!isDefined) {
+          diagnostics.issues.push(`Variable '${varName}' is undefined`);
+        }
+      });
+    } catch (error) {
+      diagnostics.issues.push(`Variable check error: ${error.message}`);
+    }
+
     // Log results
     console.log('📊 Frontend Diagnostics Results:', diagnostics);
     
@@ -1853,13 +1870,16 @@ function App() {
     if (diagnostics.warnings.length > 0) {
       console.warn('⚠️ Frontend Warnings:', diagnostics.warnings);
     }
+    if (diagnostics.selectedListingErrors.length > 0) {
+      console.error('🚨 selectedListing Errors:', diagnostics.selectedListingErrors);
+    }
     
     // Show results in UI
     setNotification({
       show: true,
       title: 'Frontend Diagnostics Complete',
-      message: `Found ${diagnostics.issues.length} issues and ${diagnostics.warnings.length} warnings. Check console for details.`,
-      type: diagnostics.issues.length > 0 ? 'error' : 'info'
+      message: `Found ${diagnostics.issues.length} issues, ${diagnostics.warnings.length} warnings, and ${diagnostics.selectedListingErrors.length} selectedListing errors. Check console for details.`,
+      type: diagnostics.issues.length > 0 || diagnostics.selectedListingErrors.length > 0 ? 'error' : 'info'
     });
 
     return diagnostics;
