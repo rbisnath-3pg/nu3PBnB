@@ -1,35 +1,23 @@
-# Deployment Trigger - Comprehensive Test Execution System
+# Deployment Trigger - Fix Login Issues
 
 ## Latest Deployment
 - **Date**: June 25, 2025
-- **Commit**: f86e040
-- **Status**: Ready for deployment
+- **Status**: Force redeployment to fix login issues
 
-## Changes Included
-- ✅ Comprehensive test execution with multiple fallback strategies
-- ✅ Strategy 1: Jest with comprehensive test suite (auth|bookings|payments|listings|users)
-- ✅ Strategy 2: Test runner (node test-runner.js suite backend)
-- ✅ Strategy 3: Simple individual tests (auth.test.js only)
-- ✅ Strategy 4: Fallback to comprehensive simulation
-- ✅ Multiple timeout handling and graceful degradation
+## Issue
+- Login endpoint returning "Invalid credentials" for test users
+- Local database shows correct password hashes
+- API may be using different database or cached data
 
-## Test Execution Improvements
-- **Before**: Single health check simulation
-- **After**: Real test execution with 4 fallback strategies
-- **Coverage**: 25+ tests across authentication, bookings, payments, listings, users
-- **Reliability**: Multiple strategies ensure completion even in production constraints
+## Changes Needed
+- Force redeployment to ensure latest code
+- Clear any potential caching issues
+- Ensure API uses correct database connection
+
+## Test Users (Should Work After Redeployment)
+- **Admin**: admin@nu3pbnb.com / admin123
+- **Hosts**: Raul50@gmail.com / host123, Ashtyn.Barrows99@gmail.com / host123
+- **Guests**: Evelyn_Feeney68@gmail.com / guest123, Kristopher32@hotmail.com / guest123
 
 ## Deployment Status
-🟢 **Ready for deployment** - All changes committed and pushed to main branch
-
-## Test Execution Flow
-1. **Strategy 1**: Jest comprehensive suite (2 min timeout)
-2. **Strategy 2**: Test runner backend suite (1.5 min timeout)
-3. **Strategy 3**: Simple auth tests (1 min timeout)
-4. **Strategy 4**: Comprehensive simulation (2 sec completion)
-
-## Expected Results
-- Real test execution when possible
-- Graceful fallback to simpler approaches
-- Always completes successfully
-- Professional test output with detailed results 
+🟡 **Force redeployment needed** - Login issues require fresh deployment 
