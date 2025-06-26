@@ -272,6 +272,33 @@ mongoose.connect(process.env.MONGODB_URI)
       console.error('Database index creation failed:', indexError);
     }
     
+    // Load booking diagnostics
+    const Diagnostics = require('./models/Diagnostics');
+    try {
+      const diag = await Diagnostics.findOne({ key: 'bookingTest' });
+      if (diag) {
+        global.nu3pbnbDiagnostics = {
+          bookingTest: {
+            lastRun: diag.lastRun,
+            success: diag.success,
+            errors: diag.errors,
+            logs: diag.logs
+          }
+        };
+        console.log('✅ Loaded booking diagnostics from MongoDB');
+      } else {
+        global.nu3pbnbDiagnostics = {
+          bookingTest: { lastRun: null, success: null, errors: [], logs: [] }
+        };
+        console.log('ℹ️ No booking diagnostics found in MongoDB, using default');
+      }
+    } catch (err) {
+      global.nu3pbnbDiagnostics = {
+        bookingTest: { lastRun: null, success: null, errors: [err.message], logs: [] }
+      };
+      console.error('❌ Failed to load diagnostics from MongoDB:', err.message);
+    }
+    
     // Run startup tests in production
     if (isProduction) {
       try {

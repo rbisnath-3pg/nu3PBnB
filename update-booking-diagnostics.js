@@ -1,5 +1,6 @@
 require('dotenv').config();
 const fetch = require('node-fetch');
+const Diagnostics = require('./models/Diagnostics');
 
 const API_BASE = 'https://nu3pbnb-api.onrender.com';
 
@@ -170,6 +171,18 @@ async function updateBookingDiagnostics() {
     }
   } catch (err) {
     console.log('⚠️ Could not verify backend status:', err.message);
+  }
+  
+  // Save diagnostics to MongoDB
+  try {
+    await Diagnostics.findOneAndUpdate(
+      { key: 'bookingTest' },
+      { ...diagnosticsData, key: 'bookingTest' },
+      { upsert: true, new: true }
+    );
+    console.log('✅ Diagnostics saved to MongoDB');
+  } catch (err) {
+    console.error('❌ Failed to save diagnostics to MongoDB:', err.message);
   }
   
   return diagnosticsData;
