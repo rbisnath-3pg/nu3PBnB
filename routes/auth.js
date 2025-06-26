@@ -14,9 +14,10 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-producti
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password, role = 'guest' } = req.body;
+    const normalizedEmail = email && typeof email === 'string' ? email.toLowerCase() : email;
     
     // Validate input
-    if (!email || !password) {
+    if (!normalizedEmail || !password) {
       return res.status(400).json({ 
         error: 'Validation failed',
         message: req.t('errors.validation') 
@@ -25,7 +26,7 @@ router.post('/register', async (req, res) => {
     
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(normalizedEmail)) {
       return res.status(400).json({ 
         error: 'Invalid email format',
         message: 'Please provide a valid email address' 
@@ -48,7 +49,7 @@ router.post('/register', async (req, res) => {
       });
     }
     
-    const existing = await User.findOne({ email });
+    const existing = await User.findOne({ email: normalizedEmail });
     if (existing) {
       return res.status(400).json({ 
         error: 'User already exists',
@@ -58,8 +59,8 @@ router.post('/register', async (req, res) => {
     
     const hashed = await bcrypt.hash(password, 10);
     const user = new User({ 
-      name: name || email.split('@')[0], 
-      email, 
+      name: name || normalizedEmail.split('@')[0], 
+      email: normalizedEmail, 
       password: hashed, 
       role 
     });
@@ -134,15 +135,16 @@ router.post('/admin/create-user', auth, requireRole('admin'), async (req, res) =
 // Login
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
-    console.log('[LOGIN] Attempt with email:', email);
-    const user = await User.findOne({ email });
+    let { email, password } = req.body;
+    const normalizedEmail = email && typeof email === 'string' ? email.toLowerCase() : email;
+    console.log('[LOGIN] Attempt with email:', normalizedEmail);
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
-      console.log('[LOGIN] No user found for email:', email);
+      console.log('[LOGIN] No user found for email:', normalizedEmail);
       return res.status(401).json({ message: 'Invalid credentials' });
     }
     const isMatch = await bcrypt.compare(password, user.password);
-    console.log('[LOGIN] Password match for', email, ':', isMatch);
+    console.log('[LOGIN] Password match for', normalizedEmail, ':', isMatch);
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
@@ -223,16 +225,15 @@ router.post('/refresh', auth, async (req, res) => {
 // Password reset request
 router.post('/reset-password', async (req, res) => {
   try {
-    const { email } = req.body;
-    
-    if (!email) {
+    let { email } = req.body;
+    const normalizedEmail = email && typeof email === 'string' ? email.toLowerCase() : email;
+    if (!normalizedEmail) {
       return res.status(400).json({ 
         error: 'Missing email',
         message: 'Email is required' 
       });
     }
-    
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
       return res.status(404).json({ 
         error: 'User not found',
