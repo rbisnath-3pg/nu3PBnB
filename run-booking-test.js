@@ -7,7 +7,7 @@ async function runBookingTest() {
   console.log('🧪 Running booking test...');
   
   const TEST_USER = {
-    email: 'guest_patience@hotmail.com',
+    email: 'Evelyn_Feeney68@gmail.com',
     password: 'guest123'
   };
   

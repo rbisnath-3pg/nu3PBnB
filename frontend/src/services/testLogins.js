@@ -7,13 +7,14 @@ const API_BASE = import.meta && import.meta.env && import.meta.env.VITE_API_URL
     ? window.API_BASE 
     : 'https://nu3pbnb-api.onrender.com';
 
+// LOCKED TEST USERS - DO NOT MODIFY
+// These users are locked and always present in all environments
 const TEST_USERS = [
-  { email: 'admin_robbie@google.com', password: 'admin123', role: 'admin' },
-  { email: 'host_davonte@hotmail.com', password: 'host123', role: 'host' },
-  { email: 'host_georgette@hotmail.com', password: 'host123', role: 'host' },
-  { email: 'host_josh@hotmail.com', password: 'host123', role: 'host' },
-  { email: 'guest_patience@hotmail.com', password: 'guest123', role: 'guest' },
-  { email: 'guest_rubie@gmail.com', password: 'guest123', role: 'guest' },
+  { email: 'admin@nu3pbnb.com', password: 'admin123', role: 'admin' },
+  { email: 'Raul50@gmail.com', password: 'host123', role: 'host' },
+  { email: 'Ashtyn.Barrows99@gmail.com', password: 'host123', role: 'host' },
+  { email: 'Evelyn_Feeney68@gmail.com', password: 'guest123', role: 'guest' },
+  { email: 'Kristopher32@hotmail.com', password: 'guest123', role: 'guest' },
 ];
 
 export default async function testLogins() {
