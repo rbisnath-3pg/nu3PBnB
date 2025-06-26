@@ -14,6 +14,23 @@
     "test:unit": "jest --coverage --testPathPatterns=__tests__ --verbose --runInBand --detectOpenHandles",
     "test:integration": "jest --coverage --testPathPatterns=integration --verbose --runInBand --detectOpenHandles",
     "test:ci": "jest --coverage --ci --watchAll=false --verbose --runInBand --detectOpenHandles --logHeapUsage",
+    "test:runner": "node test-runner.js",
+    "test:runner:all": "node test-runner.js",
+    "test:runner:suite": "node test-runner.js suite",
+    "test:runner:pattern": "node test-runner.js pattern",
+    "test:runner:patterns": "node test-runner.js patterns",
+    "test:runner:list": "node test-runner.js list",
+    "test:runner:backend": "node test-runner.js suite backend",
+    "test:runner:frontend": "node test-runner.js suite frontend",
+    "test:runner:api": "node test-runner.js suite api",
+    "test:runner:auth": "node test-runner.js pattern auth",
+    "test:runner:bookings": "node test-runner.js pattern bookings",
+    "test:runner:payments": "node test-runner.js pattern payments",
+    "test:runner:listings": "node test-runner.js pattern listings",
+    "test:runner:users": "node test-runner.js pattern users",
+    "test:runner:admin": "node test-runner.js pattern admin",
+    "test:runner:analytics": "node test-runner.js pattern analytics",
+    "test:runner:comprehensive": "node test-runner.js patterns auth,api,bookings,payments,listings,users,admin,analytics",
     "test:scheduled": "node scheduled-tests.js",
     "test:scheduled:start": "node start-scheduled-tests.js",
     "test:scheduled:demo": "node demo-scheduled-tests.js",
@@ -45,6 +62,7 @@
     "babel-jest": "^30.0.2",
     "babel-plugin-transform-import-meta": "^2.3.3",
     "bcryptjs": "^3.0.2",
+    "chalk": "^5.4.1",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
@@ -70,6 +88,8 @@
     "winston": "^3.17.0"
   },
   "devDependencies": {
+    "jest-junit": "^16.0.0",
+    "jest-watch-typeahead": "^3.0.1",
     "nodemon": "^3.1.10",
     "tslib": "^2.8.1"
   },
@@ -147,7 +167,10 @@
     ],
     "collectCoverage": true,
     "coverageDirectory": "coverage",
-    "coverageReporters": ["text", "lcov"],
+    "coverageReporters": [
+      "text",
+      "lcov"
+    ],
     "coverageThreshold": {
       "global": {
         "branches": 20,

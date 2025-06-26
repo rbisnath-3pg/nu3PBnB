@@ -51,12 +51,6 @@ global.console = {
   error: jest.fn(),
 };
 
-// MongoDB connection setup for tests
-const mongoose = require('mongoose');
-const { MongoMemoryServer } = require('mongodb-memory-server');
-
-let mongoServer;
-
 // Enhanced Jest setup with robust logging and error handling
 console.log('🔧 Jest setup initialized - Environment:', process.env.NODE_ENV || 'test');
 
@@ -114,15 +108,35 @@ global.testUtils = {
 
 // Enhanced beforeEach and afterEach logging
 beforeEach(() => {
-  console.log(`🔄 Setting up test: ${expect.getState().currentTestName || 'Unknown'}`);
+  const testName = expect.getState().currentTestName || 'Unknown';
+  console.log(`🔄 Setting up test: ${testName}`);
+  
+  // Log test start with enhanced logging if available
+  if (global.testUtils && global.testUtils.logTestStart) {
+    global.testUtils.logTestStart(testName);
+  }
 });
 
 afterEach(() => {
-  console.log(`🧹 Cleaning up test: ${expect.getState().currentTestName || 'Unknown'}`);
+  const testName = expect.getState().currentTestName || 'Unknown';
+  console.log(`🧹 Cleaning up test: ${testName}`);
+  
+  // Log test end with enhanced logging if available
+  if (global.testUtils && global.testUtils.logTestEnd) {
+    global.testUtils.logTestEnd(testName, 0); // Duration would need to be tracked
+  }
 });
+
+// MongoDB connection setup for tests
+const mongoose = require('mongoose');
+const { MongoMemoryServer } = require('mongodb-memory-server');
+
+let mongoServer;
 
 // Global test setup
 beforeAll(async () => {
+  console.log('🔧 Setting up MongoDB for tests...');
+  
   // Disconnect from any existing connections first
   if (mongoose.connection.readyState !== 0) {
     await mongoose.disconnect();
@@ -131,7 +145,11 @@ beforeAll(async () => {
   // Create new in-memory MongoDB server
   mongoServer = await MongoMemoryServer.create();
   const mongoUri = mongoServer.getUri();
+  
+  console.log('📊 Connecting to MongoDB:', mongoUri);
   await mongoose.connect(mongoUri);
+  
+  console.log('✅ MongoDB setup completed');
 }, 30000); // 30 second timeout for setup
 
 // Clear all collections after each test
@@ -145,13 +163,46 @@ afterEach(async () => {
 
 // Global test teardown
 afterAll(async () => {
+  console.log('🧹 Cleaning up MongoDB connection...');
+  
   if (mongoose.connection.readyState !== 0) {
     await mongoose.disconnect();
   }
   if (mongoServer) {
     await mongoServer.stop();
   }
+  
+  console.log('✅ MongoDB cleanup completed');
 }, 30000); // 30 second timeout for teardown
+
+// Enhanced test result logging
+const originalTest = global.test;
+global.test = function(name, fn, timeout) {
+  const startTime = Date.now();
+  
+  return originalTest(name, async (...args) => {
+    try {
+      console.log(`🚀 Test started: ${name}`);
+      const result = await fn(...args);
+      const duration = Date.now() - startTime;
+      console.log(`✅ Test passed: ${name} (${duration}ms)`);
+      return result;
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      console.error(`❌ Test failed: ${name} (${duration}ms)`, error);
+      throw error;
+    }
+  }, timeout);
+};
+
+// Enhanced describe logging
+const originalDescribe = global.describe;
+global.describe = function(name, fn) {
+  return originalDescribe(name, () => {
+    console.log(`📦 Test suite: ${name}`);
+    return fn();
+  });
+};
 
 // Log when setup is complete
 console.log('✅ Jest setup completed successfully'); 
