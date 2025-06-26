@@ -84,7 +84,7 @@ export default async function testLogins() {
       // Detailed validation
       const hasUser = !!data.user;
       const hasToken = !!data.token;
-      const emailMatch = data.user && data.user.email === user.email;
+      const emailMatch = data.user && data.user.email.toLowerCase() === user.email.toLowerCase();
       const roleMatch = data.user && data.user.role === user.role;
       const responseOk = response.ok;
       
