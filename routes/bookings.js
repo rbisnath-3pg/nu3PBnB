@@ -10,8 +10,19 @@ router.post('/', auth, requireRole('guest'), async (req, res) => {
   try {
     const { listingId, startDate, endDate, guests, message } = req.body;
     
+    // Add debugging logs
+    console.log('🔍 [Booking Debug] Received booking request:', {
+      listingId,
+      startDate,
+      endDate,
+      guests,
+      message,
+      userId: req.user.id
+    });
+    
     // Validate required fields
     if (!listingId || !startDate || !endDate || !guests) {
+      console.log('❌ [Booking Debug] Missing required fields');
       return res.status(400).json({ 
         error: 'Missing required fields',
         message: 'listingId, startDate, endDate, and guests are required' 
@@ -21,11 +32,13 @@ router.post('/', auth, requireRole('guest'), async (req, res) => {
     // Check if listing exists
     const listing = await Listing.findById(listingId);
     if (!listing) {
+      console.log('❌ [Booking Debug] Listing not found:', listingId);
       return res.status(404).json({ message: 'Listing not found' });
     }
 
     // Check if listing is available
     if (!listing.available) {
+      console.log('❌ [Booking Debug] Listing not available:', listingId);
       return res.status(400).json({ message: 'This property is not available for booking' });
     }
 
@@ -35,11 +48,23 @@ router.post('/', auth, requireRole('guest'), async (req, res) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    console.log('🔍 [Booking Debug] Date validation:', {
+      startDate: startDate,
+      start: start.toISOString(),
+      endDate: endDate,
+      end: end.toISOString(),
+      today: today.toISOString(),
+      startIsPast: start < today,
+      endBeforeStart: end <= start
+    });
+
     if (start < today) {
+      console.log('❌ [Booking Debug] Start date in past');
       return res.status(400).json({ message: 'Start date cannot be in the past' });
     }
 
     if (end <= start) {
+      console.log('❌ [Booking Debug] End date before or equal to start date');
       return res.status(400).json({ message: 'End date must be after start date' });
     }
 
@@ -66,7 +91,13 @@ router.post('/', auth, requireRole('guest'), async (req, res) => {
       ]
     });
 
+    console.log('🔍 [Booking Debug] Conflicting bookings found:', conflictingBookings.length);
     if (conflictingBookings.length > 0) {
+      console.log('❌ [Booking Debug] Conflicts:', conflictingBookings.map(b => ({
+        startDate: b.startDate,
+        endDate: b.endDate,
+        status: b.status
+      })));
       return res.status(409).json({ 
         message: 'Selected dates are not available. Please choose different dates.',
         conflictingBookings: conflictingBookings.map(booking => ({
@@ -76,6 +107,8 @@ router.post('/', auth, requireRole('guest'), async (req, res) => {
         }))
       });
     }
+
+    console.log('✅ [Booking Debug] No conflicts found, creating booking...');
 
     // Calculate total price based on nights and listing price
     const nights = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
@@ -100,12 +133,14 @@ router.post('/', auth, requireRole('guest'), async (req, res) => {
     // Populate listing details for response
     await booking.populate('listing');
     
+    console.log('✅ [Booking Debug] Booking created successfully:', booking._id);
+    
     res.status(201).json({
       message: 'Booking request created successfully',
       booking
     });
   } catch (error) {
-    console.error('Create booking error:', error);
+    console.error('❌ [Booking Debug] Create booking error:', error);
     res.status(500).json({ message: 'Failed to create booking' });
   }
 });

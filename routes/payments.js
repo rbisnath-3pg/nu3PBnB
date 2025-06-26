@@ -409,13 +409,66 @@ router.post('/process', auth, async (req, res) => {
           return res.status(404).json({ message: 'Listing not found' });
         }
 
+        // Check if listing is available
+        if (!listing.available) {
+          return res.status(400).json({ message: 'This property is not available for booking' });
+        }
+
+        // Validate dates
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (start < today) {
+          return res.status(400).json({ message: 'Start date cannot be in the past' });
+        }
+
+        if (end <= start) {
+          return res.status(400).json({ message: 'End date must be after start date' });
+        }
+
+        // Check for conflicting bookings
+        const conflictingBookings = await BookingRequest.find({
+          listing: listingId,
+          status: { $ne: 'declined' },
+          $or: [
+            // New booking starts during existing booking
+            {
+              startDate: { $lte: start },
+              endDate: { $gt: start }
+            },
+            // New booking ends during existing booking
+            {
+              startDate: { $lt: end },
+              endDate: { $gte: end }
+            },
+            // New booking completely contains existing booking
+            {
+              startDate: { $gte: start },
+              endDate: { $lte: end }
+            }
+          ]
+        });
+
+        if (conflictingBookings.length > 0) {
+          return res.status(409).json({ 
+            message: 'Selected dates are not available. Please choose different dates.',
+            conflictingBookings: conflictingBookings.map(booking => ({
+              startDate: booking.startDate,
+              endDate: booking.endDate,
+              status: booking.status
+            }))
+          });
+        }
+
         // Create the booking
         booking = new BookingRequest({
           guest: req.user.id,
           host: listing.host,
           listing: listingId,
-          startDate: new Date(startDate),
-          endDate: new Date(endDate),
+          startDate: start,
+          endDate: end,
           guests: parseInt(guests),
           totalPrice: totalPrice || amount,
           message: message || '',
