@@ -458,6 +458,10 @@ router.post('/login', async (req, res) => {
   const startTime = Date.now();
   const context = authLogger.getRequestContext(req);
   
+  console.log('[LOGIN][START] Login request received');
+  console.log('[LOGIN][DEBUG] Request body:', JSON.stringify(req.body));
+  console.log('[LOGIN][DEBUG] Request headers:', JSON.stringify(req.headers));
+  
   try {
     let { email, password } = req.body;
     const normalizedEmail = email && typeof email === 'string' ? email.toLowerCase() : email;
@@ -466,6 +470,7 @@ router.post('/login', async (req, res) => {
     console.log('[LOGIN][DEBUG] Raw email:', email);
     console.log('[LOGIN][DEBUG] Normalized email:', normalizedEmail);
     console.log('[LOGIN][DEBUG] Password provided:', !!password);
+    console.log('[LOGIN][DEBUG] Password length:', password ? password.length : 0);
     
     // Log login attempt
     authLogger.logLoginAttempt(normalizedEmail, context);
@@ -473,8 +478,12 @@ router.post('/login', async (req, res) => {
     // Validate input
     if (!normalizedEmail || !password) {
       console.warn('[LOGIN][WARN] Missing email or password');
+      console.warn('[LOGIN][WARN] Email present:', !!normalizedEmail);
+      console.warn('[LOGIN][WARN] Password present:', !!password);
       authLogger.logLoginFailure(normalizedEmail, 'Missing email or password', context);
-      return res.status(401).json({ message: 'Invalid credentials' });
+      const errorResponse = { message: 'Invalid credentials' };
+      console.log('[LOGIN][RESPONSE] Sending error response:', JSON.stringify(errorResponse));
+      return res.status(401).json(errorResponse);
     }
 
     // Validate email format
@@ -482,24 +491,31 @@ router.post('/login', async (req, res) => {
     if (!emailRegex.test(normalizedEmail)) {
       console.warn('[LOGIN][WARN] Invalid email format:', normalizedEmail);
       authLogger.logLoginFailure(normalizedEmail, 'Invalid email format', context);
-      return res.status(401).json({ message: 'Invalid credentials' });
+      const errorResponse = { message: 'Invalid credentials' };
+      console.log('[LOGIN][RESPONSE] Sending error response:', JSON.stringify(errorResponse));
+      return res.status(401).json(errorResponse);
     }
 
     // Validate password length
     if (password.length < 1) {
       console.warn('[LOGIN][WARN] Empty password');
       authLogger.logLoginFailure(normalizedEmail, 'Empty password', context);
-      return res.status(401).json({ message: 'Invalid credentials' });
+      const errorResponse = { message: 'Invalid credentials' };
+      console.log('[LOGIN][RESPONSE] Sending error response:', JSON.stringify(errorResponse));
+      return res.status(401).json(errorResponse);
     }
 
     authLogger.debug('Looking up user in database', { email: authLogger.maskEmail(normalizedEmail) }, context);
+    console.log('[LOGIN][DEBUG] Looking up user in database for email:', normalizedEmail);
     
     // Find user
     const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
       console.warn('[LOGIN][WARN] No user found for email:', normalizedEmail);
       authLogger.logLoginFailure(normalizedEmail, 'User not found', context);
-      return res.status(401).json({ message: 'Invalid credentials' });
+      const errorResponse = { message: 'Invalid credentials' };
+      console.log('[LOGIN][RESPONSE] Sending error response:', JSON.stringify(errorResponse));
+      return res.status(401).json(errorResponse);
     }
     console.log('[LOGIN][DEBUG] User found:', {
       _id: user._id,
@@ -515,12 +531,15 @@ router.post('/login', async (req, res) => {
     }, context);
 
     // Verify password
+    console.log('[LOGIN][DEBUG] Verifying password...');
     const isMatch = await bcrypt.compare(password, user.password);
     console.log('[LOGIN][DEBUG] Password match result:', isMatch);
     if (!isMatch) {
       console.warn('[LOGIN][WARN] Password did not match for user:', normalizedEmail);
       authLogger.logLoginFailure(normalizedEmail, 'Invalid password', context);
-      return res.status(401).json({ message: 'Invalid credentials' });
+      const errorResponse = { message: 'Invalid credentials' };
+      console.log('[LOGIN][RESPONSE] Sending error response:', JSON.stringify(errorResponse));
+      return res.status(401).json(errorResponse);
     }
 
     authLogger.debug('Password verified successfully', { 
@@ -530,7 +549,9 @@ router.post('/login', async (req, res) => {
     console.log('[LOGIN][DEBUG] Login successful for user:', normalizedEmail);
 
     // Generate JWT token
+    console.log('[LOGIN][DEBUG] Generating JWT token...');
     const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: '1d' });
+    console.log('[LOGIN][DEBUG] JWT token generated successfully');
     
     authLogger.debug('JWT token generated', { 
       userId: user._id,
@@ -561,13 +582,22 @@ router.post('/login', async (req, res) => {
         themePreference: user.themePreference
       }
     };
-    console.log('LOGIN RESPONSE:', loginResponse);
+    console.log('[LOGIN][SUCCESS] Login response prepared:', JSON.stringify(loginResponse));
+    console.log('[LOGIN][RESPONSE] Sending success response with token length:', token ? token.length : 0);
+    
+    // Set response headers for debugging
+    res.setHeader('X-Login-Status', 'success');
+    res.setHeader('X-User-ID', user._id.toString());
+    res.setHeader('X-User-Role', user.role);
+    
     res.json(loginResponse);
+    console.log('[LOGIN][END] Login request completed successfully');
 
   } catch (err) {
     const responseTime = Date.now() - startTime;
     
     console.error('[LOGIN][ERROR] Login error occurred:', err);
+    console.error('[LOGIN][ERROR] Error stack:', err.stack);
     authLogger.error('Login error occurred', err, {
       ...context,
       responseTime: `${responseTime}ms`,
@@ -581,7 +611,10 @@ router.post('/login', async (req, res) => {
       responseTime: `${responseTime}ms`
     }, context);
 
-    res.status(500).json({ message: 'Login failed' });
+    const errorResponse = { message: 'Login failed' };
+    console.log('[LOGIN][RESPONSE] Sending error response:', JSON.stringify(errorResponse));
+    res.status(500).json(errorResponse);
+    console.log('[LOGIN][END] Login request failed with error');
   }
 });
 
@@ -839,6 +872,21 @@ router.post('/theme', auth, async (req, res) => {
 // Minimal JSON test route for diagnostics
 router.get('/test-json', (req, res) => {
   res.json({ test: 'ok', time: new Date().toISOString() });
+});
+
+// Simple login test route
+router.post('/test-login-simple', (req, res) => {
+  console.log('[TEST-LOGIN] Simple test route hit');
+  console.log('[TEST-LOGIN] Request body:', req.body);
+  
+  const testResponse = {
+    message: 'Test login route works',
+    timestamp: new Date().toISOString(),
+    receivedData: req.body
+  };
+  
+  console.log('[TEST-LOGIN] Sending response:', JSON.stringify(testResponse));
+  res.json(testResponse);
 });
 
 module.exports = router; 
