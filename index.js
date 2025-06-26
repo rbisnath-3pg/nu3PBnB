@@ -192,6 +192,44 @@ mongoose.connect(process.env.MONGODB_URI)
       console.error('Database initialization failed:', initError);
     }
     
+    // Clear all user sessions on deployment
+    try {
+      console.log('🔐 Clearing all user sessions on deployment...');
+      
+      // Clear any session data (if you have a sessions collection)
+      try {
+        const sessionResult = await mongoose.connection.db.collection('sessions').deleteMany({});
+        console.log(`🗑️  Cleared ${sessionResult.deletedCount} session records`);
+      } catch (err) {
+        console.log('ℹ️  No sessions collection found (this is normal)');
+      }
+
+      // Clear any user activity records that might contain session info
+      try {
+        const activityResult = await mongoose.connection.db.collection('useractivities').deleteMany({});
+        console.log(`🗑️  Cleared ${activityResult.deletedCount} user activity records`);
+      } catch (err) {
+        console.log('ℹ️  No user activities collection found (this is normal)');
+      }
+
+      // Update all users to clear any session-related fields
+      const User = require('./models/User');
+      const updateResult = await User.updateMany({}, {
+        $unset: {
+          lastLoginAt: 1,
+          sessionId: 1,
+          refreshToken: 1,
+          deviceToken: 1
+        }
+      });
+      console.log(`🔄 Updated ${updateResult.modifiedCount} user records`);
+      
+      console.log('✅ All users logged out on deployment');
+    } catch (logoutError) {
+      logger.error('Failed to clear user sessions:', logoutError);
+      console.error('❌ Failed to clear user sessions:', logoutError);
+    }
+    
     // Create indexes for better performance
     try {
       const db = mongoose.connection.db;
