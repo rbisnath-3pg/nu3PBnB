@@ -274,10 +274,16 @@ const AdminTestResults = () => {
       }
     }
     
-    // Rate limiting - don't fetch too frequently
-    if (now - lastFetchTime.current < 1000) {
-      logger.current.warn('Rate limited fetch', { url, timeSinceLastFetch: now - lastFetchTime.current });
-      return Promise.resolve(null);
+    // Rate limiting - add delay if fetching too frequently, but don't skip
+    const timeSinceLastFetch = now - lastFetchTime.current;
+    if (timeSinceLastFetch < 1000) {
+      const delay = 1000 - timeSinceLastFetch;
+      logger.current.debug('Rate limiting fetch', { url, delay: `${delay}ms` });
+      return new Promise(resolve => {
+        setTimeout(() => {
+          debouncedFetch(url, options).then(resolve);
+        }, delay);
+      });
     }
     
     lastFetchTime.current = now;
@@ -477,6 +483,10 @@ const AdminTestResults = () => {
         summary: newRun.summary
       });
       
+      // Add a small delay to ensure backend has time to write to file
+      logger.current.info('Waiting for backend to initialize test run', { testRunId: newRun.id });
+      await new Promise(r => setTimeout(r, 1000));
+      
       // Poll for completion with reduced frequency
       let done = false;
       let pollCount = 0;
@@ -490,19 +500,32 @@ const AdminTestResults = () => {
         
         logger.current.debug('Polling test status', { pollCount, testRunId: newRun.id });
         
-        const pollData = await debouncedFetch(`${API_BASE}/api/admin/test-results/${newRun.id}`, {
-          headers: { 'Authorization': `Bearer ${getToken()}` }
-        });
-        
-        if (pollData && pollData.status !== 'running') {
-          setTestRuns(runs => runs.map(r => r.id === pollData.id ? pollData : r));
-          done = true;
-          logger.current.info('Test run completed', { 
-            testRunId: newRun.id,
-            finalStatus: pollData.status,
-            pollCount,
-            summary: pollData.summary
+        try {
+          const pollData = await debouncedFetch(`${API_BASE}/api/admin/test-results/${newRun.id}`, {
+            headers: { 'Authorization': `Bearer ${getToken()}` }
           });
+          
+          if (pollData && pollData.status !== 'running') {
+            setTestRuns(runs => runs.map(r => r.id === pollData.id ? pollData : r));
+            done = true;
+            logger.current.info('Test run completed', { 
+              testRunId: newRun.id,
+              finalStatus: pollData.status,
+              pollCount,
+              summary: pollData.summary
+            });
+          } else if (!pollData) {
+            logger.current.warn('Test run not found during polling', { 
+              testRunId: newRun.id,
+              pollCount 
+            });
+          }
+        } catch (err) {
+          logger.current.error('Error during polling', err, { 
+            testRunId: newRun.id,
+            pollCount 
+          });
+          // Continue polling even if there's an error
         }
       }
       
