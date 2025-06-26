@@ -1,6 +1,6 @@
 import React from 'react'
 import { useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom'
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import './App.css'
 import MapView from './components/MapView'
 import SearchBar from './components/SearchBar'
@@ -23,7 +23,7 @@ import HostDashboard from './components/HostDashboard'
 import EditListing from './components/EditListing'
 import HomePage from './components/HomePage'
 import Spinner from './components/Spinner'
-import { FaEnvelope } from 'react-icons/fa'
+import { FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa'
 import getApiBase from './services/getApiBase'
 import frontendAuthLogger from './services/authLogger'
 import testLogins from './services/testLogins'
@@ -85,12 +85,13 @@ function AppRoutes(props) {
 
 function AppHeader({ user, onLogin, onRegister, onLanguageChange }) {
   return (
-    <header className="fixed top-0 left-0 w-full z-30 bg-black bg-opacity-50 backdrop-blur-md flex items-center justify-between px-8 py-4 h-20">
-      {/* Logo */}
+    <header className="fixed top-0 left-0 w-full z-40 bg-black bg-opacity-60 backdrop-blur-md border-b border-black/10 flex items-center justify-between px-8 py-3 h-20">
+      {/* Logo and Brand */}
       <div className="flex items-center space-x-2">
-        <span className="text-2xl font-extrabold text-white tracking-tight">🏠 3PnB</span>
+        <FaMapMarkerAlt className="text-white text-xl mr-1" />
+        <span className="text-2xl font-extrabold text-white tracking-tight">3PnB</span>
       </div>
-      {/* Nav */}
+      {/* Navigation */}
       <nav className="flex items-center space-x-6">
         <button className="text-white text-base font-semibold hover:text-green-400 transition-colors">Login</button>
         <button className="text-white text-base font-semibold hover:text-green-400 transition-colors">Register</button>
@@ -1329,130 +1330,128 @@ function App() {
   }, []);
 
   return (
-    <BrowserRouter>
-      <div className="min-h-screen bg-gray-50">
-        <AppHeader user={user} />
-        <div className="pt-20">
-          <AppRoutes
-            user={user}
-            login={login}
-            logout={logout}
-            t={t}
-            i18n={i18n}
-            listings={listings}
-            featuredListings={featuredListings}
-            loading={loading}
-            error={error}
-            viewMode={viewMode}
-            setViewMode={setViewMode}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            searchResults={searchResults}
-            setSearchResults={setSearchResults}
-            showSearchResults={showSearchResults}
-            setShowSearchResults={setShowSearchResults}
-            showSignIn={showSignIn}
-            setShowSignIn={setShowSignIn}
-            showSignUp={showSignUp}
-            setShowSignUp={setShowSignUp}
-            showOnboarding={showOnboarding}
-            setShowOnboarding={setShowOnboarding}
-            showProfile={showProfile}
-            setShowProfile={setShowProfile}
-            selectedListing={selectedListing}
-            setSelectedListing={setSelectedListing}
-            showListingDetail={showListingDetail}
-            setShowListingDetail={setShowListingDetail}
-            featuredProperty={featuredProperty}
-            featuredIndex={featuredIndex}
-            setFeaturedIndex={setFeaturedIndex}
-            imageLoading={imageLoading}
-            setImageLoading={setImageLoading}
-            currentImageIndex={currentImageIndex}
-            setCurrentImageIndex={setCurrentImageIndex}
-            userBookings={userBookings}
-            setUserBookings={setUserBookings}
-            bookingsLoading={bookingsLoading}
-            setBookingsLoading={setBookingsLoading}
-            userPayments={userPayments}
-            setUserPayments={setUserPayments}
-            paymentsLoading={paymentsLoading}
-            setPaymentsLoading={setPaymentsLoading}
-            showPaymentModal={showPaymentModal}
-            setShowPaymentModal={setShowPaymentModal}
-            currentBooking={currentBooking}
-            setCurrentBooking={setCurrentBooking}
-            paymentType={paymentType}
-            setPaymentType={setPaymentType}
-            selectedStartDate={selectedStartDate}
-            setSelectedStartDate={setSelectedStartDate}
-            selectedEndDate={selectedEndDate}
-            setSelectedEndDate={setSelectedEndDate}
-            existingBookings={existingBookings}
-            setExistingBookings={setExistingBookings}
-            userWishlist={userWishlist}
-            setUserWishlist={setUserWishlist}
-            wishlistLoading={wishlistLoading}
-            setWishlistLoading={setWishlistLoading}
-            showMessages={showMessages}
-            setShowMessages={setShowMessages}
-            messages={messages}
-            setMessages={setMessages}
-            newMessage={newMessage}
-            setNewMessage={setNewMessage}
-            showMessaging={showMessaging}
-            setShowMessaging={setShowMessaging}
-            unreadCount={unreadCount}
-            setUnreadCount={setUnreadCount}
-            showReviews={showReviews}
-            setShowReviews={setShowReviews}
-            reviews={reviews}
-            setReviews={setReviews}
-            newReview={newReview}
-            setNewReview={setNewReview}
-            showAnalytics={showAnalytics}
-            setShowAnalytics={setShowAnalytics}
-            showAdminDashboard={showAdminDashboard}
-            setShowAdminDashboard={setShowAdminDashboard}
-            showHostDashboard={showHostDashboard}
-            setShowHostDashboard={setShowHostDashboard}
-            showWishlist={showWishlist}
-            setShowWishlist={setShowWishlist}
-            notification={notification}
-            setNotification={setNotification}
-            confirmation={confirmation}
-            setConfirmation={setConfirmation}
-            showSuccessMessage={showSuccessMessage}
-            setShowSuccessMessage={setShowSuccessMessage}
-            loginTestError={loginTestError}
-            setLoginTestError={setLoginTestError}
-            fetchListings={fetchListings}
-            fetchFeaturedListings={fetchFeaturedListings}
-            fetchBookings={fetchBookings}
-            fetchPayments={fetchPayments}
-            fetchWishlist={fetchWishlist}
-            cancelBooking={cancelBooking}
-            handleShareListing={handleShareListing}
-            handleAddToWishlist={handleAddToWishlist}
-            handleRemoveFromWishlist={handleRemoveFromWishlist}
-            handleUnifiedPaymentSuccess={handleUnifiedPaymentSuccess}
-            handlePaymentCancel={handlePaymentCancel}
-          />
-        </div>
-        <Footer />
-        
-        {/* Payment Modal */}
-        {showPaymentModal && currentBooking && (
-          <PaymentModal
-            booking={currentBooking}
-            selectedListing={selectedListing}
-            onSuccess={handleUnifiedPaymentSuccess}
-            onCancel={handlePaymentCancel}
-            paymentType={paymentType}
-          />
-        )}
+    <div className="min-h-screen bg-gray-50">
+      <AppHeader user={user} />
+      <div className="pt-20">
+        <AppRoutes
+          user={user}
+          login={login}
+          logout={logout}
+          t={t}
+          i18n={i18n}
+          listings={listings}
+          featuredListings={featuredListings}
+          loading={loading}
+          error={error}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          searchResults={searchResults}
+          setSearchResults={setSearchResults}
+          showSearchResults={showSearchResults}
+          setShowSearchResults={setShowSearchResults}
+          showSignIn={showSignIn}
+          setShowSignIn={setShowSignIn}
+          showSignUp={showSignUp}
+          setShowSignUp={setShowSignUp}
+          showOnboarding={showOnboarding}
+          setShowOnboarding={setShowOnboarding}
+          showProfile={showProfile}
+          setShowProfile={setShowProfile}
+          selectedListing={selectedListing}
+          setSelectedListing={setSelectedListing}
+          showListingDetail={showListingDetail}
+          setShowListingDetail={setShowListingDetail}
+          featuredProperty={featuredProperty}
+          featuredIndex={featuredIndex}
+          setFeaturedIndex={setFeaturedIndex}
+          imageLoading={imageLoading}
+          setImageLoading={setImageLoading}
+          currentImageIndex={currentImageIndex}
+          setCurrentImageIndex={setCurrentImageIndex}
+          userBookings={userBookings}
+          setUserBookings={setUserBookings}
+          bookingsLoading={bookingsLoading}
+          setBookingsLoading={setBookingsLoading}
+          userPayments={userPayments}
+          setUserPayments={setUserPayments}
+          paymentsLoading={paymentsLoading}
+          setPaymentsLoading={setPaymentsLoading}
+          showPaymentModal={showPaymentModal}
+          setShowPaymentModal={setShowPaymentModal}
+          currentBooking={currentBooking}
+          setCurrentBooking={setCurrentBooking}
+          paymentType={paymentType}
+          setPaymentType={setPaymentType}
+          selectedStartDate={selectedStartDate}
+          setSelectedStartDate={setSelectedStartDate}
+          selectedEndDate={selectedEndDate}
+          setSelectedEndDate={setSelectedEndDate}
+          existingBookings={existingBookings}
+          setExistingBookings={setExistingBookings}
+          userWishlist={userWishlist}
+          setUserWishlist={setUserWishlist}
+          wishlistLoading={wishlistLoading}
+          setWishlistLoading={setWishlistLoading}
+          showMessages={showMessages}
+          setShowMessages={setShowMessages}
+          messages={messages}
+          setMessages={setMessages}
+          newMessage={newMessage}
+          setNewMessage={setNewMessage}
+          showMessaging={showMessaging}
+          setShowMessaging={setShowMessaging}
+          unreadCount={unreadCount}
+          setUnreadCount={setUnreadCount}
+          showReviews={showReviews}
+          setShowReviews={setShowReviews}
+          reviews={reviews}
+          setReviews={setReviews}
+          newReview={newReview}
+          setNewReview={setNewReview}
+          showAnalytics={showAnalytics}
+          setShowAnalytics={setShowAnalytics}
+          showAdminDashboard={showAdminDashboard}
+          setShowAdminDashboard={setShowAdminDashboard}
+          showHostDashboard={showHostDashboard}
+          setShowHostDashboard={setShowHostDashboard}
+          showWishlist={showWishlist}
+          setShowWishlist={setShowWishlist}
+          notification={notification}
+          setNotification={setNotification}
+          confirmation={confirmation}
+          setConfirmation={setConfirmation}
+          showSuccessMessage={showSuccessMessage}
+          setShowSuccessMessage={setShowSuccessMessage}
+          loginTestError={loginTestError}
+          setLoginTestError={setLoginTestError}
+          fetchListings={fetchListings}
+          fetchFeaturedListings={fetchFeaturedListings}
+          fetchBookings={fetchBookings}
+          fetchPayments={fetchPayments}
+          fetchWishlist={fetchWishlist}
+          cancelBooking={cancelBooking}
+          handleShareListing={handleShareListing}
+          handleAddToWishlist={handleAddToWishlist}
+          handleRemoveFromWishlist={handleRemoveFromWishlist}
+          handleUnifiedPaymentSuccess={handleUnifiedPaymentSuccess}
+          handlePaymentCancel={handlePaymentCancel}
+        />
       </div>
-    </BrowserRouter>
+      <Footer />
+      
+      {/* Payment Modal */}
+      {showPaymentModal && currentBooking && (
+        <PaymentModal
+          booking={currentBooking}
+          selectedListing={selectedListing}
+          onSuccess={handleUnifiedPaymentSuccess}
+          onCancel={handlePaymentCancel}
+          paymentType={paymentType}
+        />
+      )}
+    </div>
   )
 }
 
