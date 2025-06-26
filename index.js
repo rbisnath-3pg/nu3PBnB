@@ -391,6 +391,35 @@ app.get('/api/diagnostics', async (req, res) => {
   }
 });
 
+// Alias for frontend compatibility
+app.get('/api/diagnostics/booking-tests', async (req, res) => {
+  try {
+    const Diagnostics = require('./models/Diagnostics');
+    const diag = await Diagnostics.findOne({ key: 'bookingTest' });
+    if (diag) {
+      res.json({
+        lastRun: diag.lastRun,
+        success: diag.success,
+        errors: diag.errors || [],
+        logs: diag.logs || []
+      });
+    } else {
+      res.json({
+        lastRun: null,
+        success: null,
+        errors: [],
+        logs: []
+      });
+    }
+  } catch (error) {
+    console.error('❌ Public diagnostics retrieval failed:', error);
+    res.status(500).json({ 
+      message: 'Failed to retrieve diagnostics',
+      error: error.message 
+    });
+  }
+});
+
 // Database initialization endpoint
 app.post('/init-db', async (req, res) => {
   try {
