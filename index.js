@@ -23,6 +23,9 @@ const { initializeDatabase } = require('./scripts/init-database');
 
 const app = express();
 
+// Trust proxy for rate limiting behind load balancers (Render, etc.)
+app.set('trust proxy', 1);
+
 // Environment-based configuration
 const LOG_LEVEL = process.env.LOG_LEVEL || 'info';
 const isDevelopment = process.env.NODE_ENV === 'development';
