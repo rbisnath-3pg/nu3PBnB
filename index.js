@@ -174,6 +174,7 @@ app.use((req, res, next) => {
   next();
 });
 
+console.log('[BOOT] MONGODB_URI:', process.env.MONGODB_URI);
 // MongoDB connection
 mongoose.connect(process.env.MONGODB_URI)
   .then(async () => {
