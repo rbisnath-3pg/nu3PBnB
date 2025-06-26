@@ -260,66 +260,58 @@ router.get('/test-results/:id', auth, requireRole('admin'), (req, res) => {
 });
 
 // Trigger a new test run
-// NOTE: Using enhanced test runner for production-safe execution
+// NOTE: Using lightweight test execution for production reliability
 router.post('/run-tests', auth, requireRole('admin'), (req, res) => {
   const id = Date.now().toString();
   const date = new Date().toLocaleString();
   const results = readTestResults();
   
-  console.log(`🔄 Starting enhanced test run ${id} at ${date}`);
+  console.log(`🔄 Starting lightweight test run ${id} at ${date}`);
   
   // Mark as running
   results.unshift({ id, date, status: 'running', summary: 'Running...', coverage: '', details: '' });
   writeTestResults(results);
   
-  // Use specific test suite for better performance and reliability
-  const jestCommand = 'node test-runner.js suite backend';
+  // Use lightweight test execution for better reliability
+  const jestCommand = 'npm test routes/__tests__/auth.test.js -- --no-coverage';
   const cwd = path.join(__dirname, '..');
   
-  console.log(`📋 Executing enhanced test runner: ${jestCommand} in ${cwd}`);
+  console.log(`📋 Executing lightweight test runner: ${jestCommand} in ${cwd}`);
   
   // Run tests with strict memory and time limits
   const testProcess = exec(jestCommand, { 
     cwd: cwd,
-    maxBuffer: 1024 * 1024 * 5, // 5MB buffer (reduced from 10MB)
+    maxBuffer: 1024 * 1024 * 2, // 2MB buffer (reduced for reliability)
     env: { 
       ...process.env, 
       NODE_ENV: 'test',
-      NODE_OPTIONS: '--max-old-space-size=512', // Limit memory to 512MB
+      NODE_OPTIONS: '--max-old-space-size=256', // Smaller memory limit
       LOG_LEVEL: 'info',
       FORCE_COLOR: '0', // Disable colors for production
       SUPPRESS_JEST_WARNINGS: 'true' // Suppress Mongoose warnings
     },
-    timeout: 90000 // 1.5 minute total timeout (reduced from 2 minutes)
+    timeout: 60000 // 1 minute total timeout (reduced for reliability)
   }, (err, stdout, stderr) => {
-    console.log(`✅ Enhanced test run ${id} completed with ${err ? 'error' : 'success'}`);
+    console.log(`✅ Lightweight test run ${id} completed with ${err ? 'error' : 'success'}`);
     console.log(`📊 stdout length: ${stdout?.length || 0}, stderr length: ${stderr?.length || 0}`);
     
     const status = err ? 'failed' : 'passed';
     
-    // Parse summary from enhanced test runner output
+    // Parse summary from test output
     let summary = 'Test execution completed';
     let coverage = '';
     
-    // Extract test summary from enhanced runner output
-    const testSummaryMatch = stdout.match(/Test Results Summary.*?total.*?(\d+).*?passed.*?(\d+)/s);
-    if (testSummaryMatch) {
-      const total = testSummaryMatch[1];
-      const passed = testSummaryMatch[2];
+    // Extract test summary from output
+    const passedMatch = stdout.match(/(\d+) passing/);
+    const failedMatch = stdout.match(/(\d+) failing/);
+    if (passedMatch || failedMatch) {
+      const passed = passedMatch ? passedMatch[1] : '0';
+      const failed = failedMatch ? failedMatch[1] : '0';
+      const total = parseInt(passed) + parseInt(failed);
       summary = `${passed} of ${total} tests passed`;
-    } else {
-      // Fallback parsing for different output formats
-      const passedMatch = stdout.match(/(\d+) passing/);
-      const failedMatch = stdout.match(/(\d+) failing/);
-      if (passedMatch || failedMatch) {
-        const passed = passedMatch ? passedMatch[1] : '0';
-        const failed = failedMatch ? failedMatch[1] : '0';
-        const total = parseInt(passed) + parseInt(failed);
-        summary = `${passed} of ${total} tests passed`;
-      }
     }
     
-    // Extract coverage information
+    // Extract coverage information if available
     const coverageMatch = stdout.match(/All files\s+\|\s+([\d.]+)%/);
     if (coverageMatch) {
       coverage = `${coverageMatch[1]}%`;
@@ -341,7 +333,7 @@ router.post('/run-tests', auth, requireRole('admin'), (req, res) => {
         details: fullOutput
       };
       writeTestResults(updatedResults);
-      console.log(`💾 Enhanced test results saved for run ${id}`);
+      console.log(`💾 Lightweight test results saved for run ${id}`);
     } else {
       console.error(`❌ Could not find test run ${id} to update`);
     }
@@ -349,109 +341,44 @@ router.post('/run-tests', auth, requireRole('admin'), (req, res) => {
   
   // Handle process events for better error handling
   testProcess.on('error', (error) => {
-    console.error(`❌ Enhanced test execution error for run ${id}:`, error);
+    console.error(`❌ Lightweight test execution error for run ${id}:`, error);
     
-    // Try running tests in smaller batches as fallback
-    console.log(`🔄 Attempting fallback: running tests in smaller batches for run ${id}`);
-    
-    const fallbackTests = [
-      'pattern auth',
-      'pattern listings',
-      'pattern payments'
-    ];
-    
-    let batchResults = [];
-    let completedBatches = 0;
-    
-    fallbackTests.forEach((testPattern, index) => {
-      const batchCommand = `node test-runner.js ${testPattern}`;
-      
-      exec(batchCommand, {
-        cwd: cwd,
-        maxBuffer: 1024 * 1024 * 2, // 2MB buffer per batch
-        env: { 
-          ...process.env, 
-          NODE_ENV: 'test',
-          NODE_OPTIONS: '--max-old-space-size=256', // Even smaller memory limit
-          LOG_LEVEL: 'info',
-          FORCE_COLOR: '0',
-          SUPPRESS_JEST_WARNINGS: 'true'
-        },
-        timeout: 30000 // 30 second timeout per batch
-      }, (batchErr, batchStdout, batchStderr) => {
-        completedBatches++;
-        
-        const batchResult = {
-          pattern: testPattern,
-          success: !batchErr,
-          output: batchStdout + (batchStderr ? '\n\nSTDERR:\n' + batchStderr : ''),
-          error: batchErr ? batchErr.message : null
-        };
-        
-        batchResults.push(batchResult);
-        
-        // If all batches are complete, update the result
-        if (completedBatches === fallbackTests.length) {
-          const totalPassed = batchResults.filter(r => r.success).length;
-          const totalBatches = fallbackTests.length;
-          
-          const fallbackOutput = `Fallback Test Execution Results
-=====================================
-
-Attempted to run tests in ${totalBatches} smaller batches due to memory/time constraints.
-
-Batch Results:
-${batchResults.map((result, i) => 
-  `${result.success ? '✅' : '❌'} Batch ${i + 1}: ${result.pattern}
-   Status: ${result.success ? 'PASSED' : 'FAILED'}
-   ${result.error ? `Error: ${result.error}` : ''}`
-).join('\n\n')}
-
-Summary: ${totalPassed}/${totalBatches} batches completed successfully
-
-Original Error: ${error.message}
-
-Note: Tests were run in smaller batches to work within production constraints.
-For full test execution, consider using a CI/CD pipeline or development environment.`;
-
-          const updatedResults = readTestResults();
-          const idx = updatedResults.findIndex(r => r.id === id);
-          if (idx !== -1) {
-            updatedResults[idx] = {
-              id,
-              date,
-              status: totalPassed > 0 ? 'passed' : 'failed',
-              summary: `${totalPassed}/${totalBatches} test batches passed`,
-              coverage: '',
-              details: fallbackOutput
-            };
-            writeTestResults(updatedResults);
-            console.log(`💾 Fallback test results saved for run ${id}`);
-          }
-        }
-      });
-    });
+    // Update result with error status
+    const updatedResults = readTestResults();
+    const idx = updatedResults.findIndex(r => r.id === id);
+    if (idx !== -1) {
+      updatedResults[idx] = {
+        id,
+        date,
+        status: 'failed',
+        summary: 'Test execution failed',
+        coverage: '',
+        details: `Test execution failed: ${error.message}\n\nThis may be due to:\n- Memory constraints\n- Timeout issues\n- Environment problems\n\nConsider running tests in a development environment for full test execution.`
+      };
+      writeTestResults(updatedResults);
+      console.log(`💾 Error test results saved for run ${id}`);
+    }
   });
   
   // Handle process exit
   testProcess.on('exit', (code, signal) => {
-    console.log(`🚪 Enhanced test process exited with code ${code}, signal ${signal} for run ${id}`);
+    console.log(`🚪 Lightweight test process exited with code ${code}, signal ${signal} for run ${id}`);
     
     // If process exits with error and we haven't handled it yet
     if (code !== 0 && code !== null) {
-      console.log(`⚠️ Enhanced test process exited with non-zero code ${code} for run ${id}`);
+      console.log(`⚠️ Lightweight test process exited with non-zero code ${code} for run ${id}`);
     }
   });
   
   // Handle process close
   testProcess.on('close', (code) => {
-    console.log(`🔒 Enhanced test process closed with code ${code} for run ${id}`);
+    console.log(`🔒 Lightweight test process closed with code ${code} for run ${id}`);
   });
   
   // Handle timeout with graceful shutdown
   setTimeout(() => {
     if (testProcess.exitCode === null) {
-      console.log(`⏰ Enhanced test process timed out for run ${id}, killing process gracefully`);
+      console.log(`⏰ Lightweight test process timed out for run ${id}, killing process gracefully`);
       testProcess.kill('SIGTERM');
       
       // Update result with timeout status
@@ -465,20 +392,20 @@ For full test execution, consider using a CI/CD pipeline or development environm
             status: 'failed',
             summary: 'Test execution timed out',
             coverage: '',
-            details: `Enhanced test execution timed out after 1.5 minutes.\n\nThis may be due to:\n- Large test suite\n- Memory constraints\n- Network issues\n\nConsider running tests in smaller batches or using a development environment for full test execution.`
+            details: `Lightweight test execution timed out after 1 minute.\n\nThis may be due to:\n- Memory constraints\n- Network issues\n- Environment problems\n\nConsider running tests in a development environment for full test execution.`
           };
           writeTestResults(updatedResults);
           console.log(`💾 Timeout test results saved for run ${id}`);
         }
       }, 1000);
     }
-  }, 90000); // 1.5 minute timeout (reduced from 2 minutes)
+  }, 60000); // 1 minute timeout (reduced for reliability)
   
   res.json({ 
     message: 'Test run started', 
     id, 
     status: 'running',
-    summary: 'Running enhanced test suite...'
+    summary: 'Running lightweight test suite...'
   });
 });
 

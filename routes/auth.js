@@ -76,7 +76,8 @@ router.post('/register', async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        themePreference: user.themePreference
       }
     });
   } catch (err) {
@@ -155,7 +156,8 @@ router.post('/login', async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        themePreference: user.themePreference
       }
     });
   } catch (err) {
@@ -173,7 +175,15 @@ router.get('/me', auth, async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
     
-    res.json({ user });
+    res.json({ 
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        themePreference: user.themePreference
+      }
+    });
   } catch (err) {
     console.error('Auth error:', err);
     res.status(401).json({ message: 'Invalid token' });
@@ -244,6 +254,41 @@ router.post('/reset-password', async (req, res) => {
 router.post('/test-login', (req, res) => {
   console.log('[TEST-LOGIN] Handler reached');
   res.json({ message: 'Test login route works' });
+});
+
+// Update theme preference
+router.post('/theme', auth, async (req, res) => {
+  try {
+    const { theme } = req.body;
+    
+    if (!['light', 'dark'].includes(theme)) {
+      return res.status(400).json({ message: 'Invalid theme. Must be "light" or "dark"' });
+    }
+    
+    const user = await User.findByIdAndUpdate(
+      req.user.id, 
+      { themePreference: theme },
+      { new: true }
+    ).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    res.json({ 
+      message: 'Theme preference updated successfully',
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        themePreference: user.themePreference
+      }
+    });
+  } catch (err) {
+    console.error('Theme update error:', err);
+    res.status(500).json({ message: 'Failed to update theme preference' });
+  }
 });
 
 module.exports = router; 

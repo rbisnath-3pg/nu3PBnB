@@ -96,7 +96,14 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [viewMode, setViewMode] = useState('list') // 'list' or 'map'
-  const [darkMode, setDarkMode] = useState(false)
+  const [darkMode, setDarkMode] = useState(() => {
+    // Initialize dark mode from user preference or localStorage
+    const savedTheme = localStorage.getItem('darkMode')
+    if (savedTheme !== null) {
+      return savedTheme === 'true'
+    }
+    return false
+  })
 
   // Search and filtering state
   const [searchQuery, setSearchQuery] = useState('')
@@ -1180,6 +1187,66 @@ function App() {
     };
   }, [user]);
 
+  /**
+   * Update theme preference on the server
+   * Saves the user's theme preference to persist across sessions
+   */
+  const updateThemePreference = async (isDark) => {
+    if (!user) return;
+    
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE}/api/auth/theme`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ theme: isDark ? 'dark' : 'light' })
+      });
+      
+      if (!response.ok) {
+        console.error('Failed to update theme preference');
+        return;
+      }
+      
+      const data = await response.json();
+      // Update the user data in localStorage with the new theme preference
+      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+      const updatedUser = { ...currentUser, themePreference: data.user.themePreference };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      
+    } catch (error) {
+      console.error('Error updating theme preference:', error);
+    }
+  };
+
+  /**
+   * Handle dark mode toggle
+   * Updates local state and saves preference to server
+   */
+  const handleDarkModeToggle = () => {
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    localStorage.setItem('darkMode', newDarkMode.toString());
+    
+    // Save to server if user is logged in
+    if (user) {
+      updateThemePreference(newDarkMode);
+    }
+  };
+
+  /**
+   * Initialize dark mode from user preference when user logs in
+   */
+  useEffect(() => {
+    if (user && user.themePreference) {
+      const userPrefersDark = user.themePreference === 'dark';
+      setDarkMode(userPrefersDark);
+      localStorage.setItem('darkMode', userPrefersDark.toString());
+    }
+  }, [user]);
+
   return (
     <div className={darkMode ? 'dark bg-gray-950 min-h-screen' : 'bg-white min-h-screen'}>
       {/* Global Loading Spinner */}
@@ -1205,7 +1272,7 @@ function App() {
             
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => setDarkMode(!darkMode)}
+                onClick={handleDarkModeToggle}
                 className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
               >
                 {darkMode ? '☀️' : '🌙'}
