@@ -550,7 +550,7 @@ router.post('/login', async (req, res) => {
     }, context);
 
     // Return success response
-    res.json({ 
+    const loginResponse = {
       message: 'Login successful',
       token,
       user: {
@@ -560,7 +560,9 @@ router.post('/login', async (req, res) => {
         role: user.role,
         themePreference: user.themePreference
       }
-    });
+    };
+    console.log('LOGIN RESPONSE:', loginResponse);
+    res.json(loginResponse);
 
   } catch (err) {
     const responseTime = Date.now() - startTime;
@@ -832,6 +834,11 @@ router.post('/theme', auth, async (req, res) => {
     
     res.status(500).json({ message: 'Failed to update theme preference' });
   }
+});
+
+// Minimal JSON test route for diagnostics
+router.get('/test-json', (req, res) => {
+  res.json({ test: 'ok', time: new Date().toISOString() });
 });
 
 module.exports = router; 
