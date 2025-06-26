@@ -1577,26 +1577,132 @@ function App() {
 
       {diagnostics && showDiagnostics && (
         <div className={`fixed top-0 left-0 w-full z-50 p-4 ${diagnostics.success ? 'bg-green-100 text-green-900' : 'bg-red-100 text-red-900'} border-b border-gray-300 shadow-lg`}>
-          <div className="flex justify-between items-center">
-            <div>
-              <strong>Booking Diagnostics:</strong> Last Run: {diagnostics.lastRun ? new Date(diagnostics.lastRun).toLocaleString() : 'Never'}<br/>
-              {diagnostics.success ? '✅ All booking tests passed.' : '❌ Booking test failed!'}
+          <div className="flex justify-between items-start">
+            <div className="flex-1">
+              <div className="flex items-center gap-4 mb-2">
+                <strong>Booking Diagnostics:</strong> 
+                <span>Last Run: {diagnostics.lastRun ? new Date(diagnostics.lastRun).toLocaleString() : 'Never'}</span>
+                <span className={`px-2 py-1 rounded text-xs font-bold ${diagnostics.success ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}`}>
+                  {diagnostics.success ? '✅ PASSED' : '❌ FAILED'}
+                </span>
+              </div>
+              
+              {/* Status Summary */}
+              <div className="mb-3">
+                {diagnostics.success ? (
+                  <div className="text-green-800">✅ All booking tests passed successfully!</div>
+                ) : (
+                  <div className="text-red-800">
+                    ❌ Booking test failed! 
+                    <span className="ml-2 text-sm opacity-75">
+                      {diagnostics.errors && diagnostics.errors.length > 0 
+                        ? `${diagnostics.errors.length} error(s) detected` 
+                        : 'No specific errors available'}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Detailed Error Information */}
               {diagnostics.errors && diagnostics.errors.length > 0 && (
-                <div className="mt-2">
-                  <strong>Errors:</strong>
-                  <ul className="list-disc ml-6">
-                    {diagnostics.errors.map((err, i) => <li key={i}>{err}</li>)}
-                  </ul>
+                <div className="mb-3">
+                  <strong className="text-red-800">🔍 Detailed Errors:</strong>
+                  <div className="mt-1 space-y-2">
+                    {diagnostics.errors.map((err, i) => (
+                      <div key={i} className="bg-red-50 border border-red-200 rounded p-2 text-sm">
+                        <div className="font-semibold text-red-800">Error #{i + 1}:</div>
+                        <div className="text-red-700 font-mono text-xs break-words">{err}</div>
+                        {/* Try to parse error for more details */}
+                        {err.includes('pattern') && (
+                          <div className="mt-1 text-xs text-red-600">
+                            💡 Pattern matching error detected. This usually indicates:
+                            <ul className="list-disc ml-4 mt-1">
+                              <li>Date format validation failure</li>
+                              <li>Booking availability check failure</li>
+                              <li>API response format mismatch</li>
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
+
+              {/* Debug Information */}
+              <div className="mb-3">
+                <details className="bg-gray-50 border border-gray-200 rounded">
+                  <summary className="cursor-pointer font-semibold p-2 hover:bg-gray-100">
+                    🔧 Debug Information & Troubleshooting
+                  </summary>
+                  <div className="p-3 text-sm space-y-2">
+                    <div>
+                      <strong>Diagnostics Data:</strong>
+                      <pre className="bg-gray-100 rounded p-2 text-xs mt-1 overflow-auto max-h-32">
+                        {JSON.stringify(diagnostics, null, 2)}
+                      </pre>
+                    </div>
+                    
+                    <div>
+                      <strong>API Endpoint Status:</strong>
+                      <div className="text-xs mt-1">
+                        • Endpoint: <code>/api/diagnostics/booking-tests</code><br/>
+                        • Expected: <code>{'{"lastRun": "timestamp", "success": true/false, "errors": [], "logs": []}'}</code><br/>
+                        • Current: <code>{diagnostics.lastRun ? 'Has data' : 'No data (null values)'}</code>
+                      </div>
+                    </div>
+
+                    <div>
+                      <strong>🔧 Troubleshooting Steps:</strong>
+                      <ol className="list-decimal ml-4 mt-1 text-xs space-y-1">
+                        <li>Run booking diagnostics script in Render shell: <code>node update-booking-diagnostics.js</code></li>
+                        <li>Check MongoDB connection in production</li>
+                        <li>Verify booking test dates (should be 10,000+ days in future)</li>
+                        <li>Check if diagnostics are being saved to MongoDB</li>
+                        <li>Restart backend to reload diagnostics from database</li>
+                      </ol>
+                    </div>
+
+                    <div>
+                      <strong>📊 Current State Analysis:</strong>
+                      <div className="text-xs mt-1">
+                        • <strong>lastRun:</strong> {diagnostics.lastRun ? '✅ Has timestamp' : '❌ Never run'}<br/>
+                        • <strong>success:</strong> {diagnostics.success !== null ? `✅ ${diagnostics.success}` : '❌ Unknown'}<br/>
+                        • <strong>errors:</strong> {diagnostics.errors && diagnostics.errors.length > 0 ? `❌ ${diagnostics.errors.length} errors` : '✅ No errors'}<br/>
+                        • <strong>logs:</strong> {diagnostics.logs && diagnostics.logs.length > 0 ? `✅ ${diagnostics.logs.length} log entries` : '❌ No logs'}
+                      </div>
+                    </div>
+                  </div>
+                </details>
+              </div>
+
+              {/* Debug Logs */}
               {diagnostics.logs && diagnostics.logs.length > 0 && (
-                <details className="mt-2">
-                  <summary className="cursor-pointer font-semibold">Debug Log</summary>
-                  <pre className="bg-gray-200 rounded p-2 text-xs max-h-64 overflow-auto">{diagnostics.logs.join('\n')}</pre>
+                <details className="bg-blue-50 border border-blue-200 rounded">
+                  <summary className="cursor-pointer font-semibold p-2 hover:bg-blue-100">
+                    📝 Debug Logs ({diagnostics.logs.length} entries)
+                  </summary>
+                  <pre className="bg-blue-100 rounded p-2 text-xs max-h-64 overflow-auto m-2 font-mono">
+                    {diagnostics.logs.map((log, i) => `${i + 1}: ${log}`).join('\n')}
+                  </pre>
                 </details>
               )}
             </div>
-            <button className="ml-4 px-3 py-1 rounded bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold" onClick={() => setShowDiagnostics(false)}>Dismiss</button>
+            
+            <div className="flex flex-col gap-2 ml-4">
+              <button 
+                className="px-3 py-1 rounded bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold text-sm"
+                onClick={() => setShowDiagnostics(false)}
+              >
+                Dismiss
+              </button>
+              <button 
+                className="px-3 py-1 rounded bg-blue-500 hover:bg-blue-600 text-white font-bold text-sm"
+                onClick={() => window.location.reload()}
+              >
+                Refresh
+              </button>
+            </div>
           </div>
         </div>
       )}
