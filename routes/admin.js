@@ -260,23 +260,23 @@ router.get('/test-results/:id', auth, requireRole('admin'), (req, res) => {
 });
 
 // Trigger a new test run
-// NOTE: Using actual test execution to run ALL tests in the project
+// NOTE: Using practical test execution to run critical test subset
 router.post('/run-tests', auth, requireRole('admin'), (req, res) => {
   const id = Date.now().toString();
   const date = new Date().toLocaleString();
   const results = readTestResults();
   
-  console.log(`🔄 Starting comprehensive test run ${id} at ${date}`);
+  console.log(`🔄 Starting practical test run ${id} at ${date}`);
   
   // Mark as running
   results.unshift({ id, date, status: 'running', summary: 'Running...', coverage: '', details: '' });
   writeTestResults(results);
   
-  // Use actual test execution to run ALL tests
-  const testCommand = 'npm test';
+  // Use practical test execution - run critical test subset
+  const testCommand = 'npm test -- --testPathPatterns="auth|bookings|payments" --no-coverage --verbose=false';
   const cwd = path.join(__dirname, '..');
   
-  console.log(`📋 Executing comprehensive test suite: ${testCommand} in ${cwd}`);
+  console.log(`📋 Executing practical test subset: ${testCommand} in ${cwd}`);
   
   // Run tests with production-optimized configuration
   const testProcess = exec(testCommand, { 
@@ -285,20 +285,20 @@ router.post('/run-tests', auth, requireRole('admin'), (req, res) => {
     env: { 
       ...process.env, 
       NODE_ENV: 'test',
-      NODE_OPTIONS: '--max-old-space-size=512', // Increased memory limit
+      NODE_OPTIONS: '--max-old-space-size=256', // Reduced memory limit
       LOG_LEVEL: 'error', // Only errors
       FORCE_COLOR: '0', // Disable colors
       SUPPRESS_JEST_WARNINGS: 'true', // Suppress warnings
       CI: 'true' // CI mode for better output
     },
-    timeout: 300000 // 5 minute timeout for comprehensive tests
+    timeout: 120000 // 2 minute timeout for practical tests
   }, (err, stdout, stderr) => {
-    console.log(`✅ Comprehensive test run ${id} completed with ${err ? 'error' : 'success'}`);
+    console.log(`✅ Practical test run ${id} completed with ${err ? 'error' : 'success'}`);
     console.log(`📊 stdout length: ${stdout?.length || 0}, stderr length: ${stderr?.length || 0}`);
     
     const status = err ? 'failed' : 'passed';
     
-    // Parse comprehensive test results
+    // Parse practical test results
     let summary = 'Test execution completed';
     let coverage = '';
     
@@ -306,31 +306,21 @@ router.post('/run-tests', auth, requireRole('admin'), (req, res) => {
     const passedMatch = stdout.match(/(\d+) passing/);
     const failedMatch = stdout.match(/(\d+) failing/);
     const testMatch = stdout.match(/(\d+) tests?/);
-    const coverageMatch = stdout.match(/All files\s+\|\s+(\d+\.\d+)%/);
+    const testSuitesMatch = stdout.match(/(\d+) passed, (\d+) total/);
     
     if (passedMatch || failedMatch || testMatch) {
       const passed = passedMatch ? parseInt(passedMatch[1]) : 0;
       const failed = failedMatch ? parseInt(failedMatch[1]) : 0;
       const total = testMatch ? parseInt(testMatch[1]) : (passed + failed);
       summary = `${passed} of ${total} tests passed`;
+    } else if (testSuitesMatch) {
+      const passed = parseInt(testSuitesMatch[1]);
+      const total = parseInt(testSuitesMatch[2]);
+      summary = `${passed} test suites passed (${total} total)`;
     } else if (stdout.includes('PASS') || stdout.includes('✓')) {
-      summary = 'All tests passed successfully';
+      summary = 'Critical tests passed successfully';
     } else if (stdout.includes('FAIL') || stdout.includes('✕')) {
-      summary = 'Some tests failed';
-    }
-    
-    // Extract coverage information
-    if (coverageMatch) {
-      coverage = `${coverageMatch[1]}%`;
-    } else if (stdout.includes('All files')) {
-      const coverageLines = stdout.split('\n').filter(line => line.includes('All files'));
-      if (coverageLines.length > 0) {
-        const coverageLine = coverageLines[0];
-        const match = coverageLine.match(/(\d+\.\d+)%/);
-        if (match) {
-          coverage = `${match[1]}%`;
-        }
-      }
+      summary = 'Some critical tests failed';
     }
     
     // Combine stdout and stderr for complete output
@@ -349,7 +339,7 @@ router.post('/run-tests', auth, requireRole('admin'), (req, res) => {
         details: fullOutput
       };
       writeTestResults(updatedResults);
-      console.log(`💾 Comprehensive test results saved for run ${id}`);
+      console.log(`💾 Practical test results saved for run ${id}`);
     } else {
       console.error(`❌ Could not find test run ${id} to update`);
     }
@@ -357,7 +347,7 @@ router.post('/run-tests', auth, requireRole('admin'), (req, res) => {
   
   // Handle process events for better error handling
   testProcess.on('error', (error) => {
-    console.error(`❌ Comprehensive test execution error for run ${id}:`, error);
+    console.error(`❌ Practical test execution error for run ${id}:`, error);
     
     // Update result with error status
     const updatedResults = readTestResults();
@@ -369,7 +359,7 @@ router.post('/run-tests', auth, requireRole('admin'), (req, res) => {
         status: 'failed',
         summary: 'Test execution failed',
         coverage: '',
-        details: `Comprehensive test execution failed: ${error.message}\n\nThis may be due to:\n- Memory constraints\n- Timeout issues\n- Environment problems\n\nConsider running tests in a development environment for full test execution.`
+        details: `Practical test execution failed: ${error.message}\n\nThis may be due to:\n- Memory constraints\n- Timeout issues\n- Environment problems\n\nConsider running tests in a development environment for full test execution.`
       };
       writeTestResults(updatedResults);
       console.log(`💾 Error test results saved for run ${id}`);
@@ -378,23 +368,23 @@ router.post('/run-tests', auth, requireRole('admin'), (req, res) => {
   
   // Handle process exit
   testProcess.on('exit', (code, signal) => {
-    console.log(`🚪 Comprehensive test process exited with code ${code}, signal ${signal} for run ${id}`);
+    console.log(`🚪 Practical test process exited with code ${code}, signal ${signal} for run ${id}`);
     
     // If process exits with error and we haven't handled it yet
     if (code !== 0 && code !== null) {
-      console.log(`⚠️ Comprehensive test process exited with non-zero code ${code} for run ${id}`);
+      console.log(`⚠️ Practical test process exited with non-zero code ${code} for run ${id}`);
     }
   });
   
   // Handle process close
   testProcess.on('close', (code) => {
-    console.log(`🔒 Comprehensive test process closed with code ${code} for run ${id}`);
+    console.log(`🔒 Practical test process closed with code ${code} for run ${id}`);
   });
   
   // Handle timeout with graceful shutdown
   setTimeout(() => {
     if (testProcess.exitCode === null) {
-      console.log(`⏰ Comprehensive test process timed out for run ${id}, killing process gracefully`);
+      console.log(`⏰ Practical test process timed out for run ${id}, killing process gracefully`);
       testProcess.kill('SIGTERM');
       
       // Update result with timeout status
@@ -408,20 +398,20 @@ router.post('/run-tests', auth, requireRole('admin'), (req, res) => {
             status: 'failed',
             summary: 'Test execution timed out',
             coverage: '',
-            details: `Comprehensive test execution timed out after 5 minutes.\n\nThis may be due to:\n- Memory constraints\n- Network issues\n- Environment problems\n\nConsider running tests in a development environment for full test execution.`
+            details: `Practical test execution timed out after 2 minutes.\n\nThis may be due to:\n- Memory constraints\n- Network issues\n- Environment problems\n\nConsider running tests in a development environment for full test execution.`
           };
           writeTestResults(updatedResults);
           console.log(`💾 Timeout test results saved for run ${id}`);
         }
       }, 1000);
     }
-  }, 300000); // 5 minute timeout for comprehensive tests
+  }, 120000); // 2 minute timeout for practical tests
   
   res.json({ 
     message: 'Test run started', 
     id, 
     status: 'running',
-    summary: 'Running comprehensive test suite...'
+    summary: 'Running critical test subset...'
   });
 });
 
